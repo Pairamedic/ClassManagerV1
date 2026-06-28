@@ -217,6 +217,7 @@
       <button class="tab" data-view="materials">📚 Materials</button>
       <button class="tab" data-view="simulator">🫀 Simulator</button>
       <button class="tab" data-view="records">📁 Records</button>
+      <button class="tab" data-view="users" id="tab-users" style="display:none">👥 Users</button>
     </nav>
   </div>
 </header>
@@ -493,6 +494,19 @@
     <div id="records-list"></div>
   </section>
 
+  <!-- USERS (admin only) -->
+  <section class="view" id="view-users">
+    <div class="sec-hd">
+      <div class="sec-title">Team / User Accounts</div>
+      <button class="btn sm primary" id="new-user-btn">+ Create Account</button>
+    </div>
+    <div class="notice" id="users-firestore-notice" style="margin-bottom:16px">
+      ⚠️ Make sure your Firestore rules allow authenticated users to read/write. In Firebase Console → Firestore → Rules, set:<br>
+      <code style="font-size:11px;display:block;margin-top:6px;color:var(--accent)">allow read, write: if request.auth != null;</code>
+    </div>
+    <div id="users-list"><div class="empty"><div class="empty-text">No team members yet</div></div></div>
+  </section>
+
 </main>
 
 <!-- ===== MODALS ===== -->
@@ -760,6 +774,21 @@
   </div>
 </div>
 
+<!-- CREATE USER (admin only) -->
+<div class="overlay hidden" id="modal-new-user">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-title">Create Account</div><button class="close-btn" data-close="modal-new-user">×</button></div>
+    <div class="fg"><label>Full Name</label><input type="text" id="nu-name" placeholder="Jane Smith" /></div>
+    <div class="fg"><label>Email *</label><input type="email" id="nu-email" placeholder="jane@example.com" /></div>
+    <div class="fg"><label>Temporary Password *</label>
+      <input type="text" id="nu-pass" placeholder="Min 6 characters" autocomplete="off" />
+      <div style="font-size:11px;color:var(--muted);margin-top:4px">Share this with the person — they can change it after first login.</div>
+    </div>
+    <div id="nu-err" style="color:#f87171;font-size:13px;min-height:18px;margin-bottom:8px"></div>
+    <button class="btn primary full" id="nu-save-btn">Create Account</button>
+  </div>
+</div>
+
 <!-- NEW CERT -->
 <div class="overlay hidden" id="modal-new-cert">
   <div class="modal">
@@ -1010,9 +1039,10 @@ const db        = firebase.firestore();
 let fbStorage = null;
 try { fbStorage = firebase.storage(); } catch(e) { console.warn('Firebase Storage unavailable:', e.message); }
 
-let UID = null;
-const col     = name => db.collection(`users/${UID}/${name}`);
-const stgRef  = path => fbStorage ? fbStorage.ref(path) : null;
+let CURRENT_USER = null;
+let IS_ADMIN = false;
+const col = name => db.collection(name);
+const stgRef = path => fbStorage ? fbStorage.ref(path) : null;
 
 // ============================================================
 // STATE
@@ -1194,6 +1224,100 @@ $('faq-delete-btn').addEventListener('click',async()=>{
   if(!currentFaqId||!confirm('Delete this FAQ item?'))return;
   await col('faq').doc(currentFaqId).delete();closeModal('modal-faq');
 });
+
+// ── Users / Team Management ──────────────────────────────────────────────────
+// Secondary Firebase app instance — lets admin create accounts without signing out
+let _secondaryApp = null;
+function getSecondaryAuth(){
+  if(_secondaryApp) return _secondaryApp.auth();
+  _secondaryApp = firebase.initializeApp({
+    apiKey: "AIzaSyDDCM69agn_siiIwd9429urrd6ShAQXnyE",
+    authDomain: "classmanager-ad588.firebaseapp.com",
+    projectId: "classmanager-ad588",
+    storageBucket: "classmanager-ad588.firebasestorage.app",
+    messagingSenderId: "1016222970430",
+    appId: "1:1016222970430:web:7e1077fe12ef369ae4576f"
+  }, 'secondary');
+  return _secondaryApp.auth();
+}
+
+function renderUsers(docs){
+  const list = $('users-list');
+  if(!docs||!docs.length){
+    list.innerHTML='<div class="empty"><div class="empty-text">No team members yet</div></div>';
+    return;
+  }
+  list.innerHTML = docs.map(d=>{
+    const data = d.data();
+    const isAdmin = data.email === ADMIN_EMAIL;
+    return `<div class="cert-card" style="display:flex;align-items:center;gap:12px;padding:12px 16px">
+      <div style="flex:1;min-width:0">
+        <div style="font-weight:600;font-size:14px">${data.name||'(no name)'}</div>
+        <div style="font-size:12px;color:var(--muted)">${data.email||''}</div>
+      </div>
+      <div style="font-size:11px;color:var(--muted);white-space:nowrap">${isAdmin?'Admin':'Member'}</div>
+    </div>`;
+  }).join('');
+}
+
+// Listen on the team collection
+function setupUsersListener(){
+  const unsub = col('team').orderBy('name').onSnapshot(snap=>{
+    renderUsers(snap.docs);
+  }, err=>console.warn('team listener:', err));
+  unsubs.push(unsub);
+}
+
+// Open create-user modal
+$('new-user-btn').addEventListener('click',()=>{
+  $('nu-name').value='';
+  $('nu-email').value='';
+  $('nu-pass').value='';
+  $('nu-err').textContent='';
+  $('nu-save-btn').disabled=false;
+  openModal('modal-new-user');
+});
+
+// Create account
+$('nu-save-btn').addEventListener('click',async()=>{
+  const name  = $('nu-name').value.trim();
+  const email = $('nu-email').value.trim();
+  const pass  = $('nu-pass').value;
+  $('nu-err').textContent='';
+
+  if(!email){$('nu-err').textContent='Email is required.';return;}
+  if(!pass||pass.length<6){$('nu-err').textContent='Password must be at least 6 characters.';return;}
+
+  $('nu-save-btn').disabled=true;
+  $('nu-save-btn').textContent='Creating…';
+
+  try{
+    const secAuth = getSecondaryAuth();
+    const cred = await secAuth.createUserWithEmailAndPassword(email,pass);
+    const uid  = cred.user.uid;
+    await secAuth.signOut();
+
+    // Save to team collection
+    await col('team').doc(uid).set({
+      uid, name, email,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      createdBy: CURRENT_USER.email
+    });
+
+    closeModal('modal-new-user');
+  }catch(e){
+    const msgs={
+      'auth/email-already-in-use':'An account with this email already exists.',
+      'auth/invalid-email':'Invalid email address.',
+      'auth/weak-password':'Password is too weak (min 6 characters).',
+    };
+    $('nu-err').textContent=msgs[e.code]||('Error: '+e.message);
+  }finally{
+    $('nu-save-btn').disabled=false;
+    $('nu-save-btn').textContent='Create Account';
+  }
+});
+
 function activateDashTab(which){
   ['overview','finances','info'].forEach(n=>{
     $(`stab-dash-${n}`).classList.toggle('active',n===which);
@@ -1209,47 +1333,20 @@ function activateDashTab(which){
 // ============================================================
 // AUTH + REAL-TIME LISTENERS
 // ============================================================
-const ADMIN_EMAIL='eliasacaldwellnrp@gmail.com';
+const ADMIN_EMAIL = 'eliasacaldwellnrp@gmail.com';
 
-function lsSignIn(){
-  const email=$('ls-email').value.trim();
-  const pass=$('ls-password').value;
-  const err=$('ls-err');const btn=$('ls-btn');
-  if(!email||!pass){err.textContent='Email and password required.';err.style.display='block';return;}
-  btn.textContent='…';btn.disabled=true;err.style.display='none';
-  fbAuth.signInWithEmailAndPassword(email,pass).catch(e=>{
-    const msg={
-      'auth/wrong-password':'Incorrect password.',
-      'auth/user-not-found':'No account found with this email.',
-      'auth/invalid-credential':'Incorrect email or password.',
-      'auth/too-many-requests':'Too many attempts. Try again later.',
-      'auth/invalid-email':'Enter a valid email address.',
-    }[e.code]||'Sign-in failed. Check your credentials.';
-    err.textContent=msg;err.style.display='block';
-    btn.textContent='Sign In';btn.disabled=false;
-  });
-}
-
-// Fallback: if Firebase Auth never resolves, redirect to login after 8s
+// Fallback: redirect to login if auth doesn't resolve in 8s
 const _authFallback = setTimeout(() => {
-  if ($('ls-checking').style.display !== 'none') {
-    window.location.replace('index.html');
-  }
+  if ($('ls-checking').style.display !== 'none') window.location.replace('index.html');
 }, 8000);
 
 fbAuth.onAuthStateChanged(user=>{
   clearTimeout(_authFallback);
-  if(!user){
-    unsubs.forEach(u=>u());
-    window.location.replace('index.html');
-    return;
-  }
-  if(user.email!==ADMIN_EMAIL){
-    fbAuth.signOut();
-    return;
-  }
+  if(!user){ unsubs.forEach(u=>u()); window.location.replace('index.html'); return; }
+  CURRENT_USER = user;
+  IS_ADMIN = (user.email === ADMIN_EMAIL);
   $('ls-checking').style.display='flex';
-  UID=user.uid;
+  if(IS_ADMIN) $('tab-users').style.display=''; // show Users tab for admin only
   setupListeners();
 });
 
@@ -1293,6 +1390,7 @@ function setupListeners(){
     allFaq=snap.docs.map(d=>({id:d.id,...d.data()}));
     if($('subpanel-dash-info').style.display!=='none')renderInfo();
   },console.error));
+  if(IS_ADMIN) setupUsersListener();
 }
 
 function refreshView(){
