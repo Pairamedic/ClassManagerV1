@@ -197,6 +197,24 @@
     #update-toast{position:fixed;bottom:max(28px,env(safe-area-inset-bottom,28px));left:50%;transform:translateX(-50%);background:var(--card);border:1.5px solid rgba(94,234,212,.5);color:var(--text);padding:13px 20px;border-radius:14px;font-size:14px;font-weight:500;cursor:pointer;z-index:1000;box-shadow:0 6px 28px rgba(0,0,0,.55);white-space:nowrap;animation:slideUp .3s ease;display:flex;align-items:center;gap:10px;-webkit-tap-highlight-color:transparent}
     #update-toast:hover{border-color:var(--accent);background:rgba(94,234,212,.06)}
     #update-toast .ut-pill{background:rgba(94,234,212,.15);border:1px solid rgba(94,234,212,.35);color:var(--accent);font-size:11px;font-weight:700;padding:3px 8px;border-radius:6px;letter-spacing:.04em;text-transform:uppercase;flex:none}
+    /* OCR Scanner */
+    .ocr-drop-zone{border:2px dashed var(--border);border-radius:16px;padding:32px 20px;text-align:center;transition:border-color .2s,background .2s;cursor:pointer}
+    .ocr-drop-zone:hover,.ocr-drop-zone.drag-over{border-color:rgba(94,234,212,.5);background:rgba(94,234,212,.04)}
+    .ocr-preview-wrap{position:relative;border-radius:12px;overflow:hidden;background:#000;margin-bottom:12px;display:none}
+    .ocr-preview-wrap.show{display:block}
+    #ocr-canvas{width:100%;display:block;max-height:320px;object-fit:contain}
+    .ocr-prog-wrap{margin:12px 0;display:none}
+    .ocr-prog-wrap.show{display:block}
+    .ocr-result-box{background:var(--input-bg);border:1px solid var(--border);border-radius:12px;padding:14px;font-size:13px;line-height:1.6;white-space:pre-wrap;word-break:break-word;min-height:80px;max-height:320px;overflow-y:auto;margin-bottom:10px;display:none}
+    .ocr-result-box.show{display:block}
+    .ocr-field-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+    .ocr-field-label{font-size:12px;font-weight:600;color:var(--muted);min-width:90px;flex:none}
+    .ocr-field-val{flex:1;font-size:13px;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;padding:7px 10px;color:var(--text);font-family:inherit}
+    .ocr-copy-btn{padding:6px 10px;font-size:12px;border-radius:7px;border:1px solid var(--border);background:var(--input-bg);color:var(--muted);cursor:pointer;flex:none;font-family:inherit;transition:color .15s}
+    .ocr-copy-btn:hover{color:var(--text)}
+    .ocr-section-hd{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin:14px 0 8px}
+    .ocr-hint-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:500;border:1px solid var(--border);background:var(--input-bg);color:var(--muted);cursor:pointer;margin:3px;font-family:inherit;transition:all .15s}
+    .ocr-hint-chip:hover{border-color:rgba(94,234,212,.4);color:var(--accent)}
   </style>
 </head>
 <body>
@@ -294,6 +312,7 @@
       <button class="tab" data-view="materials">📚 Materials</button>
       <button class="tab" data-view="simulator">🫀 Simulator</button>
       <button class="tab" data-view="records">📁 Records</button>
+      <button class="tab" data-view="ocr">📷 OCR Scan</button>
     </nav>
   </div>
 </header>
@@ -568,6 +587,79 @@
       <input type="text" id="rec-search" placeholder="Search students…" />
     </div>
     <div id="records-list"></div>
+  </section>
+
+  <!-- OCR SCANNER -->
+  <section class="view" id="view-ocr">
+    <div class="sec-hd" style="margin-bottom:16px">
+      <div class="sec-title">OCR Document Scanner</div>
+      <button class="btn sm danger" id="ocr-clear-btn" style="display:none">✕ Clear</button>
+    </div>
+
+    <!-- Drop / capture zone -->
+    <div class="ocr-drop-zone" id="ocr-drop-zone" onclick="$('ocr-file-input').click()">
+      <div style="font-size:38px;margin-bottom:10px">📷</div>
+      <div style="font-weight:700;font-size:15px;margin-bottom:6px">Scan a Document</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.5">
+        Take a photo or upload an image of an AHA card, certification, license, or any document to extract the text automatically.
+      </div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button class="btn primary" onclick="event.stopPropagation();$('ocr-camera-input').click()">📷 Take Photo</button>
+        <button class="btn" onclick="event.stopPropagation();$('ocr-file-input').click()">⬆ Upload Image</button>
+      </div>
+    </div>
+    <input type="file" id="ocr-camera-input" accept="image/*" capture="environment" style="display:none" />
+    <input type="file" id="ocr-file-input" accept="image/*,.pdf" style="display:none" />
+
+    <!-- Image preview -->
+    <div class="ocr-preview-wrap" id="ocr-preview-wrap" style="margin-top:14px">
+      <canvas id="ocr-canvas"></canvas>
+    </div>
+
+    <!-- Progress bar -->
+    <div class="ocr-prog-wrap" id="ocr-prog-wrap">
+      <div class="upload-prog-label">
+        <span id="ocr-prog-label">Initializing OCR…</span>
+        <span id="ocr-prog-pct">0%</span>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" id="ocr-prog-bar" style="width:0%"></div></div>
+    </div>
+
+    <!-- Results -->
+    <div id="ocr-results" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:16px 0 6px">
+        <div class="ocr-section-hd" style="margin:0">Detected Fields</div>
+        <div style="display:flex;gap:8px">
+          <button class="btn sm" id="ocr-copy-all-btn">📋 Copy All Text</button>
+        </div>
+      </div>
+
+      <!-- Auto-parsed field chips -->
+      <div id="ocr-parsed-fields" class="card" style="margin-bottom:12px;display:none">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--accent);margin-bottom:10px">Auto-detected</div>
+        <div id="ocr-parsed-rows"></div>
+      </div>
+
+      <!-- Quick-copy chips for common fields -->
+      <div style="margin-bottom:12px" id="ocr-chip-row"></div>
+
+      <!-- Raw OCR text -->
+      <div class="ocr-section-hd">Raw Extracted Text</div>
+      <div class="ocr-result-box show" id="ocr-raw-text"></div>
+
+      <!-- Copy to clipboard notice -->
+      <div id="ocr-copy-notice" style="font-size:12px;color:var(--ok);min-height:16px;margin-top:4px"></div>
+
+      <!-- Use in App -->
+      <div class="ocr-section-hd" style="margin-top:20px">Use Extracted Data</div>
+      <div class="card" style="margin-bottom:0">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Paste a detected value into a student record or AHA card field:</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn sm primary" onclick="switchView('classes')">→ Open Classes &amp; Students</button>
+          <button class="btn sm primary" onclick="switchView('certs')">→ Open Certifications</button>
+        </div>
+      </div>
+    </div>
   </section>
 
 </main>
@@ -1062,6 +1154,9 @@
     </div>
   </div>
 </div>
+
+<!-- TESSERACT OCR -->
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
 <!-- FIREBASE -->
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -2346,6 +2441,217 @@ document.addEventListener('click', function(e) {
         if(w.state==='installed'&&navigator.serviceWorker.controller)showUpdateToast();
       });
     });
+  });
+})();
+
+// ============================================================
+// OCR SCANNER
+// ============================================================
+(function(){
+  let ocrWorker = null;
+  let ocrBusy = false;
+
+  function ocrEl(id){ return document.getElementById(id); }
+
+  function showOCRClear(show){
+    const btn = ocrEl('ocr-clear-btn');
+    if(btn) btn.style.display = show ? '' : 'none';
+  }
+
+  function drawImageOnCanvas(file){
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = ocrEl('ocr-canvas');
+          const maxW = 1200, maxH = 1600;
+          let w = img.naturalWidth, h = img.naturalHeight;
+          if(w > maxW){ h = Math.round(h * maxW / w); w = maxW; }
+          if(h > maxH){ w = Math.round(w * maxH / h); h = maxH; }
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          ocrEl('ocr-preview-wrap').classList.add('show');
+          resolve(canvas);
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function runOCR(file){
+    if(ocrBusy) return;
+    ocrBusy = true;
+    ocrEl('ocr-results').style.display = 'none';
+    ocrEl('ocr-prog-wrap').classList.add('show');
+    ocrEl('ocr-prog-label').textContent = 'Loading OCR engine…';
+    ocrEl('ocr-prog-pct').textContent = '0%';
+    ocrEl('ocr-prog-bar').style.width = '0%';
+    showOCRClear(false);
+
+    try {
+      await drawImageOnCanvas(file);
+
+      if(!ocrWorker){
+        ocrWorker = await Tesseract.createWorker('eng', 1, {
+          logger: m => {
+            const status = m.status || '';
+            const pct = Math.round((m.progress || 0) * 100);
+            const label = status.includes('load') ? 'Loading language data…'
+              : status.includes('init') ? 'Initializing…'
+              : status.includes('recogniz') ? 'Recognizing text…'
+              : status || 'Processing…';
+            ocrEl('ocr-prog-label').textContent = label;
+            ocrEl('ocr-prog-pct').textContent = pct + '%';
+            ocrEl('ocr-prog-bar').style.width = pct + '%';
+          }
+        });
+      }
+
+      ocrEl('ocr-prog-label').textContent = 'Recognizing text…';
+      const canvas = ocrEl('ocr-canvas');
+      const { data } = await ocrWorker.recognize(canvas);
+      const rawText = data.text.trim();
+
+      ocrEl('ocr-prog-wrap').classList.remove('show');
+      ocrEl('ocr-results').style.display = '';
+      ocrEl('ocr-raw-text').textContent = rawText || '(No text detected)';
+      buildParsedFields(rawText);
+      buildChipRow(rawText);
+      showOCRClear(true);
+    } catch(err){
+      ocrEl('ocr-prog-wrap').classList.remove('show');
+      ocrEl('ocr-prog-label').textContent = 'Error: ' + err.message;
+      alert('OCR failed: ' + err.message);
+    } finally {
+      ocrBusy = false;
+    }
+  }
+
+  function buildParsedFields(text){
+    const parsed = parseDocumentFields(text);
+    const rows = Object.entries(parsed).filter(([,v])=>v);
+    const wrap = ocrEl('ocr-parsed-fields');
+    const rowsEl = ocrEl('ocr-parsed-rows');
+    if(!rows.length){ wrap.style.display='none'; return; }
+    wrap.style.display = '';
+    rowsEl.innerHTML = rows.map(([label, val]) => `
+      <div class="ocr-field-row">
+        <span class="ocr-field-label">${label}</span>
+        <input class="ocr-field-val" readonly value="${val.replace(/"/g,'&quot;')}" onclick="this.select()" />
+        <button class="ocr-copy-btn" onclick="ocrCopyField(this,'${val.replace(/'/g,"\\'")}')">Copy</button>
+      </div>`).join('');
+  }
+
+  function buildChipRow(text){
+    const words = text.split(/\s+/).filter(w => w.length >= 4);
+    const unique = [...new Set(words)].slice(0, 20);
+    const chipEl = ocrEl('ocr-chip-row');
+    if(!unique.length){ chipEl.innerHTML=''; return; }
+    chipEl.innerHTML = '<div style="font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Quick Copy</div>' +
+      unique.map(w => `<button class="ocr-hint-chip" onclick="ocrCopyField(this,'${w.replace(/'/g,"\\'")}')">${w}</button>`).join('');
+  }
+
+  function parseDocumentFields(text){
+    const result = {};
+    const upper = text.toUpperCase();
+
+    // AHA card number — 10–16 digit alphanumeric after common labels
+    const cardMatch = text.match(/(?:card\s*(?:number|#|no\.?)?[:\s]*|TC\s*ID[:\s]*)([A-Z0-9]{10,16})/i)
+      || text.match(/\b([A-Z]{2,4}[0-9]{6,12})\b/)
+      || text.match(/\b([0-9]{10,16})\b/);
+    if(cardMatch) result['Card #'] = cardMatch[1];
+
+    // Expiry / issue date — MM/YYYY or MM/DD/YYYY or YYYY-MM-DD
+    const dates = [...text.matchAll(/\b(\d{1,2}[\/\-]\d{2,4}(?:[\/\-]\d{2,4})?)\b/g)].map(m=>m[1]);
+    if(dates[0]) result['Date 1'] = dates[0];
+    if(dates[1]) result['Date 2'] = dates[1];
+
+    // Name — line that contains capitalized first + last name
+    const nameMatch = text.match(/^([A-Z][a-z]+(?:\s[A-Z][a-z]+){1,3})\s*$/m)
+      || text.match(/(?:name[:\s]+)([A-Z][a-z]+(?:\s[A-Z][a-z]+){1,3})/i);
+    if(nameMatch) result['Name'] = nameMatch[1].trim();
+
+    // Course / certification type keywords
+    const courseKeys = ['ACLS','PALS','BLS','CPR','HEARTSAVER','INSTRUCTOR','NREMT','EMT','PARAMEDIC'];
+    const found = courseKeys.filter(k => upper.includes(k));
+    if(found.length) result['Course/Type'] = found.join(', ');
+
+    return result;
+  }
+
+  window.ocrCopyField = function(btn, val){
+    navigator.clipboard.writeText(val).then(()=>{
+      const orig = btn.textContent;
+      btn.textContent = '✓ Copied';
+      setTimeout(()=>{ btn.textContent = orig; }, 1500);
+    }).catch(()=>{
+      const ta = document.createElement('textarea');
+      ta.value = val; ta.style.position='fixed'; ta.style.opacity='0';
+      document.body.appendChild(ta); ta.select();
+      document.execCommand('copy');
+      document.body.removeChild(ta);
+      btn.textContent = '✓';
+      setTimeout(()=>{ btn.textContent = 'Copy'; }, 1200);
+    });
+    const notice = ocrEl('ocr-copy-notice');
+    if(notice){ notice.textContent = `Copied: ${val}`; setTimeout(()=>{ notice.textContent=''; }, 2000); }
+  };
+
+  function clearOCR(){
+    ocrEl('ocr-preview-wrap').classList.remove('show');
+    ocrEl('ocr-prog-wrap').classList.remove('show');
+    ocrEl('ocr-results').style.display = 'none';
+    ocrEl('ocr-raw-text').textContent = '';
+    ocrEl('ocr-parsed-fields').style.display = 'none';
+    ocrEl('ocr-parsed-rows').innerHTML = '';
+    ocrEl('ocr-chip-row').innerHTML = '';
+    ocrEl('ocr-copy-notice').textContent = '';
+    ocrEl('ocr-camera-input').value = '';
+    ocrEl('ocr-file-input').value = '';
+    showOCRClear(false);
+  }
+
+  function handleFile(file){
+    if(!file) return;
+    if(!file.type.startsWith('image/')){
+      alert('Please select an image file (JPG, PNG, HEIC, etc.).');
+      return;
+    }
+    clearOCR();
+    runOCR(file);
+  }
+
+  ocrEl('ocr-camera-input').addEventListener('change', e => handleFile(e.target.files[0]));
+  ocrEl('ocr-file-input').addEventListener('change',  e => handleFile(e.target.files[0]));
+  ocrEl('ocr-clear-btn').addEventListener('click', clearOCR);
+
+  ocrEl('ocr-copy-all-btn').addEventListener('click', function(){
+    const text = ocrEl('ocr-raw-text').textContent;
+    ocrCopyField(this, text);
+  });
+
+  // Drag-and-drop on the drop zone
+  const dz = ocrEl('ocr-drop-zone');
+  dz.addEventListener('dragover', e=>{ e.preventDefault(); dz.classList.add('drag-over'); });
+  dz.addEventListener('dragleave', ()=> dz.classList.remove('drag-over'));
+  dz.addEventListener('drop', e=>{ e.preventDefault(); dz.classList.remove('drag-over'); handleFile(e.dataTransfer.files[0]); });
+
+  // Paste image from clipboard
+  document.addEventListener('paste', e=>{
+    if(document.getElementById('view-ocr').classList.contains('active')){
+      const items = e.clipboardData && e.clipboardData.items;
+      if(!items) return;
+      for(const item of items){
+        if(item.type.startsWith('image/')){
+          handleFile(item.getAsFile());
+          break;
+        }
+      }
+    }
   });
 })();
 
