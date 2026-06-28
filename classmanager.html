@@ -171,6 +171,17 @@
     .divider{height:1px;background:var(--border);margin:14px 0}
     #loading-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:12px}
     #loading-screen.hidden{display:none}
+    #hub-screen{position:fixed;inset:0;background:var(--bg);display:flex;align-items:center;justify-content:center;z-index:998;flex-direction:column;gap:28px;padding:24px;overflow-y:auto}
+    #hub-screen.hidden{display:none}
+    .hub-card{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:32px 24px;cursor:pointer;transition:border-color .2s,transform .15s,box-shadow .2s;text-align:center;font-family:inherit;color:var(--text);display:flex;flex-direction:column;align-items:center;gap:14px;width:100%}
+    .hub-card:hover{border-color:rgba(94,234,212,.5);transform:translateY(-2px);box-shadow:0 8px 32px rgba(0,0,0,.35)}
+    .hub-card:active{transform:translateY(0);opacity:.85}
+    .hub-card .hub-icon{font-size:48px;line-height:1}
+    .hub-card .hub-title{font-size:17px;font-weight:800;letter-spacing:-.2px}
+    .hub-card .hub-desc{font-size:12px;color:var(--muted);line-height:1.55}
+    .hub-card.primary-card{border-color:rgba(94,234,212,.3);background:rgba(94,234,212,.05)}
+    .hub-card.secondary-card{border-color:rgba(147,197,253,.3);background:rgba(147,197,253,.05)}
+    @media(min-width:600px){.hub-grid{grid-template-columns:1fr 1fr!important}}
     .filter-chips{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px;margin-bottom:14px}
     .filter-chips::-webkit-scrollbar{display:none}
     .fchip{flex:none;padding:5px 12px;border-radius:999px;font-size:12px;font-weight:500;border:1px solid var(--border);background:var(--input-bg);color:var(--muted);cursor:pointer;font-family:inherit;transition:all .15s}
@@ -234,6 +245,36 @@
       </div>
     </div>
   </div>
+</div>
+
+<!-- App Hub / Launcher — shown after login, before entering either app -->
+<div id="hub-screen" class="hidden">
+  <div style="text-align:center">
+    <svg width="150" height="64" viewBox="0 0 200 84" fill="none" xmlns="http://www.w3.org/2000/svg" style="margin-bottom:6px">
+      <polyline points="0,42 30,42 36,37 42,42 56,42 61,50 67,8 73,58 79,42 92,26 98,42 130,42 200,42"
+        stroke="var(--accent)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+    <div style="font-weight:800;font-size:22px;letter-spacing:-.3px">Class Manager <span style="color:var(--accent)">Pro</span></div>
+    <div style="font-size:11px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-top:4px">Paramedic Instructor Portal</div>
+  </div>
+
+  <div class="hub-grid" style="display:grid;grid-template-columns:1fr;gap:14px;width:100%;max-width:560px">
+    <button class="hub-card primary-card" onclick="launchDashboard()">
+      <div class="hub-icon">📊</div>
+      <div class="hub-title">Instructor Dashboard</div>
+      <div class="hub-desc">Manage classes, students, certifications, finances, and materials. Full administrative control for your EMS program.</div>
+      <div style="margin-top:4px;font-size:12px;font-weight:600;color:var(--accent);letter-spacing:.05em">Open Dashboard →</div>
+    </button>
+
+    <button class="hub-card secondary-card" onclick="launchSimulator()">
+      <div class="hub-icon">🫀</div>
+      <div class="hub-title">CM Simulator</div>
+      <div class="hub-desc">ACLS cardiac monitor simulator with real-time rhythms, defibrillator, transcutaneous pacer, and student remote control.</div>
+      <div style="margin-top:4px;font-size:12px;font-weight:600;color:var(--accent2);letter-spacing:.05em">Launch Simulator →</div>
+    </button>
+  </div>
+
+  <button onclick="fbAuth.signOut()" style="background:none;border:none;color:var(--muted);font-size:12px;cursor:pointer;font-family:inherit;padding:4px 8px;border-radius:6px;transition:color .15s" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">Sign out</button>
 </div>
 
 <header>
@@ -496,7 +537,7 @@
       <div style="font-size:14px;color:var(--muted);margin-bottom:24px;line-height:1.6">
         Full ACLS rhythm simulator with defibrillator, transcutaneous pacer, real-time debrief metrics, and remote phone control for students.
       </div>
-      <a href="index.html" class="btn primary" style="display:inline-block;font-size:15px;padding:14px 32px;text-decoration:none">
+      <a href="https://pairamedic.github.io/CMSimulator/" target="_blank" rel="noopener" class="btn primary" style="display:inline-block;font-size:15px;padding:14px 32px;text-decoration:none">
         Launch Monitor Simulator →
       </a>
       <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border)">
@@ -1276,6 +1317,8 @@ fbAuth.onAuthStateChanged(user=>{
   clearTimeout(_authFallback);
   if(!user){
     unsubs.forEach(u=>u());
+    $('hub-screen').classList.add('hidden');
+    $('loading-screen').classList.remove('hidden');
     $('ls-checking').style.display='none';
     $('ls-login').style.display='flex';
     return;
@@ -1284,12 +1327,28 @@ fbAuth.onAuthStateChanged(user=>{
     fbAuth.signOut();
     return;
   }
-  // Restore loading spinner while data loads, hide login form
+  // Auth confirmed — show the app hub so user can choose where to go
+  $('loading-screen').classList.add('hidden');
   $('ls-login').style.display='none';
-  $('ls-checking').style.display='flex';
+  $('ls-checking').style.display='none';
   UID=user.uid;
-  setupListeners();
+  showHub();
 });
+
+function showHub(){
+  $('hub-screen').classList.remove('hidden');
+}
+
+function launchDashboard(){
+  $('hub-screen').classList.add('hidden');
+  $('loading-screen').classList.remove('hidden');
+  $('ls-checking').style.display='flex';
+  setupListeners();
+}
+
+function launchSimulator(){
+  window.open('https://pairamedic.github.io/CMSimulator/','_blank');
+}
 
 function setupListeners(){
   // Fallback: force-hide loading screen after 8s in case Firestore is slow
