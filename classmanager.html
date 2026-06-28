@@ -1288,6 +1288,17 @@ function activateDashTab(which){
 // ============================================================
 const ADMIN_EMAIL='eliasacaldwellnrp@gmail.com';
 
+// The admin is always allowed. Any other account must have an active entry
+// in the `authorizedUsers` allowlist (created by the admin) to gain access.
+async function isAuthorized(user){
+  if(!user)return false;
+  if((user.email||'').toLowerCase()===ADMIN_EMAIL)return true;
+  try{
+    const doc=await db.collection('authorizedUsers').doc(user.uid).get();
+    return doc.exists && doc.data().active!==false;
+  }catch(e){console.error('Authorization check failed:',e);return false;}
+}
+
 function lsSignIn(){
   const email=$('ls-email').value.trim();
   const pass=$('ls-password').value;
@@ -1315,7 +1326,7 @@ const _authFallback = setTimeout(() => {
   }
 }, 8000);
 
-fbAuth.onAuthStateChanged(user=>{
+fbAuth.onAuthStateChanged(async user=>{
   clearTimeout(_authFallback);
   if(!user){
     unsubs.forEach(u=>u());
@@ -1325,7 +1336,7 @@ fbAuth.onAuthStateChanged(user=>{
     $('ls-login').style.display='flex';
     return;
   }
-  if(user.email!==ADMIN_EMAIL){
+  if(!(await isAuthorized(user))){
     fbAuth.signOut();
     return;
   }

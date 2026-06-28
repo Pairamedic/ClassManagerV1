@@ -70,6 +70,7 @@
 
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <script>
     firebase.initializeApp({
       apiKey: "AIzaSyDDCM69agn_siiIwd9429urrd6ShAQXnyE",
@@ -82,22 +83,40 @@
       measurementId: "G-6KX9NP2W7X"
     });
     const fbAuth = firebase.auth();
+    const db = firebase.firestore();
     const $ = id => document.getElementById(id);
 
     const ADMIN_EMAIL = 'eliasacaldwellnrp@gmail.com';
 
-    fbAuth.onAuthStateChanged(user => {
-      if (user) {
-        if (user.email !== ADMIN_EMAIL) {
-          fbAuth.signOut();
-          return;
-        }
-        window.location.replace('dashboard.html');
-      } else {
-        $('loading').style.display = 'none';
-        $('form-card').style.display = '';
-        setTimeout(() => $('email').focus(), 50);
+    // The admin is always allowed. Any other account must have an active entry
+    // in the `authorizedUsers` allowlist (created by the admin) to gain access.
+    async function isAuthorized(user) {
+      if (!user) return false;
+      if ((user.email || '').toLowerCase() === ADMIN_EMAIL) return true;
+      try {
+        const doc = await db.collection('authorizedUsers').doc(user.uid).get();
+        return doc.exists && doc.data().active !== false;
+      } catch (e) {
+        console.error('Authorization check failed:', e);
+        return false;
       }
+    }
+
+    fbAuth.onAuthStateChanged(async user => {
+      if (user) {
+        if (await isAuthorized(user)) {
+          window.location.replace('dashboard.html');
+        } else {
+          fbAuth.signOut();
+          setMsg('This account is not authorized to access Class Manager.');
+          $('loading').style.display = 'none';
+          $('form-card').style.display = '';
+        }
+        return;
+      }
+      $('loading').style.display = 'none';
+      $('form-card').style.display = '';
+      setTimeout(() => $('email').focus(), 50);
     });
 
     function errMsg(code) {

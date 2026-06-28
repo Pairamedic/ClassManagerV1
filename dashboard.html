@@ -173,6 +173,82 @@
     @media (max-width: 360px) {
       .app-grid { grid-template-columns: 1fr; }
     }
+
+    /* ── Manage Accounts Modal ── */
+    .overlay {
+      display: none;
+      position: fixed; inset: 0; z-index: 500;
+      background: rgba(0,0,0,.6);
+      align-items: center; justify-content: center;
+      padding: 16px;
+    }
+    .overlay.open { display: flex; }
+    .modal {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 100%; max-width: 460px;
+      max-height: 90vh; display: flex; flex-direction: column;
+      overflow: hidden;
+    }
+    .modal-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .modal-head h2 { margin: 0; font-size: 17px; font-weight: 700; }
+    .modal-close {
+      background: none; border: none; color: var(--muted);
+      font-size: 26px; line-height: 1; cursor: pointer; padding: 0 4px;
+    }
+    .modal-close:hover { color: var(--text); }
+    .modal-body { padding: 18px; overflow-y: auto; }
+    .fg { display: flex; flex-direction: column; gap: 5px; margin-bottom: 12px; }
+    .fg label { font-size: 13px; font-weight: 500; color: var(--muted); }
+    .fg input {
+      background: #0f131a; border: 1px solid rgba(255,255,255,.1);
+      border-radius: 10px; color: var(--text); font-size: 15px;
+      padding: 10px 13px; width: 100%; outline: none;
+      font-family: inherit; transition: border-color .15s;
+    }
+    .fg input:focus { border-color: var(--accent); }
+    .acct-btn {
+      background: rgba(255,255,255,.07);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 10px; color: var(--text); cursor: pointer;
+      font-family: inherit; font-size: 14px; padding: 10px 16px; width: 100%;
+      transition: background .15s;
+    }
+    .acct-btn:hover { background: rgba(255,255,255,.12); }
+    .acct-btn:disabled { opacity: .55; cursor: default; }
+    .acct-btn.primary {
+      background: var(--accent); color: #0b0d10;
+      border-color: transparent; font-weight: 600;
+    }
+    .acct-btn.primary:hover { background: #4dd4c0; }
+    .acct-msg { font-size: 13px; min-height: 18px; text-align: center; margin-top: 10px; }
+    .acct-msg.err { color: #f87171; }
+    .acct-msg.ok  { color: #4ade80; }
+    .acct-divider { height: 1px; background: var(--border); margin: 20px 0 16px; }
+    .acct-list-head {
+      font-size: 12px; font-weight: 700; letter-spacing: .5px;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 10px;
+    }
+    .acct-empty { font-size: 13px; color: var(--muted); padding: 8px 0; }
+    .acct-row {
+      display: flex; align-items: center; justify-content: space-between; gap: 10px;
+      padding: 10px 0; border-bottom: 1px solid var(--border);
+    }
+    .acct-row:last-child { border-bottom: none; }
+    .acct-row-email { font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .acct-row-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+    .acct-revoke {
+      background: rgba(248,113,113,.12); border: 1px solid rgba(248,113,113,.3);
+      color: #f87171; border-radius: 8px; font-family: inherit; font-size: 12px;
+      padding: 6px 11px; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+      transition: background .15s;
+    }
+    .acct-revoke:hover { background: rgba(248,113,113,.2); }
   </style>
 </head>
 <body>
@@ -216,14 +292,51 @@
           <div class="card-subtitle">ACLS Rhythm Simulator</div>
         </a>
 
+        <div id="admin-card" class="app-card" style="display:none" onclick="openAccounts()">
+          <div class="card-icon">👤</div>
+          <div class="card-title">Manage Accounts</div>
+          <div class="card-subtitle">Create &amp; revoke logins</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Manage Accounts Modal (admin only) ── -->
+  <div id="acct-overlay" class="overlay">
+    <div class="modal">
+      <div class="modal-head">
+        <h2>Manage Accounts</h2>
+        <button class="modal-close" onclick="closeAccounts()" aria-label="Close">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <form id="acct-form" autocomplete="off">
+          <div class="fg">
+            <label for="acct-email">Email</label>
+            <input id="acct-email" type="email" inputmode="email" placeholder="person@example.com" autocomplete="off" />
+          </div>
+          <div class="fg">
+            <label for="acct-pass">Temporary password</label>
+            <input id="acct-pass" type="text" placeholder="At least 6 characters" autocomplete="off" />
+          </div>
+          <button id="acct-create-btn" type="submit" class="acct-btn primary">Create Account</button>
+          <div id="acct-msg" class="acct-msg"></div>
+        </form>
+
+        <div class="acct-divider"></div>
+
+        <div class="acct-list-head">Authorized accounts</div>
+        <div id="acct-list"><div class="acct-empty">Loading…</div></div>
       </div>
     </div>
   </div>
 
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
   <script>
-    firebase.initializeApp({
+    const FB_CONFIG = {
       apiKey: "AIzaSyDDCM69agn_siiIwd9429urrd6ShAQXnyE",
       authDomain: "classmanager-ad588.firebaseapp.com",
       databaseURL: "https://classmanager-ad588-default-rtdb.firebaseio.com",
@@ -232,10 +345,26 @@
       messagingSenderId: "1016222970430",
       appId: "1:1016222970430:web:7e1077fe12ef369ae4576f",
       measurementId: "G-6KX9NP2W7X"
-    });
+    };
+    firebase.initializeApp(FB_CONFIG);
 
     const fbAuth = firebase.auth();
+    const db = firebase.firestore();
     const ADMIN_EMAIL = 'eliasacaldwellnrp@gmail.com';
+
+    // The admin is always allowed. Any other account must have an active entry
+    // in the `authorizedUsers` allowlist (created by the admin) to gain access.
+    async function isAuthorized(user) {
+      if (!user) return false;
+      if ((user.email || '').toLowerCase() === ADMIN_EMAIL) return true;
+      try {
+        const doc = await db.collection('authorizedUsers').doc(user.uid).get();
+        return doc.exists && doc.data().active !== false;
+      } catch (e) {
+        console.error('Authorization check failed:', e);
+        return false;
+      }
+    }
 
     (function renderDate() {
       const el = document.getElementById('date-line');
@@ -245,13 +374,14 @@
       });
     })();
 
-    fbAuth.onAuthStateChanged(function(user) {
+    fbAuth.onAuthStateChanged(async function(user) {
       if (!user) {
         window.location.replace('index.html');
         return;
       }
-      if (user.email !== ADMIN_EMAIL) {
+      if (!(await isAuthorized(user))) {
         fbAuth.signOut();
+        window.location.replace('index.html');
         return;
       }
 
@@ -259,11 +389,132 @@
       const app = document.getElementById('app');
       app.style.display = 'flex';
       document.getElementById('user-email-display').textContent = user.email || '';
+
+      // Only the admin can manage accounts.
+      if ((user.email || '').toLowerCase() === ADMIN_EMAIL) {
+        document.getElementById('admin-card').style.display = 'flex';
+      }
     });
 
     document.getElementById('btn-signout').addEventListener('click', function() {
       fbAuth.signOut();
     });
+  </script>
+
+  <!-- ── Manage Accounts (admin only) ── -->
+  <script>
+    // A separate Firebase app instance so that creating a user does not replace
+    // the admin's own auth session (createUserWithEmailAndPassword signs in the
+    // new user on whichever app it is called).
+    let secondaryApp = null;
+    function secondaryAuth() {
+      if (!secondaryApp) {
+        secondaryApp = firebase.apps.find(a => a.name === 'accountCreator')
+          || firebase.initializeApp(FB_CONFIG, 'accountCreator');
+      }
+      return secondaryApp.auth();
+    }
+
+    const acctMsg = document.getElementById('acct-msg');
+    function setAcctMsg(txt, ok) {
+      acctMsg.className = 'acct-msg ' + (txt ? (ok ? 'ok' : 'err') : '');
+      acctMsg.textContent = txt;
+    }
+
+    function openAccounts() {
+      document.getElementById('acct-overlay').classList.add('open');
+      setAcctMsg('');
+      loadAccounts();
+    }
+    function closeAccounts() {
+      document.getElementById('acct-overlay').classList.remove('open');
+    }
+    document.getElementById('acct-overlay').addEventListener('click', function(e) {
+      if (e.target === this) closeAccounts();
+    });
+
+    async function loadAccounts() {
+      const list = document.getElementById('acct-list');
+      list.innerHTML = '<div class="acct-empty">Loading…</div>';
+      try {
+        const snap = await db.collection('authorizedUsers').orderBy('email').get();
+        const docs = snap.docs.filter(d => d.data().active !== false);
+        if (!docs.length) {
+          list.innerHTML = '<div class="acct-empty">No additional accounts yet.</div>';
+          return;
+        }
+        list.innerHTML = docs.map(d => {
+          const u = d.data();
+          const created = u.createdAt
+            ? new Date(u.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+            : '';
+          const email = (u.email || '').replace(/"/g, '&quot;');
+          return `<div class="acct-row">
+            <div style="min-width:0">
+              <div class="acct-row-email">${email}</div>
+              <div class="acct-row-sub">${created ? 'Added ' + created : ''}</div>
+            </div>
+            <button class="acct-revoke" onclick="revokeAccount('${d.id}','${email}')">Revoke</button>
+          </div>`;
+        }).join('');
+      } catch (e) {
+        console.error(e);
+        list.innerHTML = '<div class="acct-empty">Could not load accounts.</div>';
+      }
+    }
+
+    document.getElementById('acct-form').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const email = document.getElementById('acct-email').value.trim();
+      const pass = document.getElementById('acct-pass').value;
+      const btn = document.getElementById('acct-create-btn');
+      setAcctMsg('');
+
+      if (!email || !pass) { setAcctMsg('Email and password are required.'); return; }
+      if (pass.length < 6) { setAcctMsg('Password must be at least 6 characters.'); return; }
+
+      btn.disabled = true; btn.textContent = 'Creating…';
+      try {
+        const cred = await secondaryAuth().createUserWithEmailAndPassword(email, pass);
+        const uid = cred.user.uid;
+        // Sign the new user out of the secondary app immediately.
+        await secondaryAuth().signOut();
+        // Add them to the allowlist from the admin's session (authorized to write).
+        await db.collection('authorizedUsers').doc(uid).set({
+          email: email.toLowerCase(),
+          active: true,
+          createdAt: Date.now(),
+          createdBy: ADMIN_EMAIL
+        });
+        document.getElementById('acct-email').value = '';
+        document.getElementById('acct-pass').value = '';
+        setAcctMsg('Account created for ' + email + '.', true);
+        loadAccounts();
+      } catch (err) {
+        const map = {
+          'auth/email-already-in-use': 'An account with this email already exists.',
+          'auth/invalid-email': 'Please enter a valid email address.',
+          'auth/weak-password': 'Password is too weak (use at least 6 characters).',
+          'auth/network-request-failed': 'Network error — check your connection.'
+        };
+        setAcctMsg(map[err.code] || ('Could not create account: ' + (err.message || err.code || 'unknown error')));
+      } finally {
+        btn.disabled = false; btn.textContent = 'Create Account';
+      }
+    });
+
+    // Revoking removes the allowlist entry, so the account can no longer sign in.
+    // (The Firebase Auth user itself can only be deleted from the Firebase console.)
+    async function revokeAccount(uid, email) {
+      if (!confirm('Revoke access for ' + email + '?\n\nThey will no longer be able to sign in.')) return;
+      try {
+        await db.collection('authorizedUsers').doc(uid).delete();
+        loadAccounts();
+      } catch (e) {
+        console.error(e);
+        alert('Could not revoke this account. Please try again.');
+      }
+    }
   </script>
 </body>
 </html>

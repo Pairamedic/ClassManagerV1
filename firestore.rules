@@ -1,0 +1,41 @@
+rules_version = '2';
+
+// Firestore security rules for Class Manager.
+//
+// These back the client-side allowlist: the admin can create login accounts
+// (added to `authorizedUsers`), and only accounts on that allowlist (plus the
+// admin) can read or write any data. The client checks are convenience only —
+// THESE RULES are what actually enforce access, so they must be deployed.
+//
+// Deploy with the Firebase CLI:   firebase deploy --only firestore:rules
+// or paste into Firebase console > Firestore Database > Rules.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null
+        && request.auth.token.email != null
+        && request.auth.token.email.lower() == 'eliasacaldwellnrp@gmail.com';
+    }
+
+    function isAllowed() {
+      return request.auth != null
+        && (isAdmin()
+            || exists(/databases/$(database)/documents/authorizedUsers/$(request.auth.uid)));
+    }
+
+    // Allowlist of authorized accounts.
+    // A signed-in user may read only their own entry (used by the login gate).
+    // Only the admin may list everyone or create / update / delete entries.
+    match /authorizedUsers/{uid} {
+      allow get:        if request.auth != null && (request.auth.uid == uid || isAdmin());
+      allow list, write: if isAdmin();
+    }
+
+    // Each authorized user owns a private data sandbox keyed by their UID.
+    match /users/{uid}/{document=**} {
+      allow read, write: if isAllowed() && request.auth.uid == uid;
+    }
+  }
+}
