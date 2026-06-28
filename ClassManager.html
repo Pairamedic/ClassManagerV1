@@ -1110,14 +1110,14 @@ $('signout-btn').addEventListener('click',()=>{if(confirm('Sign out?')){fbAuth.s
 // ============================================================
 function renderInfo(){
   const d=infoDoc;
-  $('tc-d-name').textContent=d.tcName||'Baptist';
-  $('tc-d-pd').textContent=d.pdName||'Jeff Jeffries';
+  $('tc-d-name').textContent=d.tcName||'—';
+  $('tc-d-pd').textContent=d.pdName||'—';
   $('tc-d-email').textContent=d.pdEmail||'—';
-  $('tc-d-phone').textContent=d.pdPhone||'501-202-7914';
-  $('tc-name').value=d.tcName!==undefined?d.tcName:'Baptist';
-  $('tc-pd').value=d.pdName!==undefined?d.pdName:'Jeff Jeffries';
+  $('tc-d-phone').textContent=d.pdPhone||'—';
+  $('tc-name').value=d.tcName||'';
+  $('tc-pd').value=d.pdName||'';
   $('tc-email').value=d.pdEmail||'';
-  $('tc-phone').value=d.pdPhone!==undefined?d.pdPhone:'501-202-7914';
+  $('tc-phone').value=d.pdPhone||'';
   const expCls=d.instExpiry?expiryClass(d.instExpiry):'';
   $('inst-d-id').textContent=d.instId||'—';
   $('inst-d-expiry').innerHTML=d.instExpiry?`<span class="exp-${expCls}">${formatDate(d.instExpiry)}</span>`:'—';
@@ -1125,8 +1125,8 @@ function renderInfo(){
   $('inst-id').value=d.instId||'';
   $('inst-expiry').value=d.instExpiry||'';
   $('inst-tcid').value=d.tcId||'';
-  $('info-rules').value=d.examRules!==undefined?d.examRules:'No Cell Phones/Photos of the test material (private).\nInstruct candidates not to write on testing materials—if written on must be shredded.';
-  $('info-steps').value=d.cardSteps!==undefined?d.cardSteps:'Reach Out To Program Director - Jeff Jeffries.';
+  $('info-rules').value=d.examRules||'';
+  $('info-steps').value=d.cardSteps||'';
   $('faq-list').innerHTML=allFaq.length
     ?allFaq.map(f=>`<div class="card-sm" style="cursor:pointer;margin-bottom:8px" onclick="openFaqEdit('${f.id}')">
         <div style="font-weight:600;font-size:14px;margin-bottom:5px">${f.question}</div>
@@ -1850,7 +1850,7 @@ $('cd-print-btn').addEventListener('click',()=>{
     </tr></thead>
     <tbody>${rows||'<tr><td colspan="9" style="text-align:center;color:#888;padding:20px">No students on roster</td></tr>'}</tbody>
   </table>
-  <div class="footer">Printed ${new Date().toLocaleDateString()} · Class Manager – Pairamedic</div>
+  <div class="footer">Printed ${new Date().toLocaleDateString()} · Class Manager</div>
   </body></html>`;
   const w=window.open('','_blank');w.document.write(html);w.document.close();
 });
