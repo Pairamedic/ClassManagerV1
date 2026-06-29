@@ -264,6 +264,9 @@
     .adj-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:500;border:1px solid rgba(147,197,253,.3);background:rgba(147,197,253,.08);color:#93c5fd;white-space:nowrap}
     .adj-chip button{background:none;border:none;color:inherit;cursor:pointer;font-size:13px;line-height:1;padding:0;opacity:.7}
     .adj-chip button:hover{opacity:1}
+    .adj-sug-item{padding:10px 14px;font-size:13px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.06)}
+    .adj-sug-item:last-child{border-bottom:none}
+    .adj-sug-item:hover{background:rgba(147,197,253,.1)}
     .btn-link{background:none;border:none;color:var(--accent2);font-size:13px;cursor:pointer;font-family:inherit;padding:0;transition:color .15s}
     .btn-link:hover{color:var(--accent)}
     .rec-file-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
@@ -612,6 +615,7 @@
     <div class="stabs">
       <button class="stab active" id="stab-classes">📅 Classes</button>
       <button class="stab" id="stab-students">👥 Students</button>
+      <button class="stab" id="stab-instructors">👨‍🏫 Instructors</button>
       <button class="stab" id="stab-classtpl">📋 Templates</button>
     </div>
 
@@ -654,6 +658,19 @@
         <button class="btn primary sm" id="new-classtpl-btn">+ New Template</button>
       </div>
       <div id="classtpl-list"></div>
+    </div>
+
+    <!-- Instructors sub-panel -->
+    <div id="subpanel-instructors" style="display:none">
+      <div class="sec-hd">
+        <div class="sec-title">Adjunct Instructors</div>
+        <button class="btn primary sm" id="new-instructor-btn">+ New Instructor</button>
+      </div>
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="instructor-search" placeholder="Search by name or specialty…" />
+      </div>
+      <div id="instructors-list"></div>
     </div>
 
     <!-- Students sub-panel -->
@@ -853,9 +870,12 @@
     <div class="fg" style="margin-top:12px"><label>Notes</label><textarea id="nc-notes" placeholder="Any additional notes…"></textarea></div>
     <div class="fg" style="margin-top:12px">
       <label>Adjunct Instructors</label>
-      <div style="display:flex;gap:6px;margin-bottom:6px">
-        <input type="text" id="nc-adj-input" placeholder="Instructor name…" style="flex:1" />
-        <button type="button" class="btn sm" id="nc-adj-add-btn">+ Add</button>
+      <div style="position:relative">
+        <div style="display:flex;gap:6px;margin-bottom:6px">
+          <input type="text" id="nc-adj-input" placeholder="Instructor name…" style="flex:1" autocomplete="off" />
+          <button type="button" class="btn sm" id="nc-adj-add-btn">+ Add</button>
+        </div>
+        <div id="nc-adj-suggestions" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:200;background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:8px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.4)"></div>
       </div>
       <div id="nc-adj-list" style="display:flex;flex-wrap:wrap;gap:6px;min-height:4px"></div>
     </div>
@@ -1091,6 +1111,39 @@
     <div id="sp-notes" style="display:none">
       <div class="fg"><label>Notes on this Student</label><textarea id="sp-notes-text" style="min-height:160px" placeholder="Observations, performance notes, contact history…"></textarea></div>
       <button class="btn primary" id="sp-notes-save">Save Notes</button>
+    </div>
+  </div>
+</div>
+
+<!-- INSTRUCTOR PROFILE -->
+<div class="overlay hidden" id="modal-instructor">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title" id="ip-title">Instructor Profile</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn sm danger" id="ip-delete-btn" style="display:none">Delete</button>
+        <button class="close-btn" data-close="modal-instructor">×</button>
+      </div>
+    </div>
+    <div class="mtabs">
+      <button class="mtab active" data-mtab="ip" data-panel="ip-info">Info</button>
+      <button class="mtab" data-mtab="ip" data-panel="ip-notes">Notes</button>
+    </div>
+    <div id="ip-info">
+      <div class="row2">
+        <div class="fg" style="margin:0"><label>First Name *</label><input type="text" id="ip-first" /></div>
+        <div class="fg" style="margin:0"><label>Last Name *</label><input type="text" id="ip-last" /></div>
+      </div>
+      <div class="fg" style="margin-top:10px"><label>Specialty / What They Teach</label><input type="text" id="ip-specialty" placeholder="e.g. ACLS, PALS, BLS" /></div>
+      <div class="fg"><label>AHA Instructor ID</label><input type="text" id="ip-ahaid" placeholder="Optional" /></div>
+      <div class="fg"><label style="display:flex;justify-content:space-between;align-items:center">Phone <a id="ip-phone-link" href="#" style="font-size:12px;color:var(--accent2);text-decoration:none;display:none">📞 Call</a></label><input type="tel" id="ip-phone" /></div>
+      <div class="fg"><label style="display:flex;justify-content:space-between;align-items:center">Email <a id="ip-email-link" href="#" style="font-size:12px;color:var(--accent2);text-decoration:none;display:none">✉️ Send</a></label><input type="email" id="ip-email" /></div>
+      <div id="ip-err" style="color:#f87171;font-size:13px;min-height:18px;margin-bottom:8px"></div>
+      <button class="btn primary full" id="ip-save-btn">Save Changes</button>
+    </div>
+    <div id="ip-notes" style="display:none">
+      <div class="fg"><label>Notes</label><textarea id="ip-notes-text" style="min-height:160px" placeholder="Teaching style, availability, specialties…"></textarea></div>
+      <button class="btn primary" id="ip-notes-save">Save Notes</button>
     </div>
   </div>
 </div>
@@ -1569,7 +1622,8 @@ const stgRef  = path => fbStorage ? fbStorage.ref(path) : null;
 // ============================================================
 // STATE
 // ============================================================
-let allClasses=[], allStudents=[], allRoster=[], allCerts=[], allExpenses=[], allMaterials=[];
+let allClasses=[], allStudents=[], allRoster=[], allCerts=[], allExpenses=[], allMaterials=[], allInstructors=[];
+let currentInstructorId=null;
 let allFaq=[], infoDoc={};
 let allEmailTemplates=[], allClassTemplates=[], allCheckoffs=[];
 let currentView='dashboard';
@@ -1897,6 +1951,10 @@ function setupListeners(){
       else renderDocRoot();
     }
   },console.error));
+  unsubs.push(col('instructors').orderBy('lastName','asc').onSnapshot(snap=>{
+    allInstructors=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if($('subpanel-instructors')&&$('subpanel-instructors').style.display!=='none')renderInstructors();
+  },console.error));
 }
 
 function refreshView(){
@@ -1922,29 +1980,24 @@ function switchView(name){
 document.getElementById('tabs').querySelectorAll('.tab').forEach(tab=>{
   tab.addEventListener('click',()=>{
     switchView(tab.dataset.view);
-    if(tab.dataset.view==='classes'){
-      $('stab-classes').classList.add('active');$('stab-students').classList.remove('active');$('stab-classtpl').classList.remove('active');
-      $('subpanel-classes').style.display='';$('subpanel-students').style.display='none';$('subpanel-classtpl').style.display='none';
-    }
+    if(tab.dataset.view==='classes')activateClassesTab('classes');
     if(tab.dataset.view==='dashboard'){
       activateDashTab('overview');
     }
   });
 });
-$('stab-classes').addEventListener('click',()=>{
-  $('stab-classes').classList.add('active');$('stab-students').classList.remove('active');$('stab-classtpl').classList.remove('active');
-  $('subpanel-classes').style.display='';$('subpanel-students').style.display='none';$('subpanel-classtpl').style.display='none';
-  currentView='classes';renderClasses();
-});
-$('stab-classtpl').addEventListener('click',()=>{
-  $('stab-classtpl').classList.add('active');$('stab-classes').classList.remove('active');$('stab-students').classList.remove('active');
-  $('subpanel-classtpl').style.display='';$('subpanel-classes').style.display='none';$('subpanel-students').style.display='none';
-  currentView='classes';renderClassTemplates();
-});
-$('stab-students').addEventListener('click',()=>{
-  $('stab-students').classList.add('active');$('stab-classes').classList.remove('active');$('stab-classtpl').classList.remove('active');
-  $('subpanel-students').style.display='';$('subpanel-classes').style.display='none';$('subpanel-classtpl').style.display='none';
-  currentView='students';renderStudents();
+function activateClassesTab(which){
+  ['classes','students','instructors','classtpl'].forEach(n=>{
+    $(`stab-${n}`).classList.toggle('active',n===which);
+    $(`subpanel-${n}`).style.display=n===which?'':'none';
+  });
+  if(which==='classes'){currentView='classes';renderClasses();}
+  else if(which==='students'){currentView='students';renderStudents();}
+  else if(which==='instructors'){currentView='classes';renderInstructors();}
+  else if(which==='classtpl'){currentView='classes';renderClassTemplates();}
+}
+['classes','students','instructors','classtpl'].forEach(n=>{
+  $(`stab-${n}`).addEventListener('click',()=>activateClassesTab(n));
 });
 
 // ============================================================
@@ -1952,8 +2005,9 @@ $('stab-students').addEventListener('click',()=>{
 // ============================================================
 document.querySelectorAll('[data-close]').forEach(btn=>{btn.addEventListener('click',()=>closeModal(btn.dataset.close));});
 document.querySelectorAll('.overlay').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o)closeModal(o.id);});});
-function openModal(id){$(id).classList.remove('hidden');}
-function closeModal(id){$(id).classList.add('hidden');}
+let _mz=50;
+function openModal(id){const el=$(id);el.style.zIndex=++_mz;el.classList.remove('hidden');}
+function closeModal(id){$(id).classList.add('hidden');if(_mz>50)_mz--;}
 document.querySelectorAll('.mtab').forEach(btn=>{
   btn.addEventListener('click',()=>{
     const g=btn.dataset.mtab;
@@ -2017,7 +2071,7 @@ function renderClasses(){
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-size:13px;color:var(--ok);font-weight:600">${fmt$(rev)}</span>
             <button class="btn sm primary" onclick="event.stopPropagation();openClassEdit('${c.id}')" style="font-size:12px;padding:4px 8px">✏️ Edit</button>
-            <button class="btn sm primary" onclick="event.stopPropagation();openClassDetail('${c.id}');setTimeout(()=>document.getElementById('cd-add-student-btn').click(),300)" style="font-size:12px;padding:4px 8px">+ Student</button>
+            <button class="btn sm primary" onclick="event.stopPropagation();openAddStudentToClass('${c.id}')" style="font-size:12px;padding:4px 8px">👥 Student</button>
           </div>
         </div>
         <div class="class-meta"><span>📅 ${formatDate(c.date)}${c.time?' '+formatTime(c.time):''}</span><span>📍 ${c.location||'Location TBD'}</span><span>👥 ${cnt} student${cnt!==1?'s':''}</span>${c.adjunctInstructors?.length?`<span>👨‍🏫 ${c.adjunctInstructors.join(', ')}</span>`:''}</div>
@@ -2054,6 +2108,19 @@ $('nc-adj-add-btn').addEventListener('click',()=>{
   ncAdjInstructors.push(v);$('nc-adj-input').value='';renderNcAdjList();
 });
 $('nc-adj-input').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('nc-adj-add-btn').click();}});
+$('nc-adj-input').addEventListener('blur',()=>setTimeout(()=>{$('nc-adj-suggestions').style.display='none';},150));
+$('nc-adj-input').addEventListener('input',()=>{
+  const q=$('nc-adj-input').value.toLowerCase().trim();
+  const el=$('nc-adj-suggestions');
+  if(!q||!allInstructors.length){el.innerHTML='';el.style.display='none';return;}
+  const matches=allInstructors.filter(i=>{
+    const name=(i.firstName+' '+i.lastName).toLowerCase();
+    return name.includes(q)&&!ncAdjInstructors.includes(i.firstName+' '+i.lastName);
+  }).slice(0,5);
+  if(!matches.length){el.innerHTML='';el.style.display='none';return;}
+  el.innerHTML=matches.map(i=>`<div class="adj-sug-item" onclick="ncAdjInstructors.push('${i.firstName} ${i.lastName}');renderNcAdjList();$('nc-adj-input').value='';$('nc-adj-suggestions').style.display='none'">${i.firstName} ${i.lastName}${i.specialty?' · <span style=\'color:var(--muted);font-size:12px\'>'+i.specialty+'</span>':''}</div>`).join('');
+  el.style.display='';
+});
 $('nc-tpl-load-btn').addEventListener('click',()=>{
   const id=$('nc-tpl-select').value;if(!id)return;
   const t=allClassTemplates.find(x=>x.id===id);if(!t)return;
@@ -2282,7 +2349,7 @@ $('aha-save-btn').addEventListener('click',async()=>{
   $('aha-save-btn').disabled=false;
 });
 
-$('cd-add-student-btn').addEventListener('click',()=>{
+function openAddRosterModal(){
   $('ar-search').value='';$('ar-results').innerHTML='';$('ar-selected').classList.add('hidden');
   ['ar-first','ar-last','ar-phone','ar-email','ar-charge-ex','ar-charge-new'].forEach(id=>$(id).value='');
   $('ar-level').value='';$('ar-paid-ex').checked=false;$('ar-paid-new').checked=false;$('ar-save-profile').checked=true;
@@ -2292,7 +2359,12 @@ $('cd-add-student-btn').addEventListener('click',()=>{
   document.querySelectorAll('.mtab[data-mtab="ar"]').forEach((t,i)=>t.classList.toggle('active',i===0));
   ['ar-existing','ar-new'].forEach((id,i)=>$(id).style.display=i===0?'':'none');
   openModal('modal-add-roster');
-});
+}
+window.openAddStudentToClass=function(classId){
+  currentClassId=classId;
+  openAddRosterModal();
+};
+$('cd-add-student-btn').addEventListener('click',openAddRosterModal);
 $('ar-search').addEventListener('input',()=>{
   const q=$('ar-search').value.toLowerCase().trim();
   if(!q){$('ar-results').innerHTML='';return;}
@@ -2416,6 +2488,79 @@ $('sp-notes-save').addEventListener('click',async()=>{
 $('sp-delete-btn').addEventListener('click',async()=>{
   if(!confirm('Delete this student profile?'))return;
   await col('students').doc(currentStudentId).delete();closeModal('modal-student');
+});
+
+// ============================================================
+// INSTRUCTORS
+// ============================================================
+function renderInstructors(){
+  const q=$('instructor-search').value.toLowerCase().trim();
+  const filtered=allInstructors.filter(i=>!q||(i.firstName+' '+i.lastName).toLowerCase().includes(q)||(i.specialty||'').toLowerCase().includes(q));
+  $('instructors-list').innerHTML=filtered.length
+    ?filtered.map(i=>`<div class="stu-card" onclick="openInstructorProfile('${i.id}')">
+        <div class="stu-info">
+          <div class="stu-name">${i.firstName} ${i.lastName}</div>
+          <div class="stu-sub">${i.specialty?`<span style="color:var(--accent2)">${i.specialty}</span>`:''} ${i.phone?`<a href="tel:${i.phone}" onclick="event.stopPropagation()" style="color:var(--accent2);text-decoration:none">${i.phone}</a>`:''} ${i.email?`<a href="mailto:${i.email}" onclick="event.stopPropagation()" style="color:var(--accent2);text-decoration:none">${i.email}</a>`:''}</div>
+        </div>
+      </div>`).join('')
+    :`<div class="empty"><div class="empty-icon">👨‍🏫</div><div class="empty-text">No adjunct instructors yet</div></div>`;
+}
+$('instructor-search').addEventListener('input',renderInstructors);
+$('new-instructor-btn').addEventListener('click',()=>{
+  currentInstructorId=null;
+  $('ip-title').textContent='New Instructor';
+  ['ip-first','ip-last','ip-specialty','ip-ahaid','ip-phone','ip-email'].forEach(id=>$(id).value='');
+  $('ip-notes-text').value='';$('ip-err').textContent='';
+  $('ip-delete-btn').style.display='none';
+  $('ip-phone-link').style.display='none';$('ip-email-link').style.display='none';
+  document.querySelectorAll('.mtab[data-mtab="ip"]').forEach((t,i)=>t.classList.toggle('active',i===0));
+  ['ip-info','ip-notes'].forEach((id,i)=>$(id).style.display=i===0?'':'none');
+  openModal('modal-instructor');
+});
+window.openInstructorProfile=function(id){
+  currentInstructorId=id;const i=allInstructors.find(x=>x.id===id);if(!i)return;
+  $('ip-title').textContent=`${i.firstName} ${i.lastName}`;
+  $('ip-first').value=i.firstName||'';$('ip-last').value=i.lastName||'';
+  $('ip-specialty').value=i.specialty||'';$('ip-ahaid').value=i.ahaid||'';
+  $('ip-phone').value=i.phone||'';$('ip-email').value=i.email||'';
+  $('ip-notes-text').value=i.notes||'';$('ip-err').textContent='';
+  $('ip-delete-btn').style.display='';
+  const pl=$('ip-phone-link'),el=$('ip-email-link');
+  if(i.phone){pl.href='tel:'+i.phone;pl.style.display='';}else pl.style.display='none';
+  if(i.email){el.href='mailto:'+i.email;el.style.display='';}else el.style.display='none';
+  document.querySelectorAll('.mtab[data-mtab="ip"]').forEach((t,idx)=>t.classList.toggle('active',idx===0));
+  ['ip-info','ip-notes'].forEach((pid,idx)=>$(pid).style.display=idx===0?'':'none');
+  openModal('modal-instructor');
+};
+$('ip-save-btn').addEventListener('click',async()=>{
+  const first=$('ip-first').value.trim(),last=$('ip-last').value.trim();
+  if(!first||!last){$('ip-err').textContent='Name required.';return;}
+  const data={firstName:first,lastName:last,specialty:$('ip-specialty').value.trim(),
+    ahaid:$('ip-ahaid').value.trim(),phone:$('ip-phone').value.trim(),email:$('ip-email').value.trim()};
+  try{
+    if(currentInstructorId){
+      await col('instructors').doc(currentInstructorId).update(data);
+    } else {
+      const ref=await col('instructors').add({...data,notes:'',createdAt:Date.now()});
+      currentInstructorId=ref.id;
+      $('ip-delete-btn').style.display='';
+      $('ip-title').textContent=`${first} ${last}`;
+    }
+    $('ip-save-btn').textContent='Saved ✓';setTimeout(()=>$('ip-save-btn').textContent='Save Changes',2000);
+    const pl=$('ip-phone-link'),el=$('ip-email-link');
+    if(data.phone){pl.href='tel:'+data.phone;pl.style.display='';}else pl.style.display='none';
+    if(data.email){el.href='mailto:'+data.email;el.style.display='';}else el.style.display='none';
+  }catch(e){$('ip-err').textContent='Error: '+e.message;}
+});
+$('ip-delete-btn').addEventListener('click',async()=>{
+  if(!currentInstructorId||!confirm('Delete this instructor?'))return;
+  await col('instructors').doc(currentInstructorId).delete();
+  closeModal('modal-instructor');
+});
+$('ip-notes-save').addEventListener('click',async()=>{
+  if(!currentInstructorId)return;
+  await col('instructors').doc(currentInstructorId).update({notes:$('ip-notes-text').value.trim()});
+  $('ip-notes-save').textContent='Saved ✓';setTimeout(()=>$('ip-notes-save').textContent='Save Notes',2000);
 });
 
 // ============================================================
