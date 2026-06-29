@@ -2070,7 +2070,7 @@ function renderClasses(){
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-size:13px;color:var(--ok);font-weight:600">${fmt$(rev)}</span>
             <button class="btn sm primary" onclick="event.stopPropagation();openClassEdit('${c.id}')" style="font-size:12px;padding:4px 8px">✏️ Edit</button>
-            <button class="btn sm primary" onclick="event.stopPropagation();openClassDetail('${c.id}');setTimeout(()=>document.getElementById('cd-add-student-btn').click(),300)" style="font-size:12px;padding:4px 8px">👥 Student</button>
+            <button class="btn sm primary" onclick="event.stopPropagation();openAddStudentToClass('${c.id}')" style="font-size:12px;padding:4px 8px">👥 Student</button>
           </div>
         </div>
         <div class="class-meta"><span>📅 ${formatDate(c.date)}${c.time?' '+formatTime(c.time):''}</span><span>📍 ${c.location||'Location TBD'}</span><span>👥 ${cnt} student${cnt!==1?'s':''}</span>${c.adjunctInstructors?.length?`<span>👨‍🏫 ${c.adjunctInstructors.join(', ')}</span>`:''}</div>
@@ -2348,7 +2348,7 @@ $('aha-save-btn').addEventListener('click',async()=>{
   $('aha-save-btn').disabled=false;
 });
 
-$('cd-add-student-btn').addEventListener('click',()=>{
+function openAddRosterModal(){
   $('ar-search').value='';$('ar-results').innerHTML='';$('ar-selected').classList.add('hidden');
   ['ar-first','ar-last','ar-phone','ar-email','ar-charge-ex','ar-charge-new'].forEach(id=>$(id).value='');
   $('ar-level').value='';$('ar-paid-ex').checked=false;$('ar-paid-new').checked=false;$('ar-save-profile').checked=true;
@@ -2358,7 +2358,12 @@ $('cd-add-student-btn').addEventListener('click',()=>{
   document.querySelectorAll('.mtab[data-mtab="ar"]').forEach((t,i)=>t.classList.toggle('active',i===0));
   ['ar-existing','ar-new'].forEach((id,i)=>$(id).style.display=i===0?'':'none');
   openModal('modal-add-roster');
-});
+}
+window.openAddStudentToClass=function(classId){
+  currentClassId=classId;
+  openAddRosterModal();
+};
+$('cd-add-student-btn').addEventListener('click',openAddRosterModal);
 $('ar-search').addEventListener('input',()=>{
   const q=$('ar-search').value.toLowerCase().trim();
   if(!q){$('ar-results').innerHTML='';return;}
