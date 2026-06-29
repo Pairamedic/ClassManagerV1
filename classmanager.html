@@ -1884,6 +1884,7 @@ function setupListeners(){
   unsubs.push(col('roster').onSnapshot(snap=>{
     allRoster=snap.docs.map(d=>({id:d.id,...d.data()}));
     refreshView();
+    if(currentClassId&&!$('modal-class-detail').classList.contains('hidden'))renderRoster(currentClassId);
   },errAndShow));
   unsubs.push(col('certs').onSnapshot(snap=>{
     allCerts=snap.docs.map(d=>({id:d.id,...d.data()}));
@@ -2347,7 +2348,7 @@ $('ar-add-ex-btn').addEventListener('click',async()=>{
     await col('roster').add({classId:currentClassId,studentId:arSelectedStudentId,name:`${s.firstName} ${s.lastName}`,
       licenseLevel:s.licenseLevel||'',email:s.email||'',phone:s.phone||'',
       charge:parseFloat($('ar-charge-ex').value)||0,paid:$('ar-paid-ex').checked,addedAt:Date.now()});
-    closeModal('modal-add-roster');
+    closeModal('modal-add-roster');renderRoster(currentClassId);
   }catch(e){$('ar-ex-err').textContent='Error: '+e.message;}
   $('ar-add-ex-btn').disabled=false;
 });
@@ -2365,7 +2366,7 @@ $('ar-add-new-btn').addEventListener('click',async()=>{
     await col('roster').add({classId:currentClassId,studentId,name:`${first} ${last}`,licenseLevel:$('ar-level').value,
       email:$('ar-email').value.trim(),phone:$('ar-phone').value.trim(),
       charge:parseFloat($('ar-charge-new').value)||0,paid:$('ar-paid-new').checked,addedAt:Date.now()});
-    closeModal('modal-add-roster');
+    closeModal('modal-add-roster');renderRoster(currentClassId);
   }catch(e){$('ar-new-err').textContent='Error: '+e.message;}
   $('ar-add-new-btn').disabled=false;
 });
