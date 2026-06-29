@@ -2048,7 +2048,7 @@ function renderClasses(){
           <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">${ctBadge(c.type)}${c.isInstructorCourse?'<span class="ct-badge ct-inst">Instructor</span>':''}${classStatusBadge(c.status)}</div>
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-size:13px;color:var(--ok);font-weight:600">${fmt$(rev)}</span>
-            <button class="btn sm" onclick="event.stopPropagation();openClassEdit('${c.id}')" style="font-size:12px;padding:4px 8px">✏️ Edit</button>
+            <button class="btn sm primary" onclick="event.stopPropagation();openClassEdit('${c.id}')" style="font-size:12px;padding:4px 8px">✏️ Edit</button>
             <button class="btn sm primary" onclick="event.stopPropagation();openClassDetail('${c.id}');setTimeout(()=>document.getElementById('cd-add-student-btn').click(),300)" style="font-size:12px;padding:4px 8px">+ Student</button>
           </div>
         </div>
