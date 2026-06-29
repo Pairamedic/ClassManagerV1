@@ -230,6 +230,29 @@
     .var-pill:hover{background:rgba(94,234,212,.2)}
     .merge-field-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
     .merge-field-lbl{font-size:12px;font-weight:600;color:var(--muted);min-width:90px;flex:none}
+    /* Megacode Checkoff Forms */
+    .chk-section-hd{background:#7a1f1f;color:#fff;font-weight:700;font-size:13px;padding:8px 12px;border-radius:6px;margin:10px 0 0}
+    .chk-row{display:flex;align-items:flex-start;gap:12px;padding:9px 0;border-bottom:1px solid var(--border)}
+    .chk-row:last-child{border-bottom:none}
+    .chk-row-text{flex:1;font-size:13px;line-height:1.45}
+    .chk-box{width:22px;height:22px;flex:none;accent-color:var(--accent);cursor:pointer;margin-top:1px}
+    .chk-cpr-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:6px}
+    @media(max-width:500px){.chk-cpr-grid{grid-template-columns:1fr 1fr}}
+    .chk-cpr-item{display:flex;flex-direction:column;gap:3px;align-items:center;background:var(--input-bg);border:1px solid var(--border);border-radius:8px;padding:7px 6px;font-size:11px;text-align:center;color:var(--muted)}
+    .chk-cpr-item input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent)}
+    .chk-cpr-item input[type=text]{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border);text-align:center;font-size:13px;color:var(--text);outline:none;padding:2px 0}
+    .chk-result-row{display:flex;gap:14px;align-items:center;margin:16px 0 8px}
+    .chk-result-btn{padding:10px 28px;border-radius:10px;border:2px solid var(--border);background:var(--input-bg);color:var(--muted);font-size:15px;font-weight:700;cursor:pointer;transition:all .15s;font-family:inherit}
+    .chk-result-btn.pass.sel{background:rgba(74,222,128,.15);border-color:#4ade80;color:#4ade80}
+    .chk-result-btn.nr.sel{background:rgba(248,113,113,.15);border-color:#f87171;color:#f87171}
+    .chk-form-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:8px;cursor:pointer;transition:border-color .15s}
+    .chk-form-card:hover{border-color:rgba(94,234,212,.3)}
+    .chk-pass{color:var(--ok);font-weight:700}.chk-nr{color:var(--danger);font-weight:700}
+    @media print{
+      body > *:not(#chk-print-area){display:none!important}
+      #chk-print-area{display:block!important;padding:20px;font-family:Arial,sans-serif;color:#000}
+      .chk-section-hd{background:#7a1f1f!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    }
   </style>
 </head>
 <body>
@@ -329,6 +352,7 @@
       <button class="tab" data-view="records">📁 Records</button>
       <button class="tab" data-view="ocr">📷 OCR Scan</button>
       <button class="tab" data-view="email">📧 Email</button>
+      <button class="tab" data-view="checkoffs">📋 Checkoffs</button>
     </nav>
   </div>
 </header>
@@ -686,6 +710,28 @@
         </div>
       </div>
     </div>
+  </section>
+
+  <!-- MEGACODE CHECKOFFS -->
+  <section class="view" id="view-checkoffs">
+    <div class="sec-hd" style="margin-bottom:12px">
+      <div class="sec-title">ACLS Megacode Checkoffs</div>
+      <button class="btn sm primary" id="chk-new-btn">+ New Checkoff</button>
+    </div>
+    <div class="filter-chips" id="chk-scenario-filter">
+      <button class="fchip active" data-sc="">All Scenarios</button>
+      <button class="fchip" data-sc="sc-1-3-8">1/3/8</button>
+      <button class="fchip" data-sc="sc-2-5">2/5</button>
+      <button class="fchip" data-sc="sc-6-11">6/11</button>
+      <button class="fchip" data-sc="sc-9">9</button>
+      <button class="fchip" data-sc="sc-12">12</button>
+      <button class="fchip" data-sc="sc-4-7-10">4/7/10</button>
+    </div>
+    <div class="search-wrap" style="margin-bottom:14px">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="chk-search" placeholder="Search by student name…" />
+    </div>
+    <div id="chk-list"></div>
   </section>
 
   <!-- EMAIL TEMPLATES -->
@@ -1256,6 +1302,64 @@
   </div>
 </div>
 
+<!-- MEGACODE CHECKOFF FORM -->
+<div class="overlay hidden" id="modal-checkoff">
+  <div class="modal" style="max-width:660px">
+    <div class="modal-hd">
+      <div>
+        <div class="modal-title" id="chkf-title">Megacode Checkoff</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px" id="chkf-subtitle"></div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn sm" id="chkf-print-btn">🖨 Print</button>
+        <button class="btn sm danger" id="chkf-delete-btn" style="display:none">Delete</button>
+        <button class="close-btn" data-close="modal-checkoff">×</button>
+      </div>
+    </div>
+
+    <!-- Header fields -->
+    <div class="row2" style="margin-bottom:4px">
+      <div class="fg" style="margin:0"><label>Student</label>
+        <select id="chkf-student" style="width:100%"><option value="">— Select student —</option></select>
+      </div>
+      <div class="fg" style="margin:0"><label>Date of Test</label>
+        <input type="date" id="chkf-date" />
+      </div>
+    </div>
+    <div class="fg"><label>Scenario</label>
+      <select id="chkf-scenario" style="width:100%"></select>
+    </div>
+
+    <!-- Dynamic form body -->
+    <div id="chkf-body"></div>
+
+    <!-- Result -->
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:8px">STOP TEST — Test Results</div>
+      <div class="chk-result-row">
+        <span style="font-size:13px;color:var(--muted)">Check PASS or NR:</span>
+        <button class="chk-result-btn pass" id="chkf-pass-btn">PASS</button>
+        <button class="chk-result-btn nr" id="chkf-nr-btn">NR</button>
+        <input type="hidden" id="chkf-result" value="" />
+      </div>
+      <div class="row2">
+        <div class="fg" style="margin:0"><label>Instructor Initials</label><input type="text" id="chkf-inst-initials" maxlength="6" /></div>
+        <div class="fg" style="margin:0"><label>Instructor Number</label><input type="text" id="chkf-inst-number" /></div>
+      </div>
+      <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin:12px 0 8px">Learning Station Competency</div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px">
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" id="chkf-ls-brady" style="width:16px;height:16px;accent-color:var(--accent)"> Bradycardia</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" id="chkf-ls-tachy" style="width:16px;height:16px;accent-color:var(--accent)"> Tachycardia</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" id="chkf-ls-ca" style="width:16px;height:16px;accent-color:var(--accent)"> Cardiac Arrest/Post-Cardiac Arrest Care</label>
+        <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer"><input type="checkbox" id="chkf-ls-mega" style="width:16px;height:16px;accent-color:var(--accent)"> Megacode Practice</label>
+      </div>
+    </div>
+
+    <div id="chkf-err" style="color:#f87171;font-size:13px;min-height:18px;margin-top:10px"></div>
+    <button class="btn primary full" id="chkf-save-btn" style="margin-top:10px">Save Checkoff</button>
+  </div>
+</div>
+
 <!-- NEW / EDIT CLASS TEMPLATE -->
 <div class="overlay hidden" id="modal-classtpl-edit">
   <div class="modal">
@@ -1408,10 +1512,11 @@ const stgRef  = path => fbStorage ? fbStorage.ref(path) : null;
 // ============================================================
 let allClasses=[], allStudents=[], allRoster=[], allCerts=[], allExpenses=[], allMaterials=[];
 let allFaq=[], infoDoc={};
-let allEmailTemplates=[], allClassTemplates=[];
+let allEmailTemplates=[], allClassTemplates=[], allCheckoffs=[];
 let currentView='dashboard';
 let currentClassId=null, currentStudentId=null, currentCertId=null, currentMatId=null, currentFaqId=null;
-let currentTplId=null, etplFilterCat='', currentClassTplId=null;
+let currentTplId=null, etplFilterCat='', currentClassTplId=null, currentCheckoffId=null;
+let chkFilterSc='', chkSearchQ='';
 let arSelectedStudentId=null, matFilterCat='';
 let currentRecordStudentId=null, recSearchQ='';
 const unsubs=[];
@@ -1717,12 +1822,16 @@ function setupListeners(){
     if(currentView==='classes')renderClassTemplates();
     populateNcTplSelect();
   },console.error));
+  unsubs.push(col('checkoffs').orderBy('completedAt','desc').onSnapshot(snap=>{
+    allCheckoffs=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(currentView==='checkoffs')renderCheckoffs();
+  },console.error));
 }
 
 function refreshView(){
   $('loading-screen').classList.add('hidden');
   renderDashboardStats();
-  const map={dashboard:renderDashboard,classes:renderClasses,students:renderStudents,certs:renderCerts,materials:renderMaterials,records:renderRecords,email:renderEmailTemplates};
+  const map={dashboard:renderDashboard,classes:renderClasses,students:renderStudents,certs:renderCerts,materials:renderMaterials,records:renderRecords,email:renderEmailTemplates,checkoffs:renderCheckoffs};
   if(map[currentView])map[currentView]();
 }
 
@@ -2769,6 +2878,305 @@ document.addEventListener('click', function(e) {
     });
   });
 })();
+
+// ============================================================
+// MEGACODE CHECKOFF FORMS
+// ============================================================
+const SECTION_DEFS={
+  team:{label:'Team Leader / Team Members',steps:[
+    {key:'assign-roles',text:'Team Leader assigns team member roles'},
+    {key:'cpr-quality',text:'Ensures high-quality CPR at all times',type:'cpr'},
+    {key:'communicate',text:'Team Leader ensures that team members communicate well'}
+  ]},
+  brady1:{label:'Bradycardia Management',steps:[
+    {key:'o2-monitor-iv',text:'Starts oxygen if needed, places monitor, starts IV'},
+    {key:'monitor-leads',text:'Places monitor leads in proper position'},
+    {key:'recognizes-brady',text:'Recognizes symptomatic/unstable bradycardia'},
+    {key:'correct-tx',text:'Administers correct treatment'},
+    {key:'second-line',text:'Prepares for second-line treatment'}
+  ]},
+  brady2:{label:'Bradycardia Management',steps:[
+    {key:'o2-monitor-iv',text:'Starts oxygen if needed, places monitor, starts IV'},
+    {key:'monitor-leads',text:'Places monitor leads in proper position'},
+    {key:'recognizes-brady',text:'Recognizes symptomatic/unstable bradycardia'},
+    {key:'atropine',text:'Administers correct dose of atropine'},
+    {key:'second-line',text:'Prepares for second-line treatment'}
+  ]},
+  tachy1:{label:'Tachycardia Management',steps:[
+    {key:'o2-monitor-iv',text:'Starts oxygen if needed, places monitor, starts IV'},
+    {key:'monitor-leads',text:'Places monitor leads in proper position'},
+    {key:'recognizes-tachy-dx',text:'Recognizes tachycardia (specific diagnosis)'},
+    {key:'no-symptoms',text:'Recognizes no symptoms due to tachycardia'},
+    {key:'drug-therapy',text:'Considers appropriate initial drug therapy'}
+  ]},
+  tachy2:{label:'Tachycardia Management',steps:[
+    {key:'o2-monitor-iv',text:'Starts oxygen if needed, places monitor, starts IV'},
+    {key:'monitor-leads',text:'Places monitor leads in proper position'},
+    {key:'recognizes-unstable-tachy',text:'Recognizes unstable tachycardia'},
+    {key:'symptoms-tachy',text:'Recognizes symptoms due to tachycardia'},
+    {key:'cardioversion',text:'Performs immediate synchronized cardioversion'}
+  ]},
+  pvt:{label:'Pulseless VT Management',steps:[
+    {key:'recognizes-pvt',text:'Recognizes pVT'},
+    {key:'clears-shock',text:'Clears before analyze and shock'},
+    {key:'resumes-cpr',text:'Immediately resumes CPR after shocks'},
+    {key:'airway',text:'Appropriate airway management'},
+    {key:'drug-cycles',text:'Appropriate cycles of drug–rhythm check/shock–CPR'},
+    {key:'drugs-doses',text:'Administers appropriate drug(s) and doses'}
+  ]},
+  vf:{label:'VF Management',steps:[
+    {key:'recognizes-vf',text:'Recognizes VF'},
+    {key:'clears-shock',text:'Clears before analyze and shock'},
+    {key:'resumes-cpr',text:'Immediately resumes CPR after shocks'},
+    {key:'airway',text:'Appropriate airway management'},
+    {key:'drug-cycles',text:'Appropriate cycles of drug–rhythm check/shock–CPR'},
+    {key:'drugs-doses',text:'Administers appropriate drug(s) and doses'}
+  ]},
+  asystole:{label:'Asystole Management',steps:[
+    {key:'recognizes-asystole',text:'Recognizes asystole'},
+    {key:'reversible-causes',text:"Verbalizes potential reversible causes of asystole (H's and T's)"},
+    {key:'drugs-doses',text:'Administers appropriate drug(s) and doses'},
+    {key:'resumes-cpr',text:'Immediately resumes CPR after rhythm checks'}
+  ]},
+  pea:{label:'PEA Management',steps:[
+    {key:'recognizes-pea',text:'Recognizes PEA'},
+    {key:'reversible-causes',text:"Verbalizes potential reversible causes of PEA (H's and T's)"},
+    {key:'drugs-doses',text:'Administers appropriate drug(s) and doses'},
+    {key:'resumes-cpr',text:'Immediately resumes CPR after rhythm checks'}
+  ]},
+  'asystole-pea':{label:'Asystole and PEA Management',steps:[
+    {key:'recognizes-asystole-pea',text:'Recognizes asystole and PEA'},
+    {key:'reversible-causes',text:"Verbalizes potential reversible causes of asystole and PEA (H's and T's)"},
+    {key:'drugs-doses',text:'Administers appropriate drug(s) and doses'},
+    {key:'resumes-cpr',text:'Immediately resumes CPR after rhythm checks'}
+  ]},
+  pcac:{label:'Post-Cardiac Arrest Care',steps:[
+    {key:'rosc',text:'Identifies ROSC'},
+    {key:'intubation-monitoring',text:'Verbalizes need for endotracheal intubation and continuous waveform capnography, ensures BP and 12-lead ECG are performed and O₂ saturation is monitored, and orders laboratory test'},
+    {key:'temp-control',text:'Considers temperature control'}
+  ]}
+};
+
+const MEGACODE_SCENARIOS=[
+  {key:'sc-1-3-8',label:'Scenarios 1/3/8',title:'Bradycardia → Pulseless VT → PEA → PCAC',sections:['team','brady1','pvt','pea','pcac']},
+  {key:'sc-2-5',  label:'Scenarios 2/5', title:'Bradycardia → VF → Asystole → PCAC',    sections:['team','brady2','vf','asystole','pcac']},
+  {key:'sc-6-11', label:'Scenarios 6/11',title:'Bradycardia → VF → PEA → PCAC',        sections:['team','brady2','vf','pea','pcac']},
+  {key:'sc-9',    label:'Scenario 9',   title:'Tachycardia → PEA → VF → PCAC',        sections:['team','tachy1','pea','vf','pcac']},
+  {key:'sc-12',   label:'Scenario 12',  title:'Bradycardia → VF → Asystole/PEA → PCAC',sections:['team','brady2','vf','asystole-pea','pcac']},
+  {key:'sc-4-7-10',label:'Scenarios 4/7/10',title:'Tachycardia → VF → PEA → PCAC',  sections:['team','tachy2','vf','pea','pcac']}
+];
+
+function chkScenarioLabel(key){
+  const s=MEGACODE_SCENARIOS.find(x=>x.key===key);
+  return s?s.label:key;
+}
+
+function renderCheckoffs(){
+  const q=chkSearchQ.toLowerCase();
+  let list=allCheckoffs.filter(c=>
+    (!chkFilterSc||c.scenario===chkFilterSc)&&
+    (!q||((c.studentName||'').toLowerCase().includes(q)))
+  );
+  $('chk-list').innerHTML=list.length
+    ?list.map(c=>`
+      <div class="chk-form-card" onclick="openCheckoffModal('${c.id}')">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;margin-bottom:6px">
+          <div style="font-weight:600;font-size:14px">${c.studentName||'Unknown Student'}</div>
+          <span class="${c.result==='PASS'?'chk-pass':'chk-nr'}">${c.result||'—'}</span>
+        </div>
+        <div style="font-size:12px;color:var(--muted)">${chkScenarioLabel(c.scenario)} &nbsp;·&nbsp; ${formatDate(c.dateOfTest)}</div>
+      </div>`).join('')
+    :`<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No checkoffs yet. Tap + New Checkoff to start one.</div></div>`;
+}
+
+function populateChkScenarioSelect(){
+  const sel=$('chkf-scenario');
+  sel.innerHTML='';
+  MEGACODE_SCENARIOS.forEach(s=>{
+    const o=document.createElement('option');
+    o.value=s.key;o.textContent=`${s.label} — ${s.title}`;
+    sel.appendChild(o);
+  });
+}
+
+function populateChkStudentSelect(selectedId=''){
+  const sel=$('chkf-student');
+  sel.innerHTML='<option value="">— Select student —</option>';
+  [...allStudents].sort((a,b)=>(a.lastName||'').localeCompare(b.lastName||'')).forEach(s=>{
+    const o=document.createElement('option');
+    o.value=s.id;o.textContent=`${s.lastName}, ${s.firstName}`;
+    sel.appendChild(o);
+  });
+  if(selectedId)sel.value=selectedId;
+}
+
+function buildCheckoffBody(scenarioKey, stepsData){
+  const sc=MEGACODE_SCENARIOS.find(x=>x.key===scenarioKey);
+  if(!sc)return '';
+  return sc.sections.map(secId=>{
+    const sec=SECTION_DEFS[secId];if(!sec)return '';
+    const rows=sec.steps.map(step=>{
+      if(step.type==='cpr'){
+        const d=stepsData||{};
+        return `<div class="chk-row" style="flex-direction:column;align-items:flex-start">
+          <div style="display:flex;align-items:flex-start;gap:12px;width:100%">
+            <input type="checkbox" class="chk-box" data-step="${secId}__${step.key}" ${d[secId+'__'+step.key]?'checked':''} />
+            <span class="chk-row-text" style="font-weight:500">${step.text}</span>
+          </div>
+          <div class="chk-cpr-grid" style="width:100%;margin-top:8px">
+            <div class="chk-cpr-item"><span>Rate 100–120/min</span><input type="checkbox" data-cpr="rate" ${d['cpr-rate']?'checked':''} /></div>
+            <div class="chk-cpr-item"><span>Depth ≥2 inches</span><input type="checkbox" data-cpr="depth" ${d['cpr-depth']?'checked':''} /></div>
+            <div class="chk-cpr-item"><span>Fraction &gt;80%</span><input type="text" data-cpr="fraction" value="${d['cpr-fraction']||''}" placeholder="___%" style="width:60px" /></div>
+            <div class="chk-cpr-item"><span>Chest Recoil</span><input type="checkbox" data-cpr="recoil" ${d['cpr-recoil']?'checked':''} /></div>
+            <div class="chk-cpr-item"><span>Ventilation Rate</span><input type="text" data-cpr="vent-rate" value="${d['cpr-vent-rate']||''}" placeholder="___" style="width:60px" /></div>
+          </div>
+        </div>`;
+      }
+      return `<div class="chk-row">
+        <input type="checkbox" class="chk-box" data-step="${secId}__${step.key}" ${stepsData&&stepsData[secId+'__'+step.key]?'checked':''} />
+        <span class="chk-row-text">${step.text}</span>
+      </div>`;
+    }).join('');
+    return `<div class="chk-section-hd">${sec.label}</div><div>${rows}</div>`;
+  }).join('');
+}
+
+function collectCheckoffData(){
+  const body=$('chkf-body');
+  const steps={};
+  body.querySelectorAll('[data-step]').forEach(el=>{steps[el.dataset.step]=el.checked;});
+  body.querySelectorAll('[data-cpr]').forEach(el=>{
+    const key='cpr-'+el.dataset.cpr;
+    steps[key]=el.type==='checkbox'?el.checked:el.value;
+  });
+  return steps;
+}
+
+function openCheckoffModal(existingId){
+  currentCheckoffId=existingId||null;
+  populateChkStudentSelect();
+  populateChkScenarioSelect();
+  $('chkf-err').textContent='';
+  $('chkf-delete-btn').style.display=existingId?'':'none';
+
+  if(existingId){
+    const c=allCheckoffs.find(x=>x.id===existingId);if(!c)return;
+    $('chkf-title').textContent='ACLS Megacode Checkoff';
+    $('chkf-subtitle').textContent=`${chkScenarioLabel(c.scenario)} — ${c.studentName||''}`;
+    $('chkf-student').value=c.studentId||'';
+    $('chkf-date').value=c.dateOfTest||'';
+    $('chkf-scenario').value=c.scenario||'';
+    $('chkf-result').value=c.result||'';
+    $('chkf-pass-btn').classList.toggle('sel',c.result==='PASS');
+    $('chkf-nr-btn').classList.toggle('sel',c.result==='NR');
+    $('chkf-inst-initials').value=c.instInitials||'';
+    $('chkf-inst-number').value=c.instNumber||'';
+    $('chkf-ls-brady').checked=!!(c.ls&&c.ls.brady);
+    $('chkf-ls-tachy').checked=!!(c.ls&&c.ls.tachy);
+    $('chkf-ls-ca').checked=!!(c.ls&&c.ls.ca);
+    $('chkf-ls-mega').checked=!!(c.ls&&c.ls.mega);
+    $('chkf-body').innerHTML=buildCheckoffBody(c.scenario,c.steps||{});
+  } else {
+    $('chkf-title').textContent='New ACLS Megacode Checkoff';
+    $('chkf-subtitle').textContent='';
+    $('chkf-date').value=today();
+    $('chkf-result').value='';
+    $('chkf-pass-btn').classList.remove('sel');
+    $('chkf-nr-btn').classList.remove('sel');
+    $('chkf-inst-initials').value='';
+    $('chkf-inst-number').value='';
+    ['ls-brady','ls-tachy','ls-ca','ls-mega'].forEach(id=>$('chkf-'+id).checked=false);
+    $('chkf-body').innerHTML=buildCheckoffBody(MEGACODE_SCENARIOS[0].key,{});
+  }
+  openModal('modal-checkoff');
+}
+
+$('chkf-scenario').addEventListener('change',function(){
+  $('chkf-body').innerHTML=buildCheckoffBody(this.value,{});
+});
+$('chkf-pass-btn').addEventListener('click',()=>{
+  $('chkf-result').value='PASS';
+  $('chkf-pass-btn').classList.add('sel');$('chkf-nr-btn').classList.remove('sel');
+});
+$('chkf-nr-btn').addEventListener('click',()=>{
+  $('chkf-result').value='NR';
+  $('chkf-nr-btn').classList.add('sel');$('chkf-pass-btn').classList.remove('sel');
+});
+
+$('chkf-save-btn').addEventListener('click',async()=>{
+  const studentId=$('chkf-student').value;
+  const dateOfTest=$('chkf-date').value;
+  const scenario=$('chkf-scenario').value;
+  if(!studentId||!dateOfTest){$('chkf-err').textContent='Student and date are required.';return;}
+  const student=allStudents.find(s=>s.id===studentId);
+  const data={
+    studentId,studentName:student?`${student.firstName} ${student.lastName}`:'',
+    dateOfTest,scenario,
+    steps:collectCheckoffData(),
+    result:$('chkf-result').value,
+    instInitials:$('chkf-inst-initials').value.trim(),
+    instNumber:$('chkf-inst-number').value.trim(),
+    ls:{brady:$('chkf-ls-brady').checked,tachy:$('chkf-ls-tachy').checked,ca:$('chkf-ls-ca').checked,mega:$('chkf-ls-mega').checked},
+    completedAt:Date.now()
+  };
+  try{
+    if(currentCheckoffId){await col('checkoffs').doc(currentCheckoffId).update(data);}
+    else{await col('checkoffs').add(data);}
+    closeModal('modal-checkoff');
+  }catch(e){$('chkf-err').textContent='Error: '+e.message;}
+});
+
+$('chkf-delete-btn').addEventListener('click',async()=>{
+  if(!currentCheckoffId||!confirm('Delete this checkoff?'))return;
+  await col('checkoffs').doc(currentCheckoffId).delete();
+  closeModal('modal-checkoff');
+});
+
+$('chkf-print-btn').addEventListener('click',()=>{
+  const sc=MEGACODE_SCENARIOS.find(x=>x.key===$('chkf-scenario').value)||{};
+  const studentName=$('chkf-student').options[$('chkf-student').selectedIndex]?.text||'';
+  let area=document.getElementById('chk-print-area');
+  if(!area){area=document.createElement('div');area.id='chk-print-area';document.body.appendChild(area);}
+  area.innerHTML=`<div style="font-family:Arial,sans-serif;max-width:680px;margin:0 auto">
+    <h2 style="font-size:16px;margin-bottom:4px">Megacode Testing Checklist — ${sc.label||''}</h2>
+    <h3 style="font-size:14px;font-weight:normal;margin-top:0;margin-bottom:16px">${sc.title||''}</h3>
+    <div style="display:flex;gap:40px;margin-bottom:20px">
+      <span>Student Name: <u>${studentName}</u></span>
+      <span>Date of Test: <u>${formatDate($('chkf-date').value)}</u></span>
+    </div>
+    <table style="width:100%;border-collapse:collapse;font-size:12px">
+      <thead><tr style="background:#7a1f1f;color:#fff"><th style="padding:8px;text-align:left">Critical Performance Steps</th><th style="padding:8px;width:110px;text-align:center">Check if done correctly</th></tr></thead>
+      <tbody>${$('chkf-body').querySelectorAll('.chk-section-hd,.chk-row').length?
+        Array.from($('chkf-body').children).map(child=>{
+          if(child.classList.contains('chk-section-hd'))
+            return `<tr style="background:#7a1f1f"><td colspan="2" style="padding:6px 8px;font-weight:700;color:#fff">${child.textContent}</td></tr>`;
+          return Array.from(child.querySelectorAll('.chk-row')).map(row=>{
+            const cb=row.querySelector('.chk-box');
+            const txt=row.querySelector('.chk-row-text');
+            return `<tr style="border-bottom:1px solid #ddd"><td style="padding:6px 8px">${txt?txt.textContent:''}</td><td style="text-align:center;font-size:18px">${cb&&cb.checked?'☑':'☐'}</td></tr>`;
+          }).join('');
+        }).join(''):''}
+      </tbody>
+    </table>
+    <div style="margin-top:20px;border-top:2px solid #000;padding-top:12px">
+      <strong>STOP TEST</strong><br>
+      Test Results — PASS: ${$('chkf-result').value==='PASS'?'☑':'☐'} &nbsp;&nbsp; NR: ${$('chkf-result').value==='NR'?'☑':'☐'}<br><br>
+      Instructor Initials: <u>${$('chkf-inst-initials').value||'_____'}</u> &nbsp;&nbsp;
+      Instructor Number: <u>${$('chkf-inst-number').value||'________________________'}</u> &nbsp;&nbsp;
+      Date: <u>${formatDate($('chkf-date').value)}</u>
+    </div>
+  </div>`;
+  window.print();
+});
+
+$('chk-new-btn').addEventListener('click',()=>openCheckoffModal(null));
+$('chk-search').addEventListener('input',e=>{chkSearchQ=e.target.value;renderCheckoffs();});
+$('chk-scenario-filter').querySelectorAll('.fchip').forEach(chip=>{
+  chip.addEventListener('click',()=>{
+    $('chk-scenario-filter').querySelectorAll('.fchip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');chkFilterSc=chip.dataset.sc||'';renderCheckoffs();
+  });
+});
 
 // ============================================================
 // CLASS TEMPLATES
