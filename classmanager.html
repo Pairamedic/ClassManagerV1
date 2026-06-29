@@ -475,6 +475,7 @@
     <div class="stabs">
       <button class="stab active" id="stab-classes">📅 Classes</button>
       <button class="stab" id="stab-students">👥 Students</button>
+      <button class="stab" id="stab-classtpl">📋 Templates</button>
     </div>
 
     <!-- Classes sub-panel -->
@@ -507,6 +508,15 @@
         </div>
       </div>
       <div id="classes-list"></div>
+    </div>
+
+    <!-- Class Templates sub-panel -->
+    <div id="subpanel-classtpl" style="display:none">
+      <div class="sec-hd">
+        <div class="sec-title">Class Templates</div>
+        <button class="btn primary sm" id="new-classtpl-btn">+ New Template</button>
+      </div>
+      <div id="classtpl-list"></div>
     </div>
 
     <!-- Students sub-panel -->
@@ -743,6 +753,13 @@
 <div class="overlay hidden" id="modal-new-class">
   <div class="modal">
     <div class="modal-hd"><div class="modal-title">Schedule New Class</div><button class="close-btn" data-close="modal-new-class">×</button></div>
+    <!-- Template picker -->
+    <div id="nc-tpl-row" style="display:flex;gap:8px;align-items:center;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)">
+      <select id="nc-tpl-select" style="flex:1;font-size:13px">
+        <option value="">— Start from a template (optional) —</option>
+      </select>
+      <button class="btn sm primary" id="nc-tpl-load-btn">Load</button>
+    </div>
     <div class="fg"><label>Class Type *</label>
       <input type="hidden" id="nc-type" value="">
       <div class="opt-group">
@@ -782,6 +799,7 @@
     <div class="modal-hd">
       <div><div class="modal-title" id="cd-title"></div><div style="margin-top:4px" id="cd-badges"></div></div>
       <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn sm" id="cd-save-tpl-btn" title="Save as template">📋</button>
         <button class="btn sm danger" id="cd-delete-btn">Delete</button>
         <button class="close-btn" data-close="modal-class-detail">×</button>
       </div>
@@ -1238,6 +1256,55 @@
   </div>
 </div>
 
+<!-- NEW / EDIT CLASS TEMPLATE -->
+<div class="overlay hidden" id="modal-classtpl-edit">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title" id="classtpl-edit-title">New Class Template</div>
+      <button class="close-btn" data-close="modal-classtpl-edit">×</button>
+    </div>
+    <div class="fg"><label>Template Name *</label><input type="text" id="ct-name" placeholder="e.g. Monthly ACLS – Fire Station 7" /></div>
+    <div class="fg"><label>Class Type *</label>
+      <input type="hidden" id="ct-type" value="">
+      <div class="opt-group">
+        <button type="button" class="opt-btn" data-val="ACLS">ACLS</button>
+        <button type="button" class="opt-btn" data-val="ACLS-EP">ACLS-EP</button>
+        <button type="button" class="opt-btn" data-val="PALS">PALS</button>
+        <button type="button" class="opt-btn" data-val="BLS">BLS</button>
+        <button type="button" class="opt-btn" data-val="Stop the Bleed">Stop the Bleed</button>
+        <button type="button" class="opt-btn" data-val="Heartsaver">Heartsaver</button>
+        <button type="button" class="opt-btn" data-val="Heartsaver AED">Heartsaver AED</button>
+        <button type="button" class="opt-btn" data-val="Instructor Course">Instructor Course</button>
+        <button type="button" class="opt-btn" data-val="Other">Other</button>
+      </div>
+    </div>
+    <div class="fg"><label>Location / Venue</label><input type="text" id="ct-location" placeholder="Address or facility name" /></div>
+    <div class="row2">
+      <div class="fg" style="margin:0"><label>Default Time</label><input type="time" id="ct-time" /></div>
+      <div class="fg" style="margin:0"><label>Max Students</label><input type="number" id="ct-max" placeholder="e.g. 12" min="1" /></div>
+    </div>
+    <div class="row2" style="margin-top:10px">
+      <div class="fg" style="margin:0"><label>Default Charge ($)</label><input type="number" id="ct-charge" placeholder="0.00" min="0" step="0.01" /></div>
+      <div class="fg" style="margin:0">
+        <label>Email Template</label>
+        <select id="ct-email-tpl" style="width:100%">
+          <option value="">None</option>
+        </select>
+      </div>
+    </div>
+    <div class="fg" style="margin-top:10px"><label>Notes</label><textarea id="ct-notes" placeholder="Any default notes for this class type…" style="min-height:60px"></textarea></div>
+    <div class="toggle-row" style="margin-bottom:14px">
+      <div><div class="toggle-lbl">Instructor Course</div><div class="toggle-sub">Adds AHA/Atlas setup info to emails</div></div>
+      <label class="toggle"><input type="checkbox" id="ct-instructor-course"><span class="slider"></span></label>
+    </div>
+    <div id="ct-err" style="color:#f87171;font-size:13px;min-height:18px;margin-bottom:8px"></div>
+    <div style="display:flex;gap:10px">
+      <button class="btn full" data-close="modal-classtpl-edit">Cancel</button>
+      <button class="btn primary full" id="ct-save-btn">Save Template</button>
+    </div>
+  </div>
+</div>
+
 <!-- NEW / EDIT EMAIL TEMPLATE -->
 <div class="overlay hidden" id="modal-etpl-edit">
   <div class="modal" style="max-width:620px">
@@ -1341,10 +1408,10 @@ const stgRef  = path => fbStorage ? fbStorage.ref(path) : null;
 // ============================================================
 let allClasses=[], allStudents=[], allRoster=[], allCerts=[], allExpenses=[], allMaterials=[];
 let allFaq=[], infoDoc={};
-let allEmailTemplates=[];
+let allEmailTemplates=[], allClassTemplates=[];
 let currentView='dashboard';
 let currentClassId=null, currentStudentId=null, currentCertId=null, currentMatId=null, currentFaqId=null;
-let currentTplId=null, etplFilterCat='';
+let currentTplId=null, etplFilterCat='', currentClassTplId=null;
 let arSelectedStudentId=null, matFilterCat='';
 let currentRecordStudentId=null, recSearchQ='';
 const unsubs=[];
@@ -1643,6 +1710,12 @@ function setupListeners(){
     allEmailTemplates=snap.docs.map(d=>({id:d.id,...d.data()}));
     if(currentView==='email')renderEmailTemplates();
     populateEmailTplSelect();
+    populateCtEmailTplSelect();
+  },console.error));
+  unsubs.push(col('class_templates').orderBy('createdAt','asc').onSnapshot(snap=>{
+    allClassTemplates=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(currentView==='classes')renderClassTemplates();
+    populateNcTplSelect();
   },console.error));
 }
 
@@ -1670,8 +1743,8 @@ document.getElementById('tabs').querySelectorAll('.tab').forEach(tab=>{
   tab.addEventListener('click',()=>{
     switchView(tab.dataset.view);
     if(tab.dataset.view==='classes'){
-      $('stab-classes').classList.add('active');$('stab-students').classList.remove('active');
-      $('subpanel-classes').style.display='';$('subpanel-students').style.display='none';
+      $('stab-classes').classList.add('active');$('stab-students').classList.remove('active');$('stab-classtpl').classList.remove('active');
+      $('subpanel-classes').style.display='';$('subpanel-students').style.display='none';$('subpanel-classtpl').style.display='none';
     }
     if(tab.dataset.view==='dashboard'){
       activateDashTab('overview');
@@ -1679,13 +1752,18 @@ document.getElementById('tabs').querySelectorAll('.tab').forEach(tab=>{
   });
 });
 $('stab-classes').addEventListener('click',()=>{
-  $('stab-classes').classList.add('active');$('stab-students').classList.remove('active');
-  $('subpanel-classes').style.display='';$('subpanel-students').style.display='none';
+  $('stab-classes').classList.add('active');$('stab-students').classList.remove('active');$('stab-classtpl').classList.remove('active');
+  $('subpanel-classes').style.display='';$('subpanel-students').style.display='none';$('subpanel-classtpl').style.display='none';
   currentView='classes';renderClasses();
 });
+$('stab-classtpl').addEventListener('click',()=>{
+  $('stab-classtpl').classList.add('active');$('stab-classes').classList.remove('active');$('stab-students').classList.remove('active');
+  $('subpanel-classtpl').style.display='';$('subpanel-classes').style.display='none';$('subpanel-students').style.display='none';
+  currentView='classes';renderClassTemplates();
+});
 $('stab-students').addEventListener('click',()=>{
-  $('stab-students').classList.add('active');$('stab-classes').classList.remove('active');
-  $('subpanel-students').style.display='';$('subpanel-classes').style.display='none';
+  $('stab-students').classList.add('active');$('stab-classes').classList.remove('active');$('stab-classtpl').classList.remove('active');
+  $('subpanel-students').style.display='';$('subpanel-classes').style.display='none';$('subpanel-classtpl').style.display='none';
   currentView='students';renderStudents();
 });
 
@@ -1765,7 +1843,21 @@ $('new-class-btn').addEventListener('click',()=>{
   ['nc-type','nc-location','nc-notes'].forEach(id=>$(id).value='');
   $('nc-date').value=today();$('nc-time').value='';$('nc-max').value='';$('nc-charge').value='';
   $('nc-instructor-course').checked=false;$('nc-err').textContent='';
+  syncOptGroup('nc-type','');
+  $('nc-tpl-select').value='';
+  populateNcTplSelect();
   openModal('modal-new-class');
+});
+$('nc-tpl-load-btn').addEventListener('click',()=>{
+  const id=$('nc-tpl-select').value;if(!id)return;
+  const t=allClassTemplates.find(x=>x.id===id);if(!t)return;
+  syncOptGroup('nc-type',t.type||'');
+  $('nc-location').value=t.location||'';
+  $('nc-time').value=t.time||'';
+  $('nc-max').value=t.maxStudents||'';
+  $('nc-charge').value=t.defaultCharge||'';
+  $('nc-notes').value=t.notes||'';
+  $('nc-instructor-course').checked=!!t.isInstructorCourse;
 });
 $('nc-save-btn').addEventListener('click',async()=>{
   const type=$('nc-type').value,date=$('nc-date').value;
@@ -1880,6 +1972,15 @@ $('cd-notes-save').addEventListener('click',async()=>{
   const notes=$('cd-notes-text').value.trim();
   await col('classes').doc(currentClassId).update({notes});
   $('cd-notes-save').textContent='Saved ✓';setTimeout(()=>$('cd-notes-save').textContent='Save Notes',2000);
+});
+$('cd-save-tpl-btn').addEventListener('click',()=>{
+  const c=allClasses.find(x=>x.id===currentClassId);if(!c)return;
+  openClassTplEditModal({
+    name:`${c.type} – ${c.location||'Template'}`,
+    type:c.type,location:c.location,time:c.time,
+    maxStudents:c.maxStudents,defaultCharge:c.defaultCharge,
+    notes:c.notes,isInstructorCourse:c.isInstructorCourse
+  },true);
 });
 $('cd-delete-btn').addEventListener('click',async()=>{
   if(!confirm('Delete this class and all roster entries?'))return;
@@ -2668,6 +2769,93 @@ document.addEventListener('click', function(e) {
     });
   });
 })();
+
+// ============================================================
+// CLASS TEMPLATES
+// ============================================================
+function renderClassTemplates(){
+  $('classtpl-list').innerHTML=allClassTemplates.length
+    ?allClassTemplates.map(t=>`
+      <div class="class-card" onclick="openClassTplEditModal(${JSON.stringify({...t}).replace(/</g,'\\u003c')},false,'${t.id}')">
+        <div class="class-card-hd">
+          <div>${ctBadge(t.type||'Other')}</div>
+          <div style="font-size:13px;font-weight:600;color:var(--muted)">${t.defaultCharge?fmt$(t.defaultCharge):''}</div>
+        </div>
+        <div style="font-weight:600;font-size:14px;margin-bottom:4px">${t.name||'Untitled'}</div>
+        <div class="class-meta">
+          ${t.location?`<span>📍 ${t.location}</span>`:''}
+          ${t.time?`<span>🕐 ${formatTime(t.time)}</span>`:''}
+          ${t.maxStudents?`<span>👥 Max ${t.maxStudents}</span>`:''}
+        </div>
+      </div>`).join('')
+    :`<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No class templates yet.<br>Create one or tap 📋 on any class to save it as a template.</div></div>`;
+}
+
+function openClassTplEditModal(prefill, isNew, existingId){
+  currentClassTplId = isNew ? null : (existingId || null);
+  $('classtpl-edit-title').textContent = currentClassTplId ? 'Edit Class Template' : 'New Class Template';
+  $('ct-name').value = prefill.name || '';
+  $('ct-location').value = prefill.location || '';
+  $('ct-time').value = prefill.time || '';
+  $('ct-max').value = prefill.maxStudents || '';
+  $('ct-charge').value = prefill.defaultCharge || '';
+  $('ct-notes').value = prefill.notes || '';
+  $('ct-instructor-course').checked = !!prefill.isInstructorCourse;
+  $('ct-err').textContent = '';
+  syncOptGroup('ct-type', prefill.type || '');
+  populateCtEmailTplSelect(prefill.emailTemplateId || '');
+  openModal('modal-classtpl-edit');
+}
+
+function populateNcTplSelect(){
+  const sel=$('nc-tpl-select');if(!sel)return;
+  const cur=sel.value;
+  sel.innerHTML='<option value="">— Start from a template (optional) —</option>';
+  allClassTemplates.forEach(t=>{
+    const opt=document.createElement('option');
+    opt.value=t.id;opt.textContent=t.name;
+    sel.appendChild(opt);
+  });
+  if(cur)sel.value=cur;
+}
+
+function populateCtEmailTplSelect(selected=''){
+  const sel=$('ct-email-tpl');if(!sel)return;
+  sel.innerHTML='<option value="">None</option>';
+  allEmailTemplates.forEach(t=>{
+    const opt=document.createElement('option');
+    opt.value=t.id;opt.textContent=`${t.category||'Custom'} — ${t.name}`;
+    sel.appendChild(opt);
+  });
+  sel.value=selected||'';
+}
+
+$('new-classtpl-btn').addEventListener('click',()=>openClassTplEditModal({},true));
+
+$('ct-save-btn').addEventListener('click',async()=>{
+  const name=$('ct-name').value.trim();
+  const type=$('ct-type').value;
+  if(!name||!type){$('ct-err').textContent='Template name and class type are required.';return;}
+  const data={
+    name,type,
+    location:$('ct-location').value.trim(),
+    time:$('ct-time').value,
+    maxStudents:parseInt($('ct-max').value)||null,
+    defaultCharge:parseFloat($('ct-charge').value)||0,
+    notes:$('ct-notes').value.trim(),
+    isInstructorCourse:$('ct-instructor-course').checked,
+    emailTemplateId:$('ct-email-tpl').value||null,
+    createdAt:Date.now()
+  };
+  try{
+    if(currentClassTplId){
+      await col('class_templates').doc(currentClassTplId).update(data);
+    } else {
+      await col('class_templates').add(data);
+    }
+    closeModal('modal-classtpl-edit');
+  }catch(e){$('ct-err').textContent='Error: '+e.message;}
+});
 
 // ============================================================
 // EMAIL TEMPLATES
