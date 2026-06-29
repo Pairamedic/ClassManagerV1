@@ -261,6 +261,9 @@
     /* Document File Browser */
     .doc-folder-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 10px;cursor:pointer;transition:border-color .15s,background .15s;text-align:center;display:flex;flex-direction:column;align-items:center}
     .doc-folder-card:hover{border-color:rgba(94,234,212,.35);background:rgba(94,234,212,.03)}
+    .adj-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:500;border:1px solid rgba(147,197,253,.3);background:rgba(147,197,253,.08);color:#93c5fd;white-space:nowrap}
+    .adj-chip button{background:none;border:none;color:inherit;cursor:pointer;font-size:13px;line-height:1;padding:0;opacity:.7}
+    .adj-chip button:hover{opacity:1}
     .btn-link{background:none;border:none;color:var(--accent2);font-size:13px;cursor:pointer;font-family:inherit;padding:0;transition:color .15s}
     .btn-link:hover{color:var(--accent)}
     .rec-file-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
@@ -881,6 +884,14 @@
       <div class="fg" style="margin:0"><label>Default Charge ($)</label><input type="number" id="nc-charge" placeholder="0.00" min="0" step="0.01" /></div>
     </div>
     <div class="fg" style="margin-top:12px"><label>Notes</label><textarea id="nc-notes" placeholder="Any additional notes…"></textarea></div>
+    <div class="fg" style="margin-top:12px">
+      <label>Adjunct Instructors</label>
+      <div style="display:flex;gap:6px;margin-bottom:6px">
+        <input type="text" id="nc-adj-input" placeholder="Instructor name…" style="flex:1" />
+        <button type="button" class="btn sm" id="nc-adj-add-btn">+ Add</button>
+      </div>
+      <div id="nc-adj-list" style="display:flex;flex-wrap:wrap;gap:6px;min-height:4px"></div>
+    </div>
     <div class="toggle-row" style="margin-bottom:14px">
       <div><div class="toggle-lbl">Instructor Course</div><div class="toggle-sub">Adds AHA/Atlas setup info to emails</div></div>
       <label class="toggle"><input type="checkbox" id="nc-instructor-course"><span class="slider"></span></label>
@@ -1599,6 +1610,7 @@ let chkFilterSc='', chkSearchQ='';
 let arSelectedStudentId=null, matFilterCat='';
 let allDocFolders=[];
 let currentDocStudentId=null, currentDocSubfolder=null;
+let ncAdjInstructors=[];
 const unsubs=[];
 
 // ============================================================
@@ -2030,21 +2042,30 @@ function renderClasses(){
     ?list.map(c=>{const cnt=allRoster.filter(r=>r.classId===c.id).length,rev=allRoster.filter(r=>r.classId===c.id).reduce((s,r)=>s+(+r.charge||0),0);
       return `<div class="class-card" onclick="openClassDetail('${c.id}')">
         <div class="class-card-hd"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">${ctBadge(c.type)}${c.isInstructorCourse?'<span class="ct-badge ct-inst">Instructor</span>':''}${classStatusBadge(c.status)}</div><div style="font-size:13px;color:var(--ok);font-weight:600">${fmt$(rev)}</div></div>
-        <div class="class-meta"><span>📅 ${formatDate(c.date)}${c.time?' '+formatTime(c.time):''}</span><span>📍 ${c.location||'Location TBD'}</span><span>👥 ${cnt} student${cnt!==1?'s':''}</span></div>
+        <div class="class-meta"><span>📅 ${formatDate(c.date)}${c.time?' '+formatTime(c.time):''}</span><span>📍 ${c.location||'Location TBD'}</span><span>👥 ${cnt} student${cnt!==1?'s':''}</span>${c.adjunctInstructors?.length?`<span>👨‍🏫 ${c.adjunctInstructors.join(', ')}</span>`:''}</div>
       </div>`;}).join('')
     :`<div class="empty"><div class="empty-icon">📅</div><div class="empty-text">No classes found</div></div>`;
 }
 ['class-search','class-filter-type','class-filter-time'].forEach(id=>{$(id).addEventListener('input',renderClasses);$(id).addEventListener('change',renderClasses);});
 
+function renderNcAdjList(){
+  $('nc-adj-list').innerHTML=ncAdjInstructors.map((n,i)=>`<span class="adj-chip">${n}<button onclick="ncAdjInstructors.splice(${i},1);renderNcAdjList()" title="Remove">×</button></span>`).join('');
+}
 $('new-class-btn').addEventListener('click',()=>{
   ['nc-type','nc-location','nc-notes'].forEach(id=>$(id).value='');
   $('nc-date').value=today();$('nc-time').value='';$('nc-max').value='';$('nc-charge').value='';
   $('nc-instructor-course').checked=false;$('nc-err').textContent='';
+  ncAdjInstructors=[];$('nc-adj-input').value='';renderNcAdjList();
   syncOptGroup('nc-type','');
   $('nc-tpl-select').value='';
   populateNcTplSelect();
   openModal('modal-new-class');
 });
+$('nc-adj-add-btn').addEventListener('click',()=>{
+  const v=$('nc-adj-input').value.trim();if(!v)return;
+  ncAdjInstructors.push(v);$('nc-adj-input').value='';renderNcAdjList();
+});
+$('nc-adj-input').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('nc-adj-add-btn').click();}});
 $('nc-tpl-load-btn').addEventListener('click',()=>{
   const id=$('nc-tpl-select').value;if(!id)return;
   const t=allClassTemplates.find(x=>x.id===id);if(!t)return;
@@ -2055,6 +2076,7 @@ $('nc-tpl-load-btn').addEventListener('click',()=>{
   $('nc-charge').value=t.defaultCharge||'';
   $('nc-notes').value=t.notes||'';
   $('nc-instructor-course').checked=!!t.isInstructorCourse;
+  ncAdjInstructors=[...(t.adjunctInstructors||[])];$('nc-adj-input').value='';renderNcAdjList();
 });
 $('nc-save-btn').addEventListener('click',async()=>{
   const type=$('nc-type').value,date=$('nc-date').value;
@@ -2064,7 +2086,7 @@ $('nc-save-btn').addEventListener('click',async()=>{
     await col('classes').add({type,date,time:$('nc-time').value,location:$('nc-location').value.trim(),
       maxStudents:parseInt($('nc-max').value)||null,defaultCharge:parseFloat($('nc-charge').value)||0,
       notes:$('nc-notes').value.trim(),isInstructorCourse:$('nc-instructor-course').checked,
-      status:'Scheduled',createdAt:Date.now()});
+      adjunctInstructors:[...ncAdjInstructors],status:'Scheduled',createdAt:Date.now()});
     closeModal('modal-new-class');
   }catch(e){$('nc-err').textContent='Error: '+e.message;}
   $('nc-save-btn').disabled=false;
@@ -2075,7 +2097,7 @@ window.openClassDetail=function(classId){
   const c=allClasses.find(x=>x.id===classId);if(!c)return;
   $('cd-title').textContent=c.type;
   $('cd-badges').innerHTML=ctBadge(c.type)+(c.isInstructorCourse?'<span class="ct-badge ct-inst" style="margin-left:6px">Instructor Course</span>':'');
-  $('cd-meta').innerHTML=`<span>📅 ${formatDate(c.date)}${c.time?' '+formatTime(c.time):''}</span><span>📍 ${c.location||'Location TBD'}</span>`;
+  $('cd-meta').innerHTML=`<span>📅 ${formatDate(c.date)}${c.time?' '+formatTime(c.time):''}</span><span>📍 ${c.location||'Location TBD'}</span>${c.adjunctInstructors?.length?`<span>👨‍🏫 ${c.adjunctInstructors.join(', ')}</span>`:''}`;
   document.querySelectorAll('.mtab[data-mtab="cd"]').forEach((t,i)=>t.classList.toggle('active',i===0));
   ['cd-roster','cd-attend','cd-checklist','cd-email','cd-notes'].forEach((id,i)=>$(id).style.display=i===0?'':'none');
   $('cd-notes-text').value=c.notes||'';
