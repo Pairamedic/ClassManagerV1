@@ -852,8 +852,8 @@
 <!-- NEW CLASS -->
 <div class="overlay hidden" id="modal-new-class">
   <div class="modal">
-    <div class="modal-hd"><div class="modal-title">Schedule New Class</div><button class="close-btn" data-close="modal-new-class">×</button></div>
-    <!-- Template picker -->
+    <div class="modal-hd"><div class="modal-title" id="nc-modal-title">Schedule New Class</div><button class="close-btn" data-close="modal-new-class">×</button></div>
+    <!-- Template picker (hidden in edit mode) -->
     <div id="nc-tpl-row" style="display:flex;gap:8px;align-items:center;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)">
       <select id="nc-tpl-select" style="flex:1;font-size:13px">
         <option value="">— Start from a template (optional) —</option>
@@ -907,6 +907,7 @@
     <div class="modal-hd">
       <div><div class="modal-title" id="cd-title"></div><div style="margin-top:4px" id="cd-badges"></div></div>
       <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn sm" id="cd-edit-btn">✏️ Edit</button>
         <button class="btn sm" id="cd-save-tpl-btn" title="Save as template">📋</button>
         <button class="btn sm danger" id="cd-delete-btn">Delete</button>
         <button class="close-btn" data-close="modal-class-detail">×</button>
@@ -1493,6 +1494,7 @@
     </div>
     <div id="ct-err" style="color:#f87171;font-size:13px;min-height:18px;margin-bottom:8px"></div>
     <div style="display:flex;gap:10px">
+      <button class="btn danger" id="ct-delete-btn" style="display:none">Delete</button>
       <button class="btn full" data-close="modal-classtpl-edit">Cancel</button>
       <button class="btn primary full" id="ct-save-btn">Save Template</button>
     </div>
@@ -1610,7 +1612,7 @@ let chkFilterSc='', chkSearchQ='';
 let arSelectedStudentId=null, matFilterCat='';
 let allDocFolders=[];
 let currentDocStudentId=null, currentDocSubfolder=null;
-let ncAdjInstructors=[];
+let ncAdjInstructors=[], editingClassId=null;
 const unsubs=[];
 
 // ============================================================
@@ -2051,16 +2053,26 @@ function renderClasses(){
 function renderNcAdjList(){
   $('nc-adj-list').innerHTML=ncAdjInstructors.map((n,i)=>`<span class="adj-chip">${n}<button onclick="ncAdjInstructors.splice(${i},1);renderNcAdjList()" title="Remove">×</button></span>`).join('');
 }
-$('new-class-btn').addEventListener('click',()=>{
-  ['nc-type','nc-location','nc-notes'].forEach(id=>$(id).value='');
-  $('nc-date').value=today();$('nc-time').value='';$('nc-max').value='';$('nc-charge').value='';
-  $('nc-instructor-course').checked=false;$('nc-err').textContent='';
-  ncAdjInstructors=[];$('nc-adj-input').value='';renderNcAdjList();
-  syncOptGroup('nc-type','');
-  $('nc-tpl-select').value='';
-  populateNcTplSelect();
+function openNewClassModal(prefill, classIdToEdit){
+  editingClassId=classIdToEdit||null;
+  $('nc-modal-title').textContent=editingClassId?'Edit Class':'Schedule New Class';
+  $('nc-save-btn').textContent=editingClassId?'Save Changes':'Schedule Class';
+  $('nc-tpl-row').style.display=editingClassId?'none':'';
+  syncOptGroup('nc-type',prefill.type||'');
+  $('nc-date').value=prefill.date||today();
+  $('nc-time').value=prefill.time||'';
+  $('nc-location').value=prefill.location||'';
+  $('nc-max').value=prefill.maxStudents||'';
+  $('nc-charge').value=prefill.defaultCharge||'';
+  $('nc-notes').value=prefill.notes||'';
+  $('nc-instructor-course').checked=!!prefill.isInstructorCourse;
+  ncAdjInstructors=[...(prefill.adjunctInstructors||[])];
+  $('nc-adj-input').value='';renderNcAdjList();
+  $('nc-err').textContent='';
+  if(!editingClassId){$('nc-tpl-select').value='';populateNcTplSelect();}
   openModal('modal-new-class');
-});
+}
+$('new-class-btn').addEventListener('click',()=>openNewClassModal({}));
 $('nc-adj-add-btn').addEventListener('click',()=>{
   const v=$('nc-adj-input').value.trim();if(!v)return;
   ncAdjInstructors.push(v);$('nc-adj-input').value='';renderNcAdjList();
@@ -2082,12 +2094,19 @@ $('nc-save-btn').addEventListener('click',async()=>{
   const type=$('nc-type').value,date=$('nc-date').value;
   if(!type||!date){$('nc-err').textContent='Class type and date are required.';return;}
   $('nc-save-btn').disabled=true;$('nc-err').textContent='';
+  const fields={type,date,time:$('nc-time').value,location:$('nc-location').value.trim(),
+    maxStudents:parseInt($('nc-max').value)||null,defaultCharge:parseFloat($('nc-charge').value)||0,
+    notes:$('nc-notes').value.trim(),isInstructorCourse:$('nc-instructor-course').checked,
+    adjunctInstructors:[...ncAdjInstructors]};
   try{
-    await col('classes').add({type,date,time:$('nc-time').value,location:$('nc-location').value.trim(),
-      maxStudents:parseInt($('nc-max').value)||null,defaultCharge:parseFloat($('nc-charge').value)||0,
-      notes:$('nc-notes').value.trim(),isInstructorCourse:$('nc-instructor-course').checked,
-      adjunctInstructors:[...ncAdjInstructors],status:'Scheduled',createdAt:Date.now()});
-    closeModal('modal-new-class');
+    if(editingClassId){
+      await col('classes').doc(editingClassId).update(fields);
+      closeModal('modal-new-class');
+      openClassDetail(editingClassId);
+    } else {
+      await col('classes').add({...fields,status:'Scheduled',createdAt:Date.now()});
+      closeModal('modal-new-class');
+    }
   }catch(e){$('nc-err').textContent='Error: '+e.message;}
   $('nc-save-btn').disabled=false;
 });
@@ -2194,6 +2213,11 @@ $('cd-notes-save').addEventListener('click',async()=>{
   const notes=$('cd-notes-text').value.trim();
   await col('classes').doc(currentClassId).update({notes});
   $('cd-notes-save').textContent='Saved ✓';setTimeout(()=>$('cd-notes-save').textContent='Save Notes',2000);
+});
+$('cd-edit-btn').addEventListener('click',()=>{
+  const c=allClasses.find(x=>x.id===currentClassId);if(!c)return;
+  closeModal('modal-class-detail');
+  openNewClassModal(c,currentClassId);
 });
 $('cd-save-tpl-btn').addEventListener('click',()=>{
   const c=allClasses.find(x=>x.id===currentClassId);if(!c)return;
@@ -3357,6 +3381,7 @@ function openClassTplEditModal(prefill, isNew, existingId){
   $('ct-notes').value = prefill.notes || '';
   $('ct-instructor-course').checked = !!prefill.isInstructorCourse;
   $('ct-err').textContent = '';
+  $('ct-delete-btn').style.display = currentClassTplId ? '' : 'none';
   syncOptGroup('ct-type', prefill.type || '');
   populateCtEmailTplSelect(prefill.emailTemplateId || '');
   openModal('modal-classtpl-edit');
@@ -3410,6 +3435,12 @@ $('ct-save-btn').addEventListener('click',async()=>{
     }
     closeModal('modal-classtpl-edit');
   }catch(e){$('ct-err').textContent='Error: '+e.message;}
+});
+$('ct-delete-btn').addEventListener('click',async()=>{
+  if(!currentClassTplId)return;
+  if(!confirm('Delete this template? This cannot be undone.'))return;
+  await col('class_templates').doc(currentClassTplId).delete();
+  closeModal('modal-classtpl-edit');
 });
 
 // ============================================================
