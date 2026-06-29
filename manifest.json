@@ -1,0 +1,24 @@
+{
+  "name": "Class Manager",
+  "short_name": "Class Manager",
+  "description": "Instructor Portal — manage classes, students, certifications, and more",
+  "start_url": "/classmanager.html",
+  "display": "standalone",
+  "background_color": "#0b0d10",
+  "theme_color": "#0b0d10",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
