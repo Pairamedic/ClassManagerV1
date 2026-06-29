@@ -1,4 +1,4 @@
-const CACHE = 'cmv1';
+const CACHE = 'cmv1-4';
 
 self.addEventListener('install', e => {
   e.waitUntil(

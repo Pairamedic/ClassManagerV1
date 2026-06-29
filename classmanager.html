@@ -5,7 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
   <title>Class Manager</title>
   <link rel="icon" type="image/svg+xml" href="icon.svg" />
-  <link rel="apple-touch-icon" sizes="180x180" href="icon.svg" />
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png" />
+  <link rel="manifest" href="manifest.json" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Class Manager" />
@@ -256,6 +258,19 @@
     .chklist-text.done{text-decoration:line-through;opacity:.45}
     .chklist-del{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;line-height:1;padding:0 4px;flex:none;transition:color .15s}
     .chklist-del:hover{color:var(--danger)}
+    /* Document File Browser */
+    .doc-folder-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 10px;cursor:pointer;transition:border-color .15s,background .15s;text-align:center;display:flex;flex-direction:column;align-items:center}
+    .doc-folder-card:hover{border-color:rgba(94,234,212,.35);background:rgba(94,234,212,.03)}
+    .adj-chip{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:999px;font-size:12px;font-weight:500;border:1px solid rgba(147,197,253,.3);background:rgba(147,197,253,.08);color:#93c5fd;white-space:nowrap}
+    .adj-chip button{background:none;border:none;color:inherit;cursor:pointer;font-size:13px;line-height:1;padding:0;opacity:.7}
+    .adj-chip button:hover{opacity:1}
+    .adj-sug-item{padding:10px 14px;font-size:13px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.06)}
+    .adj-sug-item:last-child{border-bottom:none}
+    .adj-sug-item:hover{background:rgba(147,197,253,.1)}
+    .btn-link{background:none;border:none;color:var(--accent2);font-size:13px;cursor:pointer;font-family:inherit;padding:0;transition:color .15s}
+    .btn-link:hover{color:var(--accent)}
+    .rec-file-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)}
+    .rec-file-row:last-child{border-bottom:none}
     /* Megacode Checkoff Forms */
     .chk-section-hd{background:#7a1f1f;color:#fff;font-weight:700;font-size:13px;padding:8px 12px;border-radius:6px;margin:10px 0 0}
     .chk-row{display:flex;align-items:flex-start;gap:12px;padding:9px 0;border-bottom:1px solid var(--border)}
@@ -374,9 +389,6 @@
       <button class="tab" data-view="classes">📅 Classes</button>
       <button class="tab" data-view="certs">🏅 Certs</button>
       <button class="tab" data-view="materials">📚 Materials</button>
-      <button class="tab" data-view="simulator">🫀 Simulator</button>
-      <button class="tab" data-view="records">📁 Records</button>
-      <button class="tab" data-view="ocr">📷 OCR Scan</button>
       <button class="tab" data-view="email">📧 Email</button>
       <button class="tab" data-view="checkoffs">📋 Checkoffs</button>
     </nav>
@@ -390,6 +402,7 @@
     <div class="stabs">
       <button class="stab active" id="stab-dash-overview">📊 Overview</button>
       <button class="stab" id="stab-dash-finances">💰 Finances</button>
+      <button class="stab" id="stab-dash-records">📁 Records</button>
       <button class="stab" id="stab-dash-info">📋 Info &amp; FAQ</button>
     </div>
 
@@ -443,6 +456,83 @@
         <div>
           <div class="sec-hd"><div class="sec-title">Income by Class</div></div>
           <div id="income-by-class"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Records + OCR sub-panel -->
+    <div id="subpanel-dash-records" style="display:none">
+      <!-- File Browser -->
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:10px;flex-wrap:wrap">
+        <div id="rec-breadcrumb" style="display:flex;align-items:center;gap:4px;font-size:14px;font-weight:600;flex-wrap:wrap"></div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn sm" id="rec-new-folder-btn" style="display:none">📁 New Folder</button>
+          <button class="btn sm primary" id="rec-upload-btn" style="display:none">⬆ Upload</button>
+        </div>
+      </div>
+      <div id="rec-new-folder-form" style="display:none;margin-bottom:12px">
+        <div style="display:flex;gap:8px">
+          <input type="text" id="rec-folder-name" placeholder="Folder name…" style="flex:1" />
+          <button class="btn primary sm" id="rec-folder-create-btn">Create</button>
+          <button class="btn sm" id="rec-folder-cancel-btn">Cancel</button>
+        </div>
+      </div>
+      <div id="rec-upload-prog" class="upload-prog" style="margin-bottom:8px">
+        <div class="upload-prog-label"><span id="rec-prog-name"></span><span id="rec-prog-pct"></span></div>
+        <div class="prog-bar"><div class="prog-fill" id="rec-prog-bar" style="width:0%"></div></div>
+      </div>
+      <div id="rec-upload-err" style="font-size:12px;color:var(--danger);min-height:14px;margin-bottom:6px"></div>
+      <div class="search-wrap" id="rec-search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="rec-search" placeholder="Search students…" />
+      </div>
+      <div class="notice" id="rec-storage-notice" style="display:none">Firebase Storage is not enabled. Enable it in the Firebase console to upload files.</div>
+      <div id="rec-browser"></div>
+      <input type="file" id="rec-file-input" multiple accept="*/*" style="display:none" />
+
+      <!-- OCR Scanner -->
+      <div style="margin-top:28px;padding-top:20px;border-top:1px solid var(--border)">
+        <div class="sec-hd" style="margin-bottom:16px">
+          <div class="sec-title">📷 OCR Document Scanner</div>
+          <button class="btn sm danger" id="ocr-clear-btn" style="display:none">✕ Clear</button>
+        </div>
+        <div class="ocr-drop-zone" id="ocr-drop-zone" onclick="$('ocr-file-input').click()">
+          <div style="font-size:38px;margin-bottom:10px">📷</div>
+          <div style="font-weight:700;font-size:15px;margin-bottom:6px">Scan a Document</div>
+          <div style="font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.5">Take a photo or upload an image of an AHA card, certification, license, or any document to extract the text automatically.</div>
+          <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+            <button class="btn primary" onclick="event.stopPropagation();$('ocr-camera-input').click()">📷 Take Photo</button>
+            <button class="btn" onclick="event.stopPropagation();$('ocr-file-input').click()">⬆ Upload Image</button>
+          </div>
+        </div>
+        <input type="file" id="ocr-camera-input" accept="image/*" capture="environment" style="display:none" />
+        <input type="file" id="ocr-file-input" accept="image/*,.pdf" style="display:none" />
+        <div class="ocr-preview-wrap" id="ocr-preview-wrap" style="margin-top:14px"><canvas id="ocr-canvas"></canvas></div>
+        <div class="ocr-prog-wrap" id="ocr-prog-wrap">
+          <div class="upload-prog-label"><span id="ocr-prog-label">Initializing OCR…</span><span id="ocr-prog-pct">0%</span></div>
+          <div class="prog-bar"><div class="prog-fill" id="ocr-prog-bar" style="width:0%"></div></div>
+        </div>
+        <div id="ocr-results" style="display:none">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin:16px 0 6px">
+            <div class="ocr-section-hd" style="margin:0">Detected Fields</div>
+            <div style="display:flex;gap:8px"><button class="btn sm" id="ocr-copy-all-btn">📋 Copy All Text</button></div>
+          </div>
+          <div id="ocr-parsed-fields" class="card" style="margin-bottom:12px;display:none">
+            <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--accent);margin-bottom:10px">Auto-detected</div>
+            <div id="ocr-parsed-rows"></div>
+          </div>
+          <div style="margin-bottom:12px" id="ocr-chip-row"></div>
+          <div class="ocr-section-hd">Raw Extracted Text</div>
+          <div class="ocr-result-box show" id="ocr-raw-text"></div>
+          <div id="ocr-copy-notice" style="font-size:12px;color:var(--ok);min-height:16px;margin-top:4px"></div>
+          <div class="ocr-section-hd" style="margin-top:20px">Use Extracted Data</div>
+          <div class="card" style="margin-bottom:0">
+            <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Paste a detected value into a student record or AHA card field:</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <button class="btn sm primary" onclick="switchView('classes')">→ Open Classes &amp; Students</button>
+              <button class="btn sm primary" onclick="switchView('certs')">→ Open Certifications</button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -525,6 +615,7 @@
     <div class="stabs">
       <button class="stab active" id="stab-classes">📅 Classes</button>
       <button class="stab" id="stab-students">👥 Students</button>
+      <button class="stab" id="stab-instructors">👨‍🏫 Instructors</button>
       <button class="stab" id="stab-classtpl">📋 Templates</button>
     </div>
 
@@ -567,6 +658,19 @@
         <button class="btn primary sm" id="new-classtpl-btn">+ New Template</button>
       </div>
       <div id="classtpl-list"></div>
+    </div>
+
+    <!-- Instructors sub-panel -->
+    <div id="subpanel-instructors" style="display:none">
+      <div class="sec-hd">
+        <div class="sec-title">Adjunct Instructors</div>
+        <button class="btn primary sm" id="new-instructor-btn">+ New Instructor</button>
+      </div>
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="instructor-search" placeholder="Search by name or specialty…" />
+      </div>
+      <div id="instructors-list"></div>
     </div>
 
     <!-- Students sub-panel -->
@@ -645,98 +749,6 @@
   </section>
 
   <!-- RECORDS -->
-  <section class="view" id="view-records">
-    <div class="sec-hd">
-      <div class="sec-title">Student Records</div>
-      <div style="display:flex;gap:8px;align-items:center">
-        <select id="rec-year-filter" class="btn sm" style="padding:7px 10px">
-          <option value="">All Years</option>
-        </select>
-        <button class="btn sm primary" id="rec-export-year-btn">⬇ Export Year</button>
-      </div>
-    </div>
-    <div class="notice" id="rec-storage-notice" style="display:none">
-      Firebase Storage is not enabled. Enable it in the Firebase console (Storage section) to upload records.
-    </div>
-    <div class="search-wrap">
-      <span class="search-icon">🔍</span>
-      <input type="text" id="rec-search" placeholder="Search students…" />
-    </div>
-    <div id="records-list"></div>
-  </section>
-
-  <!-- OCR SCANNER -->
-  <section class="view" id="view-ocr">
-    <div class="sec-hd" style="margin-bottom:16px">
-      <div class="sec-title">OCR Document Scanner</div>
-      <button class="btn sm danger" id="ocr-clear-btn" style="display:none">✕ Clear</button>
-    </div>
-
-    <!-- Drop / capture zone -->
-    <div class="ocr-drop-zone" id="ocr-drop-zone" onclick="$('ocr-file-input').click()">
-      <div style="font-size:38px;margin-bottom:10px">📷</div>
-      <div style="font-weight:700;font-size:15px;margin-bottom:6px">Scan a Document</div>
-      <div style="font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.5">
-        Take a photo or upload an image of an AHA card, certification, license, or any document to extract the text automatically.
-      </div>
-      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
-        <button class="btn primary" onclick="event.stopPropagation();$('ocr-camera-input').click()">📷 Take Photo</button>
-        <button class="btn" onclick="event.stopPropagation();$('ocr-file-input').click()">⬆ Upload Image</button>
-      </div>
-    </div>
-    <input type="file" id="ocr-camera-input" accept="image/*" capture="environment" style="display:none" />
-    <input type="file" id="ocr-file-input" accept="image/*,.pdf" style="display:none" />
-
-    <!-- Image preview -->
-    <div class="ocr-preview-wrap" id="ocr-preview-wrap" style="margin-top:14px">
-      <canvas id="ocr-canvas"></canvas>
-    </div>
-
-    <!-- Progress bar -->
-    <div class="ocr-prog-wrap" id="ocr-prog-wrap">
-      <div class="upload-prog-label">
-        <span id="ocr-prog-label">Initializing OCR…</span>
-        <span id="ocr-prog-pct">0%</span>
-      </div>
-      <div class="prog-bar"><div class="prog-fill" id="ocr-prog-bar" style="width:0%"></div></div>
-    </div>
-
-    <!-- Results -->
-    <div id="ocr-results" style="display:none">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin:16px 0 6px">
-        <div class="ocr-section-hd" style="margin:0">Detected Fields</div>
-        <div style="display:flex;gap:8px">
-          <button class="btn sm" id="ocr-copy-all-btn">📋 Copy All Text</button>
-        </div>
-      </div>
-
-      <!-- Auto-parsed field chips -->
-      <div id="ocr-parsed-fields" class="card" style="margin-bottom:12px;display:none">
-        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--accent);margin-bottom:10px">Auto-detected</div>
-        <div id="ocr-parsed-rows"></div>
-      </div>
-
-      <!-- Quick-copy chips for common fields -->
-      <div style="margin-bottom:12px" id="ocr-chip-row"></div>
-
-      <!-- Raw OCR text -->
-      <div class="ocr-section-hd">Raw Extracted Text</div>
-      <div class="ocr-result-box show" id="ocr-raw-text"></div>
-
-      <!-- Copy to clipboard notice -->
-      <div id="ocr-copy-notice" style="font-size:12px;color:var(--ok);min-height:16px;margin-top:4px"></div>
-
-      <!-- Use in App -->
-      <div class="ocr-section-hd" style="margin-top:20px">Use Extracted Data</div>
-      <div class="card" style="margin-bottom:0">
-        <div style="font-size:13px;color:var(--muted);margin-bottom:12px">Paste a detected value into a student record or AHA card field:</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap">
-          <button class="btn sm primary" onclick="switchView('classes')">→ Open Classes &amp; Students</button>
-          <button class="btn sm primary" onclick="switchView('certs')">→ Open Certifications</button>
-        </div>
-      </div>
-    </div>
-  </section>
 
   <!-- MEGACODE CHECKOFFS -->
   <section class="view" id="view-checkoffs">
@@ -824,8 +836,8 @@
 <!-- NEW CLASS -->
 <div class="overlay hidden" id="modal-new-class">
   <div class="modal">
-    <div class="modal-hd"><div class="modal-title">Schedule New Class</div><button class="close-btn" data-close="modal-new-class">×</button></div>
-    <!-- Template picker -->
+    <div class="modal-hd"><div class="modal-title" id="nc-modal-title">Schedule New Class</div><button class="close-btn" data-close="modal-new-class">×</button></div>
+    <!-- Template picker (hidden in edit mode) -->
     <div id="nc-tpl-row" style="display:flex;gap:8px;align-items:center;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)">
       <select id="nc-tpl-select" style="flex:1;font-size:13px">
         <option value="">— Start from a template (optional) —</option>
@@ -856,6 +868,17 @@
       <div class="fg" style="margin:0"><label>Default Charge ($)</label><input type="number" id="nc-charge" placeholder="0.00" min="0" step="0.01" /></div>
     </div>
     <div class="fg" style="margin-top:12px"><label>Notes</label><textarea id="nc-notes" placeholder="Any additional notes…"></textarea></div>
+    <div class="fg" style="margin-top:12px">
+      <label>Adjunct Instructors</label>
+      <div style="position:relative">
+        <div style="display:flex;gap:6px;margin-bottom:6px">
+          <input type="text" id="nc-adj-input" placeholder="Instructor name…" style="flex:1" autocomplete="off" />
+          <button type="button" class="btn sm" id="nc-adj-add-btn">+ Add</button>
+        </div>
+        <div id="nc-adj-suggestions" style="display:none;position:absolute;top:100%;left:0;right:0;z-index:200;background:var(--card);border:1px solid rgba(255,255,255,.1);border-radius:8px;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,.4)"></div>
+      </div>
+      <div id="nc-adj-list" style="display:flex;flex-wrap:wrap;gap:6px;min-height:4px"></div>
+    </div>
     <div class="toggle-row" style="margin-bottom:14px">
       <div><div class="toggle-lbl">Instructor Course</div><div class="toggle-sub">Adds AHA/Atlas setup info to emails</div></div>
       <label class="toggle"><input type="checkbox" id="nc-instructor-course"><span class="slider"></span></label>
@@ -871,6 +894,7 @@
     <div class="modal-hd">
       <div><div class="modal-title" id="cd-title"></div><div style="margin-top:4px" id="cd-badges"></div></div>
       <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn sm" id="cd-edit-btn">✏️ Edit</button>
         <button class="btn sm" id="cd-save-tpl-btn" title="Save as template">📋</button>
         <button class="btn sm danger" id="cd-delete-btn">Delete</button>
         <button class="close-btn" data-close="modal-class-detail">×</button>
@@ -1069,8 +1093,8 @@
           <button type="button" class="opt-btn" data-val="Other">Other</button>
         </div>
       </div>
-      <div class="fg"><label>Phone</label><input type="tel" id="sp-phone" /></div>
-      <div class="fg"><label>Email</label><input type="email" id="sp-email" /></div>
+      <div class="fg"><label style="display:flex;justify-content:space-between;align-items:center">Phone <a id="sp-phone-link" href="#" style="font-size:12px;color:var(--accent2);text-decoration:none;display:none">📞 Call</a></label><input type="tel" id="sp-phone" /></div>
+      <div class="fg"><label style="display:flex;justify-content:space-between;align-items:center">Email <a id="sp-email-link" href="#" style="font-size:12px;color:var(--accent2);text-decoration:none;display:none">✉️ Send</a></label><input type="email" id="sp-email" /></div>
       <button class="btn primary full" id="sp-save-btn">Save Changes</button>
     </div>
     <div id="sp-history" style="display:none">
@@ -1087,6 +1111,39 @@
     <div id="sp-notes" style="display:none">
       <div class="fg"><label>Notes on this Student</label><textarea id="sp-notes-text" style="min-height:160px" placeholder="Observations, performance notes, contact history…"></textarea></div>
       <button class="btn primary" id="sp-notes-save">Save Notes</button>
+    </div>
+  </div>
+</div>
+
+<!-- INSTRUCTOR PROFILE -->
+<div class="overlay hidden" id="modal-instructor">
+  <div class="modal">
+    <div class="modal-hd">
+      <div class="modal-title" id="ip-title">Instructor Profile</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button class="btn sm danger" id="ip-delete-btn" style="display:none">Delete</button>
+        <button class="close-btn" data-close="modal-instructor">×</button>
+      </div>
+    </div>
+    <div class="mtabs">
+      <button class="mtab active" data-mtab="ip" data-panel="ip-info">Info</button>
+      <button class="mtab" data-mtab="ip" data-panel="ip-notes">Notes</button>
+    </div>
+    <div id="ip-info">
+      <div class="row2">
+        <div class="fg" style="margin:0"><label>First Name *</label><input type="text" id="ip-first" /></div>
+        <div class="fg" style="margin:0"><label>Last Name *</label><input type="text" id="ip-last" /></div>
+      </div>
+      <div class="fg" style="margin-top:10px"><label>Specialty / What They Teach</label><input type="text" id="ip-specialty" placeholder="e.g. ACLS, PALS, BLS" /></div>
+      <div class="fg"><label>AHA Instructor ID</label><input type="text" id="ip-ahaid" placeholder="Optional" /></div>
+      <div class="fg"><label style="display:flex;justify-content:space-between;align-items:center">Phone <a id="ip-phone-link" href="#" style="font-size:12px;color:var(--accent2);text-decoration:none;display:none">📞 Call</a></label><input type="tel" id="ip-phone" /></div>
+      <div class="fg"><label style="display:flex;justify-content:space-between;align-items:center">Email <a id="ip-email-link" href="#" style="font-size:12px;color:var(--accent2);text-decoration:none;display:none">✉️ Send</a></label><input type="email" id="ip-email" /></div>
+      <div id="ip-err" style="color:#f87171;font-size:13px;min-height:18px;margin-bottom:8px"></div>
+      <button class="btn primary full" id="ip-save-btn">Save Changes</button>
+    </div>
+    <div id="ip-notes" style="display:none">
+      <div class="fg"><label>Notes</label><textarea id="ip-notes-text" style="min-height:160px" placeholder="Teaching style, availability, specialties…"></textarea></div>
+      <button class="btn primary" id="ip-notes-save">Save Notes</button>
     </div>
   </div>
 </div>
@@ -1457,6 +1514,7 @@
     </div>
     <div id="ct-err" style="color:#f87171;font-size:13px;min-height:18px;margin-bottom:8px"></div>
     <div style="display:flex;gap:10px">
+      <button class="btn danger" id="ct-delete-btn" style="display:none">Delete</button>
       <button class="btn full" data-close="modal-classtpl-edit">Cancel</button>
       <button class="btn primary full" id="ct-save-btn">Save Template</button>
     </div>
@@ -1564,7 +1622,8 @@ const stgRef  = path => fbStorage ? fbStorage.ref(path) : null;
 // ============================================================
 // STATE
 // ============================================================
-let allClasses=[], allStudents=[], allRoster=[], allCerts=[], allExpenses=[], allMaterials=[];
+let allClasses=[], allStudents=[], allRoster=[], allCerts=[], allExpenses=[], allMaterials=[], allInstructors=[];
+let currentInstructorId=null;
 let allFaq=[], infoDoc={};
 let allEmailTemplates=[], allClassTemplates=[], allCheckoffs=[];
 let currentView='dashboard';
@@ -1572,7 +1631,9 @@ let currentClassId=null, currentStudentId=null, currentCertId=null, currentMatId
 let currentTplId=null, etplFilterCat='', currentClassTplId=null, currentCheckoffId=null;
 let chkFilterSc='', chkSearchQ='';
 let arSelectedStudentId=null, matFilterCat='';
-let currentRecordStudentId=null, recSearchQ='';
+let allDocFolders=[];
+let currentDocStudentId=null, currentDocSubfolder=null;
+let ncAdjInstructors=[], editingClassId=null;
 const unsubs=[];
 
 // ============================================================
@@ -1745,14 +1806,15 @@ $('faq-delete-btn').addEventListener('click',async()=>{
   await col('faq').doc(currentFaqId).delete();closeModal('modal-faq');
 });
 function activateDashTab(which){
-  ['overview','finances','info'].forEach(n=>{
+  ['overview','finances','records','info'].forEach(n=>{
     $(`stab-dash-${n}`).classList.toggle('active',n===which);
     $(`subpanel-dash-${n}`).style.display=n===which?'':'none';
   });
   if(which==='finances')renderFinances();
+  if(which==='records')renderDocBrowser();
   if(which==='info')renderInfo();
 }
-['overview','finances','info'].forEach(n=>{
+['overview','finances','records','info'].forEach(n=>{
   $(`stab-dash-${n}`).addEventListener('click',()=>activateDashTab(n));
 });
 
@@ -1844,6 +1906,7 @@ function setupListeners(){
   unsubs.push(col('roster').onSnapshot(snap=>{
     allRoster=snap.docs.map(d=>({id:d.id,...d.data()}));
     refreshView();
+    if(currentClassId&&!$('modal-class-detail').classList.contains('hidden'))renderRoster(currentClassId);
   },errAndShow));
   unsubs.push(col('certs').onSnapshot(snap=>{
     allCerts=snap.docs.map(d=>({id:d.id,...d.data()}));
@@ -1881,12 +1944,23 @@ function setupListeners(){
     allCheckoffs=snap.docs.map(d=>({id:d.id,...d.data()}));
     if(currentView==='checkoffs')renderCheckoffs();
   },console.error));
+  unsubs.push(col('doc_folders').orderBy('createdAt','asc').onSnapshot(snap=>{
+    allDocFolders=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if($('subpanel-dash-records')&&$('subpanel-dash-records').style.display!=='none'){
+      if(currentDocStudentId)openDocFolder(currentDocStudentId,currentDocSubfolder);
+      else renderDocRoot();
+    }
+  },console.error));
+  unsubs.push(col('instructors').orderBy('lastName','asc').onSnapshot(snap=>{
+    allInstructors=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if($('subpanel-instructors')&&$('subpanel-instructors').style.display!=='none')renderInstructors();
+  },console.error));
 }
 
 function refreshView(){
   $('loading-screen').classList.add('hidden');
   renderDashboardStats();
-  const map={dashboard:renderDashboard,classes:renderClasses,students:renderStudents,certs:renderCerts,materials:renderMaterials,records:renderRecords,email:renderEmailTemplates,checkoffs:renderCheckoffs};
+  const map={dashboard:renderDashboard,classes:renderClasses,students:renderStudents,certs:renderCerts,materials:renderMaterials,email:renderEmailTemplates,checkoffs:renderCheckoffs};
   if(map[currentView])map[currentView]();
 }
 
@@ -1894,7 +1968,7 @@ function refreshView(){
 // TAB NAV
 // ============================================================
 function switchView(name){
-  if(name==='finances'||name==='info'){switchView('dashboard');activateDashTab(name);return;}
+  if(name==='finances'||name==='info'||name==='records'||name==='ocr'){switchView('dashboard');activateDashTab(name==='ocr'?'records':name);return;}
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
   const tab=document.querySelector(`.tab[data-view="${name}"]`);
@@ -1906,29 +1980,24 @@ function switchView(name){
 document.getElementById('tabs').querySelectorAll('.tab').forEach(tab=>{
   tab.addEventListener('click',()=>{
     switchView(tab.dataset.view);
-    if(tab.dataset.view==='classes'){
-      $('stab-classes').classList.add('active');$('stab-students').classList.remove('active');$('stab-classtpl').classList.remove('active');
-      $('subpanel-classes').style.display='';$('subpanel-students').style.display='none';$('subpanel-classtpl').style.display='none';
-    }
+    if(tab.dataset.view==='classes')activateClassesTab('classes');
     if(tab.dataset.view==='dashboard'){
       activateDashTab('overview');
     }
   });
 });
-$('stab-classes').addEventListener('click',()=>{
-  $('stab-classes').classList.add('active');$('stab-students').classList.remove('active');$('stab-classtpl').classList.remove('active');
-  $('subpanel-classes').style.display='';$('subpanel-students').style.display='none';$('subpanel-classtpl').style.display='none';
-  currentView='classes';renderClasses();
-});
-$('stab-classtpl').addEventListener('click',()=>{
-  $('stab-classtpl').classList.add('active');$('stab-classes').classList.remove('active');$('stab-students').classList.remove('active');
-  $('subpanel-classtpl').style.display='';$('subpanel-classes').style.display='none';$('subpanel-students').style.display='none';
-  currentView='classes';renderClassTemplates();
-});
-$('stab-students').addEventListener('click',()=>{
-  $('stab-students').classList.add('active');$('stab-classes').classList.remove('active');$('stab-classtpl').classList.remove('active');
-  $('subpanel-students').style.display='';$('subpanel-classes').style.display='none';$('subpanel-classtpl').style.display='none';
-  currentView='students';renderStudents();
+function activateClassesTab(which){
+  ['classes','students','instructors','classtpl'].forEach(n=>{
+    $(`stab-${n}`).classList.toggle('active',n===which);
+    $(`subpanel-${n}`).style.display=n===which?'':'none';
+  });
+  if(which==='classes'){currentView='classes';renderClasses();}
+  else if(which==='students'){currentView='students';renderStudents();}
+  else if(which==='instructors'){currentView='classes';renderInstructors();}
+  else if(which==='classtpl'){currentView='classes';renderClassTemplates();}
+}
+['classes','students','instructors','classtpl'].forEach(n=>{
+  $(`stab-${n}`).addEventListener('click',()=>activateClassesTab(n));
 });
 
 // ============================================================
@@ -1996,21 +2065,60 @@ function renderClasses(){
   $('classes-list').innerHTML=list.length
     ?list.map(c=>{const cnt=allRoster.filter(r=>r.classId===c.id).length,rev=allRoster.filter(r=>r.classId===c.id).reduce((s,r)=>s+(+r.charge||0),0);
       return `<div class="class-card" onclick="openClassDetail('${c.id}')">
-        <div class="class-card-hd"><div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">${ctBadge(c.type)}${c.isInstructorCourse?'<span class="ct-badge ct-inst">Instructor</span>':''}${classStatusBadge(c.status)}</div><div style="font-size:13px;color:var(--ok);font-weight:600">${fmt$(rev)}</div></div>
-        <div class="class-meta"><span>📅 ${formatDate(c.date)}${c.time?' '+formatTime(c.time):''}</span><span>📍 ${c.location||'Location TBD'}</span><span>👥 ${cnt} student${cnt!==1?'s':''}</span></div>
+        <div class="class-card-hd">
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">${ctBadge(c.type)}${c.isInstructorCourse?'<span class="ct-badge ct-inst">Instructor</span>':''}${classStatusBadge(c.status)}</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:13px;color:var(--ok);font-weight:600">${fmt$(rev)}</span>
+            <button class="btn sm primary" onclick="event.stopPropagation();openClassEdit('${c.id}')" style="font-size:12px;padding:4px 8px">✏️ Edit</button>
+            <button class="btn sm primary" onclick="event.stopPropagation();openClassDetail('${c.id}');setTimeout(()=>document.getElementById('cd-add-student-btn').click(),300)" style="font-size:12px;padding:4px 8px">👥 Student</button>
+          </div>
+        </div>
+        <div class="class-meta"><span>📅 ${formatDate(c.date)}${c.time?' '+formatTime(c.time):''}</span><span>📍 ${c.location||'Location TBD'}</span><span>👥 ${cnt} student${cnt!==1?'s':''}</span>${c.adjunctInstructors?.length?`<span>👨‍🏫 ${c.adjunctInstructors.join(', ')}</span>`:''}</div>
       </div>`;}).join('')
     :`<div class="empty"><div class="empty-icon">📅</div><div class="empty-text">No classes found</div></div>`;
 }
 ['class-search','class-filter-type','class-filter-time'].forEach(id=>{$(id).addEventListener('input',renderClasses);$(id).addEventListener('change',renderClasses);});
 
-$('new-class-btn').addEventListener('click',()=>{
-  ['nc-type','nc-location','nc-notes'].forEach(id=>$(id).value='');
-  $('nc-date').value=today();$('nc-time').value='';$('nc-max').value='';$('nc-charge').value='';
-  $('nc-instructor-course').checked=false;$('nc-err').textContent='';
-  syncOptGroup('nc-type','');
-  $('nc-tpl-select').value='';
-  populateNcTplSelect();
+function renderNcAdjList(){
+  $('nc-adj-list').innerHTML=ncAdjInstructors.map((n,i)=>`<span class="adj-chip">${n}<button onclick="ncAdjInstructors.splice(${i},1);renderNcAdjList()" title="Remove">×</button></span>`).join('');
+}
+function openNewClassModal(prefill, classIdToEdit){
+  editingClassId=classIdToEdit||null;
+  $('nc-modal-title').textContent=editingClassId?'Edit Class':'Schedule New Class';
+  $('nc-save-btn').textContent=editingClassId?'Save Changes':'Schedule Class';
+  $('nc-tpl-row').style.display=editingClassId?'none':'';
+  syncOptGroup('nc-type',prefill.type||'');
+  $('nc-date').value=prefill.date||today();
+  $('nc-time').value=prefill.time||'';
+  $('nc-location').value=prefill.location||'';
+  $('nc-max').value=prefill.maxStudents||'';
+  $('nc-charge').value=prefill.defaultCharge||'';
+  $('nc-notes').value=prefill.notes||'';
+  $('nc-instructor-course').checked=!!prefill.isInstructorCourse;
+  ncAdjInstructors=[...(prefill.adjunctInstructors||[])];
+  $('nc-adj-input').value='';renderNcAdjList();
+  $('nc-err').textContent='';
+  if(!editingClassId){$('nc-tpl-select').value='';populateNcTplSelect();}
   openModal('modal-new-class');
+}
+$('new-class-btn').addEventListener('click',()=>openNewClassModal({}));
+$('nc-adj-add-btn').addEventListener('click',()=>{
+  const v=$('nc-adj-input').value.trim();if(!v)return;
+  ncAdjInstructors.push(v);$('nc-adj-input').value='';renderNcAdjList();
+});
+$('nc-adj-input').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();$('nc-adj-add-btn').click();}});
+$('nc-adj-input').addEventListener('blur',()=>setTimeout(()=>{$('nc-adj-suggestions').style.display='none';},150));
+$('nc-adj-input').addEventListener('input',()=>{
+  const q=$('nc-adj-input').value.toLowerCase().trim();
+  const el=$('nc-adj-suggestions');
+  if(!q||!allInstructors.length){el.innerHTML='';el.style.display='none';return;}
+  const matches=allInstructors.filter(i=>{
+    const name=(i.firstName+' '+i.lastName).toLowerCase();
+    return name.includes(q)&&!ncAdjInstructors.includes(i.firstName+' '+i.lastName);
+  }).slice(0,5);
+  if(!matches.length){el.innerHTML='';el.style.display='none';return;}
+  el.innerHTML=matches.map(i=>`<div class="adj-sug-item" onclick="ncAdjInstructors.push('${i.firstName} ${i.lastName}');renderNcAdjList();$('nc-adj-input').value='';$('nc-adj-suggestions').style.display='none'">${i.firstName} ${i.lastName}${i.specialty?' · <span style=\'color:var(--muted);font-size:12px\'>'+i.specialty+'</span>':''}</div>`).join('');
+  el.style.display='';
 });
 $('nc-tpl-load-btn').addEventListener('click',()=>{
   const id=$('nc-tpl-select').value;if(!id)return;
@@ -2022,27 +2130,39 @@ $('nc-tpl-load-btn').addEventListener('click',()=>{
   $('nc-charge').value=t.defaultCharge||'';
   $('nc-notes').value=t.notes||'';
   $('nc-instructor-course').checked=!!t.isInstructorCourse;
+  ncAdjInstructors=[...(t.adjunctInstructors||[])];$('nc-adj-input').value='';renderNcAdjList();
 });
 $('nc-save-btn').addEventListener('click',async()=>{
   const type=$('nc-type').value,date=$('nc-date').value;
   if(!type||!date){$('nc-err').textContent='Class type and date are required.';return;}
   $('nc-save-btn').disabled=true;$('nc-err').textContent='';
+  const fields={type,date,time:$('nc-time').value,location:$('nc-location').value.trim(),
+    maxStudents:parseInt($('nc-max').value)||null,defaultCharge:parseFloat($('nc-charge').value)||0,
+    notes:$('nc-notes').value.trim(),isInstructorCourse:$('nc-instructor-course').checked,
+    adjunctInstructors:[...ncAdjInstructors]};
   try{
-    await col('classes').add({type,date,time:$('nc-time').value,location:$('nc-location').value.trim(),
-      maxStudents:parseInt($('nc-max').value)||null,defaultCharge:parseFloat($('nc-charge').value)||0,
-      notes:$('nc-notes').value.trim(),isInstructorCourse:$('nc-instructor-course').checked,
-      status:'Scheduled',createdAt:Date.now()});
-    closeModal('modal-new-class');
+    if(editingClassId){
+      await col('classes').doc(editingClassId).update(fields);
+      closeModal('modal-new-class');
+      openClassDetail(editingClassId);
+    } else {
+      await col('classes').add({...fields,status:'Scheduled',createdAt:Date.now()});
+      closeModal('modal-new-class');
+    }
   }catch(e){$('nc-err').textContent='Error: '+e.message;}
   $('nc-save-btn').disabled=false;
 });
 
+window.openClassEdit=function(classId){
+  const c=allClasses.find(x=>x.id===classId);if(!c)return;
+  openNewClassModal(c,classId);
+};
 window.openClassDetail=function(classId){
   currentClassId=classId;
   const c=allClasses.find(x=>x.id===classId);if(!c)return;
   $('cd-title').textContent=c.type;
   $('cd-badges').innerHTML=ctBadge(c.type)+(c.isInstructorCourse?'<span class="ct-badge ct-inst" style="margin-left:6px">Instructor Course</span>':'');
-  $('cd-meta').innerHTML=`<span>📅 ${formatDate(c.date)}${c.time?' '+formatTime(c.time):''}</span><span>📍 ${c.location||'Location TBD'}</span>`;
+  $('cd-meta').innerHTML=`<span>📅 ${formatDate(c.date)}${c.time?' '+formatTime(c.time):''}</span><span>📍 ${c.location||'Location TBD'}</span>${c.adjunctInstructors?.length?`<span>👨‍🏫 ${c.adjunctInstructors.join(', ')}</span>`:''}`;
   document.querySelectorAll('.mtab[data-mtab="cd"]').forEach((t,i)=>t.classList.toggle('active',i===0));
   ['cd-roster','cd-attend','cd-checklist','cd-email','cd-notes'].forEach((id,i)=>$(id).style.display=i===0?'':'none');
   $('cd-notes-text').value=c.notes||'';
@@ -2139,6 +2259,11 @@ $('cd-notes-save').addEventListener('click',async()=>{
   const notes=$('cd-notes-text').value.trim();
   await col('classes').doc(currentClassId).update({notes});
   $('cd-notes-save').textContent='Saved ✓';setTimeout(()=>$('cd-notes-save').textContent='Save Notes',2000);
+});
+$('cd-edit-btn').addEventListener('click',()=>{
+  const c=allClasses.find(x=>x.id===currentClassId);if(!c)return;
+  closeModal('modal-class-detail');
+  openNewClassModal(c,currentClassId);
 });
 $('cd-save-tpl-btn').addEventListener('click',()=>{
   const c=allClasses.find(x=>x.id===currentClassId);if(!c)return;
@@ -2257,7 +2382,7 @@ $('ar-add-ex-btn').addEventListener('click',async()=>{
     await col('roster').add({classId:currentClassId,studentId:arSelectedStudentId,name:`${s.firstName} ${s.lastName}`,
       licenseLevel:s.licenseLevel||'',email:s.email||'',phone:s.phone||'',
       charge:parseFloat($('ar-charge-ex').value)||0,paid:$('ar-paid-ex').checked,addedAt:Date.now()});
-    closeModal('modal-add-roster');
+    closeModal('modal-add-roster');renderRoster(currentClassId);
   }catch(e){$('ar-ex-err').textContent='Error: '+e.message;}
   $('ar-add-ex-btn').disabled=false;
 });
@@ -2275,7 +2400,7 @@ $('ar-add-new-btn').addEventListener('click',async()=>{
     await col('roster').add({classId:currentClassId,studentId,name:`${first} ${last}`,licenseLevel:$('ar-level').value,
       email:$('ar-email').value.trim(),phone:$('ar-phone').value.trim(),
       charge:parseFloat($('ar-charge-new').value)||0,paid:$('ar-paid-new').checked,addedAt:Date.now()});
-    closeModal('modal-add-roster');
+    closeModal('modal-add-roster');renderRoster(currentClassId);
   }catch(e){$('ar-new-err').textContent='Error: '+e.message;}
   $('ar-add-new-btn').disabled=false;
 });
@@ -2289,7 +2414,7 @@ function renderStudents(){
   $('students-list').innerHTML=filtered.length
     ?filtered.map(s=>{const cnt=allRoster.filter(r=>r.studentId===s.id).length;
       return `<div class="stu-card" onclick="openStudentProfile('${s.id}')">
-        <div class="stu-info"><div class="stu-name">${s.firstName} ${s.lastName}</div><div class="stu-sub">${lvBadge(s.licenseLevel)} ${s.phone||''} ${s.email||''}</div></div>
+        <div class="stu-info"><div class="stu-name">${s.firstName} ${s.lastName}</div><div class="stu-sub">${lvBadge(s.licenseLevel)} ${s.phone?`<a href="tel:${s.phone}" onclick="event.stopPropagation()" style="color:var(--accent2);text-decoration:none">${s.phone}</a>`:''} ${s.email?`<a href="mailto:${s.email}" onclick="event.stopPropagation()" style="color:var(--accent2);text-decoration:none">${s.email}</a>`:''}</div></div>
         <div style="text-align:right;flex:none;font-size:12px;color:var(--muted)">${cnt} class${cnt!==1?'es':''}</div>
       </div>`;}).join('')
     :`<div class="empty"><div class="empty-icon">👥</div><div class="empty-text">No students found</div></div>`;
@@ -2315,6 +2440,9 @@ window.openStudentProfile=function(studentId){
   $('sp-title').textContent=`${s.firstName} ${s.lastName}`;
   $('sp-first').value=s.firstName||'';$('sp-last').value=s.lastName||'';$('sp-level').value=s.licenseLevel||'';
   $('sp-phone').value=s.phone||'';$('sp-email').value=s.email||'';$('sp-notes-text').value=s.notes||'';
+  const pLink=$('sp-phone-link'),eLink=$('sp-email-link');
+  if(s.phone){pLink.href='tel:'+s.phone;pLink.style.display='';}else pLink.style.display='none';
+  if(s.email){eLink.href='mailto:'+s.email;eLink.style.display='';}else eLink.style.display='none';
   const entries=allRoster.filter(r=>r.studentId===studentId);
   $('sp-total').textContent=fmt$(entries.reduce((s,r)=>s+(+r.charge||0),0));
   $('sp-history-list').innerHTML=entries.length
@@ -2342,6 +2470,9 @@ $('sp-save-btn').addEventListener('click',async()=>{
   await col('students').doc(currentStudentId).update(data);
   $('sp-title').textContent=`${data.firstName} ${data.lastName}`;
   $('sp-save-btn').textContent='Saved ✓';setTimeout(()=>$('sp-save-btn').textContent='Save Changes',2000);
+  const pLink=$('sp-phone-link'),eLink=$('sp-email-link');
+  if(data.phone){pLink.href='tel:'+data.phone;pLink.style.display='';}else pLink.style.display='none';
+  if(data.email){eLink.href='mailto:'+data.email;eLink.style.display='';}else eLink.style.display='none';
 });
 $('sp-notes-save').addEventListener('click',async()=>{
   const notes=$('sp-notes-text').value.trim();
@@ -2351,6 +2482,79 @@ $('sp-notes-save').addEventListener('click',async()=>{
 $('sp-delete-btn').addEventListener('click',async()=>{
   if(!confirm('Delete this student profile?'))return;
   await col('students').doc(currentStudentId).delete();closeModal('modal-student');
+});
+
+// ============================================================
+// INSTRUCTORS
+// ============================================================
+function renderInstructors(){
+  const q=$('instructor-search').value.toLowerCase().trim();
+  const filtered=allInstructors.filter(i=>!q||(i.firstName+' '+i.lastName).toLowerCase().includes(q)||(i.specialty||'').toLowerCase().includes(q));
+  $('instructors-list').innerHTML=filtered.length
+    ?filtered.map(i=>`<div class="stu-card" onclick="openInstructorProfile('${i.id}')">
+        <div class="stu-info">
+          <div class="stu-name">${i.firstName} ${i.lastName}</div>
+          <div class="stu-sub">${i.specialty?`<span style="color:var(--accent2)">${i.specialty}</span>`:''} ${i.phone?`<a href="tel:${i.phone}" onclick="event.stopPropagation()" style="color:var(--accent2);text-decoration:none">${i.phone}</a>`:''} ${i.email?`<a href="mailto:${i.email}" onclick="event.stopPropagation()" style="color:var(--accent2);text-decoration:none">${i.email}</a>`:''}</div>
+        </div>
+      </div>`).join('')
+    :`<div class="empty"><div class="empty-icon">👨‍🏫</div><div class="empty-text">No adjunct instructors yet</div></div>`;
+}
+$('instructor-search').addEventListener('input',renderInstructors);
+$('new-instructor-btn').addEventListener('click',()=>{
+  currentInstructorId=null;
+  $('ip-title').textContent='New Instructor';
+  ['ip-first','ip-last','ip-specialty','ip-ahaid','ip-phone','ip-email'].forEach(id=>$(id).value='');
+  $('ip-notes-text').value='';$('ip-err').textContent='';
+  $('ip-delete-btn').style.display='none';
+  $('ip-phone-link').style.display='none';$('ip-email-link').style.display='none';
+  document.querySelectorAll('.mtab[data-mtab="ip"]').forEach((t,i)=>t.classList.toggle('active',i===0));
+  ['ip-info','ip-notes'].forEach((id,i)=>$(id).style.display=i===0?'':'none');
+  openModal('modal-instructor');
+});
+window.openInstructorProfile=function(id){
+  currentInstructorId=id;const i=allInstructors.find(x=>x.id===id);if(!i)return;
+  $('ip-title').textContent=`${i.firstName} ${i.lastName}`;
+  $('ip-first').value=i.firstName||'';$('ip-last').value=i.lastName||'';
+  $('ip-specialty').value=i.specialty||'';$('ip-ahaid').value=i.ahaid||'';
+  $('ip-phone').value=i.phone||'';$('ip-email').value=i.email||'';
+  $('ip-notes-text').value=i.notes||'';$('ip-err').textContent='';
+  $('ip-delete-btn').style.display='';
+  const pl=$('ip-phone-link'),el=$('ip-email-link');
+  if(i.phone){pl.href='tel:'+i.phone;pl.style.display='';}else pl.style.display='none';
+  if(i.email){el.href='mailto:'+i.email;el.style.display='';}else el.style.display='none';
+  document.querySelectorAll('.mtab[data-mtab="ip"]').forEach((t,idx)=>t.classList.toggle('active',idx===0));
+  ['ip-info','ip-notes'].forEach((pid,idx)=>$(pid).style.display=idx===0?'':'none');
+  openModal('modal-instructor');
+};
+$('ip-save-btn').addEventListener('click',async()=>{
+  const first=$('ip-first').value.trim(),last=$('ip-last').value.trim();
+  if(!first||!last){$('ip-err').textContent='Name required.';return;}
+  const data={firstName:first,lastName:last,specialty:$('ip-specialty').value.trim(),
+    ahaid:$('ip-ahaid').value.trim(),phone:$('ip-phone').value.trim(),email:$('ip-email').value.trim()};
+  try{
+    if(currentInstructorId){
+      await col('instructors').doc(currentInstructorId).update(data);
+    } else {
+      const ref=await col('instructors').add({...data,notes:'',createdAt:Date.now()});
+      currentInstructorId=ref.id;
+      $('ip-delete-btn').style.display='';
+      $('ip-title').textContent=`${first} ${last}`;
+    }
+    $('ip-save-btn').textContent='Saved ✓';setTimeout(()=>$('ip-save-btn').textContent='Save Changes',2000);
+    const pl=$('ip-phone-link'),el=$('ip-email-link');
+    if(data.phone){pl.href='tel:'+data.phone;pl.style.display='';}else pl.style.display='none';
+    if(data.email){el.href='mailto:'+data.email;el.style.display='';}else el.style.display='none';
+  }catch(e){$('ip-err').textContent='Error: '+e.message;}
+});
+$('ip-delete-btn').addEventListener('click',async()=>{
+  if(!currentInstructorId||!confirm('Delete this instructor?'))return;
+  await col('instructors').doc(currentInstructorId).delete();
+  closeModal('modal-instructor');
+});
+$('ip-notes-save').addEventListener('click',async()=>{
+  if(!currentInstructorId)return;
+  await col('instructors').doc(currentInstructorId).update({notes:$('ip-notes-text').value.trim()});
+  $('ip-notes-save').textContent='Saved ✓';setTimeout(()=>$('ip-notes-save').textContent='Save Notes',2000);
 });
 
 // ============================================================
@@ -2685,195 +2889,222 @@ $('matd-delete-btn').addEventListener('click',async()=>{
 });
 
 // ============================================================
-// RECORDS
+// DOCUMENT FILE BROWSER (Records)
 // ============================================================
-function renderRecords() {
-  const q = $('rec-search').value.toLowerCase().trim();
-  const filtered = allStudents.filter(s =>
-    !q || (s.firstName + ' ' + s.lastName).toLowerCase().includes(q) || (s.email||'').toLowerCase().includes(q)
-  );
-  // Populate year filter
-  const years = new Set();
-  const now = new Date().getFullYear();
-  for (let y = now; y >= now - 5; y--) years.add(String(y));
-  allRoster.forEach(r => { const c = allClasses.find(x => x.id === r.classId); if (c?.date) years.add(c.date.slice(0,4)); });
-  const sel = $('rec-year-filter');
-  const prevVal = sel.value;
-  sel.innerHTML = '<option value="">All Years</option>' + [...years].sort((a,b)=>b-a).map(y => `<option value="${y}">${y}</option>`).join('');
-  if (prevVal) sel.value = prevVal;
-
-  $('records-list').innerHTML = filtered.length ? filtered.map(s => {
-    const classes = allRoster.filter(r => r.studentId === s.id);
-    const completed = classes.filter(r => r.paid).length;
-    return `<div class="stu-card" onclick="openStudentRecords('${s.id}')">
-      <div class="stu-info">
-        <div class="stu-name">${s.firstName} ${s.lastName}</div>
-        <div class="stu-sub">${s.licenseLevel ? `<span class="lv-badge lv-${(s.licenseLevel||'').toLowerCase().replace(/[^a-z]/g,'')}">${s.licenseLevel}</span> ` : ''}${completed} completed class${completed!==1?'es':''}</div>
-      </div>
-      <div style="text-align:right;flex:none">
-        <div style="font-size:12px;color:var(--accent);font-weight:600">📁 View Records</div>
-      </div>
-    </div>`;
-  }).join('') : `<div class="empty"><div class="empty-icon">📁</div><div class="empty-text">No students found</div></div>`;
+function renderDocBrowser() {
+  if (!currentDocStudentId) renderDocRoot();
+  else openDocFolder(currentDocStudentId, currentDocSubfolder);
 }
 
-window.openStudentRecords = async function(studentId) {
-  currentRecordStudentId = studentId;
-  const s = allStudents.find(x => x.id === studentId);
-  if (!s) return;
-  $('sr-title').textContent = `${s.firstName} ${s.lastName}`;
-  $('sr-subtitle').textContent = s.licenseLevel || '';
-  $('sr-upload-err').textContent = '';
-  $('sr-upload-prog').classList.remove('show');
+function renderDocRoot() {
+  currentDocStudentId = null;
+  currentDocSubfolder = null;
+  $('rec-breadcrumb').innerHTML = '<span>📁 Student Records</span>';
+  $('rec-upload-btn').style.display = 'none';
+  $('rec-new-folder-btn').style.display = 'none';
+  $('rec-new-folder-form').style.display = 'none';
+  $('rec-search-wrap').style.display = '';
+  $('rec-storage-notice').style.display = !fbStorage ? '' : 'none';
 
-  // Show classes
-  const entries = allRoster.filter(r => r.studentId === studentId);
-  $('sr-classes-list').innerHTML = entries.length ? entries.map(r => {
-    const c = allClasses.find(x => x.id === r.classId) || {};
-    return `<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid var(--border)">
-      <div><div style="font-size:13px;font-weight:500">${c.type||'Class'}</div><div style="font-size:11px;color:var(--muted)">${formatDate(c.date)}</div></div>
-      <span class="paid-badge ${r.paid?'paid-y':'paid-n'}">${r.paid?'Completed':'In Progress'}</span>
-    </div>`;
-  }).join('') : '<div style="font-size:13px;color:var(--muted)">No class history</div>';
+  const q = ($('rec-search').value||'').toLowerCase().trim();
+  const students = q
+    ? allStudents.filter(s => (s.firstName+' '+s.lastName).toLowerCase().includes(q) || (s.email||'').toLowerCase().includes(q))
+    : allStudents;
 
-  openModal('modal-student-records');
-  await loadStudentFiles(studentId);
-};
+  $('rec-browser').innerHTML = students.length
+    ? `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:4px">
+        ${students.map(s => {
+          const cnt = allRoster.filter(r => r.studentId === s.id).length;
+          return `<div class="doc-folder-card" onclick="openDocFolder('${s.id}')">
+            <div style="font-size:36px;margin-bottom:8px">📁</div>
+            <div style="font-weight:600;font-size:13px;line-height:1.3;word-break:break-word;text-align:center">${s.firstName} ${s.lastName}</div>
+            ${s.licenseLevel ? `<div style="font-size:10px;color:var(--muted);margin-top:3px">${s.licenseLevel}</div>` : ''}
+            <div style="font-size:10px;color:var(--muted);margin-top:2px">${cnt} class${cnt!==1?'es':''}</div>
+          </div>`;
+        }).join('')}
+      </div>`
+    : '<div class="empty"><div class="empty-icon">📁</div><div class="empty-text">No students yet</div></div>';
+}
 
-async function loadStudentFiles(studentId) {
-  $('sr-files-list').innerHTML = '<div class="empty" style="padding:20px 0"><div class="spin"></div></div>';
+window.openDocFolder = function(studentId, subfolder) {
+  currentDocStudentId = studentId;
+  currentDocSubfolder = subfolder || null;
+
+  const s = allStudents.find(x => x.id === studentId) || {};
+  const studentName = `${s.firstName||''} ${s.lastName||''}`.trim();
+
+  // Breadcrumb
+  if (subfolder) {
+    $('rec-breadcrumb').innerHTML = `<button class="btn-link" onclick="renderDocRoot()">📁 Records</button>
+      <span style="color:var(--muted);margin:0 4px">/</span>
+      <button class="btn-link" onclick="openDocFolder('${studentId}')">${studentName}</button>
+      <span style="color:var(--muted);margin:0 4px">/</span>
+      <span>${subfolder}</span>`;
+  } else {
+    $('rec-breadcrumb').innerHTML = `<button class="btn-link" onclick="renderDocRoot()">📁 Records</button>
+      <span style="color:var(--muted);margin:0 4px">/</span>
+      <span>${studentName}</span>`;
+  }
+  $('rec-upload-btn').style.display = '';
+  $('rec-new-folder-btn').style.display = subfolder ? 'none' : '';
+  $('rec-new-folder-form').style.display = 'none';
+  $('rec-folder-name').value = '';
+  $('rec-search-wrap').style.display = 'none';
+  $('rec-upload-err').textContent = '';
+  $('rec-storage-notice').style.display = !fbStorage ? '' : 'none';
+
   if (!fbStorage) {
-    $('sr-files-list').innerHTML = '<div class="empty" style="padding:20px 0"><div class="empty-text">Storage not available — enable Firebase Storage in the console.</div></div>';
+    $('rec-browser').innerHTML = '';
     return;
   }
-  try {
-    const ref = stgRef(`records/${UID}/${studentId}`);
-    const result = await ref.listAll();
-    if (result.items.length === 0) {
-      $('sr-files-list').innerHTML = '<div class="empty" style="padding:20px 0"><div class="empty-text">No files uploaded yet</div></div>';
-      return;
-    }
-    const files = await Promise.all(result.items.map(async item => {
-      const url = await item.getDownloadURL();
-      const meta = await item.getMetadata();
-      return { name: item.name, url, size: meta.size, contentType: meta.contentType, updated: meta.updated };
-    }));
-    files.sort((a,b) => new Date(b.updated) - new Date(a.updated));
-    $('sr-files-list').innerHTML = files.map(f => {
-      const {icon} = fileIcon(f.contentType||'');
-      return `<div style="display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border)">
-        <span style="font-size:20px">${icon}</span>
-        <div style="flex:1;min-width:0">
-          <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f.name}</div>
-          <div style="font-size:11px;color:var(--muted)">${fmtBytes(f.size)} · ${formatDate(f.updated?.slice(0,10))}</div>
-        </div>
-        <a href="${f.url}" target="_blank" rel="noopener" class="btn sm" title="Open">↗</a>
-        <button class="btn sm danger" onclick="deleteRecordFile('${studentId}','${f.name}')">×</button>
-      </div>`;
-    }).join('');
-  } catch(e) {
-    $('sr-files-list').innerHTML = `<div style="font-size:13px;color:var(--danger);padding:12px 0">Error loading files: ${e.message}</div>`;
-  }
-}
 
-window.deleteRecordFile = async function(studentId, fileName) {
-  if (!fbStorage) { alert('Storage not available.'); return; }
-  if (!confirm(`Delete "${fileName}"?`)) return;
-  try {
-    await stgRef(`records/${UID}/${studentId}/${fileName}`).delete();
-    await loadStudentFiles(studentId);
-  } catch(e) { alert('Delete failed: ' + e.message); }
+  $('rec-browser').innerHTML = '<div class="empty" style="padding:32px 0"><div class="spin"></div></div>';
+
+  const storagePath = subfolder
+    ? `records/${UID}/${studentId}/${subfolder}`
+    : `records/${UID}/${studentId}`;
+
+  stgRef(storagePath).listAll().then(async result => {
+    const firestoreFolders = subfolder ? [] : allDocFolders.filter(f => f.studentId === studentId);
+    const storagePrefixes = result.prefixes.map(p => p.name);
+    const allFolderNames = [...new Set([...firestoreFolders.map(f => f.name), ...storagePrefixes])];
+
+    const files = (await Promise.all(result.items.map(async item => {
+      try {
+        const [url, meta] = await Promise.all([item.getDownloadURL(), item.getMetadata()]);
+        return { name: item.name, url, size: meta.size, contentType: meta.contentType, updated: meta.updated };
+      } catch { return null; }
+    }))).filter(Boolean).sort((a,b) => new Date(b.updated) - new Date(a.updated));
+
+    let html = '';
+    if (allFolderNames.length) {
+      html += `<div style="margin-bottom:16px">
+        <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:8px">Folders</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px">
+          ${allFolderNames.map(name => `<div class="doc-folder-card" onclick="openDocFolder('${studentId}','${name.replace(/'/g,"\\'")}')">
+            <div style="font-size:28px;margin-bottom:6px">📁</div>
+            <div style="font-weight:600;font-size:12px;word-break:break-word;text-align:center">${name}</div>
+          </div>`).join('')}
+        </div>
+      </div>`;
+    }
+    if (files.length) {
+      html += `<div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:8px">Files (${files.length})</div>`;
+      html += files.map(f => {
+        const {icon} = fileIcon(f.contentType||'');
+        const sn = f.name.replace(/'/g,"\\'").replace(/"/g,'&quot;');
+        const sf = (subfolder||'').replace(/'/g,"\\'");
+        return `<div class="rec-file-row">
+          <span style="font-size:20px;flex:none">${icon}</span>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f.name}</div>
+            <div style="font-size:11px;color:var(--muted)">${fmtBytes(f.size)} · ${(f.updated||'').slice(0,10)}</div>
+          </div>
+          <a href="${f.url}" target="_blank" rel="noopener" class="btn sm">↗</a>
+          <button class="btn sm danger" onclick="deleteDocFile('${studentId}','${sf}','${sn}')">×</button>
+        </div>`;
+      }).join('');
+    }
+    if (!allFolderNames.length && !files.length) {
+      html = '<div class="empty" style="padding:32px 0"><div class="empty-icon">📄</div><div class="empty-text">Empty — upload files with the button above</div></div>';
+    }
+    $('rec-browser').innerHTML = html;
+  }).catch(() => {
+    $('rec-browser').innerHTML = '<div class="empty" style="padding:32px 0"><div class="empty-icon">📄</div><div class="empty-text">Empty — upload files with the button above</div></div>';
+  });
 };
 
-$('sr-file-input').addEventListener('change', async function() {
+// Upload
+$('rec-upload-btn').addEventListener('click', () => $('rec-file-input').click());
+$('rec-file-input').addEventListener('change', async function() {
   const files = Array.from(this.files);
-  if (!files.length || !currentRecordStudentId) return;
-  if (!fbStorage) { alert('Storage not available — enable Firebase Storage in the console.'); return; }
-  $('sr-upload-err').textContent = '';
+  if (!files.length || !currentDocStudentId || !fbStorage) return;
+  $('rec-upload-err').textContent = '';
+  const basePath = currentDocSubfolder
+    ? `records/${UID}/${currentDocStudentId}/${currentDocSubfolder}`
+    : `records/${UID}/${currentDocStudentId}`;
   for (const file of files) {
-    $('sr-prog-name').textContent = file.name;
-    $('sr-upload-prog').classList.add('show');
+    $('rec-prog-name').textContent = file.name;
+    $('rec-upload-prog').classList.add('show');
     try {
-      const ref = stgRef(`records/${UID}/${currentRecordStudentId}/${file.name}`);
-      const task = ref.put(file);
+      const task = stgRef(`${basePath}/${file.name}`).put(file);
       await new Promise((res, rej) => {
-        task.on('state_changed',
-          snap => {
-            const pct = Math.round(snap.bytesTransferred / snap.totalBytes * 100);
-            $('sr-prog-bar').style.width = pct + '%';
-            $('sr-prog-pct').textContent = pct + '%';
-          },
-          rej, res
-        );
+        task.on('state_changed', snap => {
+          const pct = Math.round(snap.bytesTransferred / snap.totalBytes * 100);
+          $('rec-prog-bar').style.width = pct + '%';
+          $('rec-prog-pct').textContent = pct + '%';
+        }, rej, res);
       });
     } catch(e) {
-      $('sr-upload-err').textContent = 'Upload failed: ' + e.message;
-      $('sr-upload-prog').classList.remove('show');
+      $('rec-upload-err').textContent = 'Upload failed: ' + e.message;
+      $('rec-upload-prog').classList.remove('show');
       this.value = '';
       return;
     }
   }
-  $('sr-upload-prog').classList.remove('show');
+  $('rec-upload-prog').classList.remove('show');
   this.value = '';
-  await loadStudentFiles(currentRecordStudentId);
+  openDocFolder(currentDocStudentId, currentDocSubfolder);
 });
 
-// Drag-and-drop
+// Drag-and-drop onto the records panel
 (function() {
-  const zone = $('sr-drop-zone');
-  zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = 'var(--accent)'; });
-  zone.addEventListener('dragleave', () => { zone.style.borderColor = ''; });
-  zone.addEventListener('drop', e => {
-    e.preventDefault(); zone.style.borderColor = '';
+  const view = $('subpanel-dash-records');
+  view.addEventListener('dragover', e => {
+    if (currentDocStudentId && fbStorage) { e.preventDefault(); view.style.outline = '2px dashed var(--accent)'; }
+  });
+  view.addEventListener('dragleave', () => { view.style.outline = ''; });
+  view.addEventListener('drop', e => {
+    view.style.outline = '';
+    if (!currentDocStudentId || !fbStorage) return;
+    e.preventDefault();
     const dt = new DataTransfer();
     Array.from(e.dataTransfer.files).forEach(f => dt.items.add(f));
-    const input = $('sr-file-input');
-    input.files = dt.files;
-    input.dispatchEvent(new Event('change'));
+    $('rec-file-input').files = dt.files;
+    $('rec-file-input').dispatchEvent(new Event('change'));
   });
 })();
 
-// Export all records for a year as a list of download links in a new tab
-$('rec-export-year-btn').addEventListener('click', async function() {
-  if (!fbStorage) { alert('Storage not available — enable Firebase Storage in the console.'); return; }
-  const year = $('rec-year-filter').value;
-  this.textContent = 'Loading…'; this.disabled = true;
-  try {
-    const topRef = stgRef(`records/${UID}`);
-    const studentFolders = await topRef.listAll();
-    const rows = [];
-    for (const folder of studentFolders.prefixes) {
-      const sid = folder.name;
-      const s = allStudents.find(x => x.id === sid);
-      const name = s ? `${s.firstName} ${s.lastName}` : sid;
-      const items = await folder.listAll();
-      for (const item of items.items) {
-        const meta = await item.getMetadata();
-        const fileYear = (meta.updated || '').slice(0,4);
-        if (year && fileYear !== year) continue;
-        const url = await item.getDownloadURL();
-        rows.push({ name, file: item.name, url, date: meta.updated?.slice(0,10), size: fmtBytes(meta.size) });
-      }
-    }
-    if (!rows.length) { alert(year ? `No records found for ${year}.` : 'No records found.'); return; }
-    const html = `<!DOCTYPE html><html><head><meta charset="utf-8"/><title>Records Export${year?' – '+year:''}</title>
-    <style>body{font-family:system-ui,Arial,sans-serif;font-size:13px;color:#111;padding:20px}
-    h1{font-size:18px;margin:0 0 4px}table{width:100%;border-collapse:collapse;margin-top:16px}
-    th{background:#1a1a2e;color:#fff;padding:8px 10px;text-align:left;font-size:12px;font-weight:600}
-    td{padding:8px 10px;border-bottom:1px solid #e5e7eb}tr:nth-child(even)td{background:#f9fafb}
-    a{color:#0d9488;font-weight:600}@media print{button{display:none}}</style></head>
-    <body><button onclick="window.print()" style="margin-bottom:16px;padding:8px 18px;background:#1a1a2e;color:#fff;border:none;border-radius:6px;cursor:pointer">🖨️ Print / Save PDF</button>
-    <h1>Student Records Export${year?' – '+year:''}</h1>
-    <div style="font-size:12px;color:#555;margin-bottom:12px">Generated ${new Date().toLocaleString()} · ${rows.length} file${rows.length!==1?'s':''}</div>
-    <table><thead><tr><th>Student</th><th>File</th><th>Date</th><th>Size</th><th>Link</th></tr></thead>
-    <tbody>${rows.map(r=>`<tr><td>${r.name}</td><td>${r.file}</td><td>${r.date||'—'}</td><td>${r.size}</td><td><a href="${r.url}" target="_blank">Download</a></td></tr>`).join('')}</tbody>
-    </table></body></html>`;
-    const w = window.open('','_blank'); w.document.write(html); w.document.close();
-  } catch(e) { alert('Export failed: ' + e.message); }
-  finally { this.textContent = '⬇ Export Year'; this.disabled = false; }
+// New folder
+$('rec-new-folder-btn').addEventListener('click', () => {
+  $('rec-new-folder-form').style.display = '';
+  $('rec-folder-name').focus();
 });
+$('rec-folder-cancel-btn').addEventListener('click', () => {
+  $('rec-new-folder-form').style.display = 'none';
+  $('rec-folder-name').value = '';
+});
+$('rec-folder-create-btn').addEventListener('click', async () => {
+  const name = $('rec-folder-name').value.trim();
+  if (!name || !currentDocStudentId) return;
+  if (allDocFolders.find(f => f.studentId === currentDocStudentId && f.name === name)) {
+    alert('A folder with that name already exists.');
+    return;
+  }
+  $('rec-folder-create-btn').disabled = true;
+  try {
+    await col('doc_folders').add({studentId: currentDocStudentId, name, createdAt: Date.now()});
+    $('rec-new-folder-form').style.display = 'none';
+    $('rec-folder-name').value = '';
+  } catch(e) { alert('Error: ' + e.message); }
+  $('rec-folder-create-btn').disabled = false;
+});
+$('rec-folder-name').addEventListener('keydown', e => { if (e.key === 'Enter') $('rec-folder-create-btn').click(); });
 
-$('rec-search').addEventListener('input', renderRecords);
+// Delete file
+window.deleteDocFile = async function(studentId, subfolder, fileName) {
+  if (!fbStorage || !confirm(`Delete "${fileName}"?`)) return;
+  try {
+    const path = subfolder
+      ? `records/${UID}/${studentId}/${subfolder}/${fileName}`
+      : `records/${UID}/${studentId}/${fileName}`;
+    await stgRef(path).delete();
+    openDocFolder(studentId, subfolder || null);
+  } catch(e) { alert('Delete failed: ' + e.message); }
+};
+
+$('rec-search').addEventListener('input', () => { if (!currentDocStudentId) renderDocRoot(); });
+
 
 // ============================================================
 // OPT-GROUP INIT
@@ -3246,13 +3477,20 @@ $('chk-scenario-filter').querySelectorAll('.fchip').forEach(chip=>{
 // ============================================================
 // CLASS TEMPLATES
 // ============================================================
+window.openClassTplById=function(id){
+  const t=allClassTemplates.find(x=>x.id===id);if(!t)return;
+  openClassTplEditModal(t,false,id);
+};
 function renderClassTemplates(){
   $('classtpl-list').innerHTML=allClassTemplates.length
     ?allClassTemplates.map(t=>`
-      <div class="class-card" onclick="openClassTplEditModal(${JSON.stringify({...t}).replace(/</g,'\\u003c')},false,'${t.id}')">
+      <div class="class-card">
         <div class="class-card-hd">
           <div>${ctBadge(t.type||'Other')}</div>
-          <div style="font-size:13px;font-weight:600;color:var(--muted)">${t.defaultCharge?fmt$(t.defaultCharge):''}</div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <span style="font-size:13px;font-weight:600;color:var(--muted)">${t.defaultCharge?fmt$(t.defaultCharge):''}</span>
+            <button class="btn sm" onclick="openClassTplById('${t.id}')" style="font-size:12px;padding:4px 8px">✏️ Edit</button>
+          </div>
         </div>
         <div style="font-weight:600;font-size:14px;margin-bottom:4px">${t.name||'Untitled'}</div>
         <div class="class-meta">
@@ -3275,6 +3513,7 @@ function openClassTplEditModal(prefill, isNew, existingId){
   $('ct-notes').value = prefill.notes || '';
   $('ct-instructor-course').checked = !!prefill.isInstructorCourse;
   $('ct-err').textContent = '';
+  $('ct-delete-btn').style.display = currentClassTplId ? '' : 'none';
   syncOptGroup('ct-type', prefill.type || '');
   populateCtEmailTplSelect(prefill.emailTemplateId || '');
   openModal('modal-classtpl-edit');
@@ -3328,6 +3567,12 @@ $('ct-save-btn').addEventListener('click',async()=>{
     }
     closeModal('modal-classtpl-edit');
   }catch(e){$('ct-err').textContent='Error: '+e.message;}
+});
+$('ct-delete-btn').addEventListener('click',async()=>{
+  if(!currentClassTplId)return;
+  if(!confirm('Delete this template? This cannot be undone.'))return;
+  await col('class_templates').doc(currentClassTplId).delete();
+  closeModal('modal-classtpl-edit');
 });
 
 // ============================================================
@@ -3621,7 +3866,7 @@ $('etpl-cat-filter').querySelectorAll('.fchip').forEach(chip=>{
 
   // Paste image from clipboard
   document.addEventListener('paste', e=>{
-    if(document.getElementById('view-ocr').classList.contains('active')){
+    if($('subpanel-dash-records')&&$('subpanel-dash-records').style.display!=='none'){
       const items = e.clipboardData && e.clipboardData.items;
       if(!items) return;
       for(const item of items){
