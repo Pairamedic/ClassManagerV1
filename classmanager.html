@@ -2005,8 +2005,9 @@ function activateClassesTab(which){
 // ============================================================
 document.querySelectorAll('[data-close]').forEach(btn=>{btn.addEventListener('click',()=>closeModal(btn.dataset.close));});
 document.querySelectorAll('.overlay').forEach(o=>{o.addEventListener('click',e=>{if(e.target===o)closeModal(o.id);});});
-function openModal(id){$(id).classList.remove('hidden');}
-function closeModal(id){$(id).classList.add('hidden');}
+let _mz=50;
+function openModal(id){const el=$(id);el.style.zIndex=++_mz;el.classList.remove('hidden');}
+function closeModal(id){$(id).classList.add('hidden');if(_mz>50)_mz--;}
 document.querySelectorAll('.mtab').forEach(btn=>{
   btn.addEventListener('click',()=>{
     const g=btn.dataset.mtab;
