@@ -232,6 +232,7 @@
     .etpl-cat-payment{background:rgba(74,222,128,.12);color:#4ade80;border-color:rgba(74,222,128,.3)}
     .etpl-cat-completion{background:rgba(147,197,253,.12);color:var(--accent2);border-color:rgba(147,197,253,.3)}
     .etpl-cat-custom{background:rgba(167,176,190,.1);color:var(--muted);border-color:rgba(167,176,190,.25)}
+    .etpl-cat-details{background:rgba(251,146,60,.12);color:#fb923c;border-color:rgba(251,146,60,.3)}
     .var-pill{display:inline-block;background:rgba(94,234,212,.1);color:var(--accent);border:1px solid rgba(94,234,212,.25);border-radius:4px;padding:1px 6px;font-size:11px;font-family:monospace;cursor:pointer;margin:2px;transition:background .15s}
     .var-pill:hover{background:rgba(94,234,212,.2)}
     .merge-field-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
@@ -780,10 +781,14 @@
   <section class="view" id="view-email">
     <div class="sec-hd" style="margin-bottom:4px">
       <div class="sec-title">Email Templates</div>
-      <button class="btn sm primary" id="etpl-new-btn">+ New Template</button>
+      <div style="display:flex;gap:6px">
+        <button class="btn sm" id="etpl-seed-btn" title="Restore the three default templates">↺ Defaults</button>
+        <button class="btn sm primary" id="etpl-new-btn">+ New Template</button>
+      </div>
     </div>
     <div class="filter-chips" id="etpl-cat-filter" style="margin-bottom:14px">
       <button class="fchip active" data-cat="">All</button>
+      <button class="fchip" data-cat="Class Details">Details</button>
       <button class="fchip" data-cat="Class Confirmation">Confirmation</button>
       <button class="fchip" data-cat="Class Reminder">Reminder</button>
       <button class="fchip" data-cat="Payment">Payment</button>
@@ -933,6 +938,13 @@
     <div id="cd-email" style="display:none">
       <div class="notice" id="cd-email-notice"></div>
 
+      <!-- Recipient filter -->
+      <div style="display:flex;gap:6px;margin-bottom:12px">
+        <button class="btn sm active" id="email-filter-all" onclick="setEmailFilter('')">All Students</button>
+        <button class="btn sm" id="email-filter-paid" onclick="setEmailFilter('paid')">Paid Only</button>
+        <button class="btn sm" id="email-filter-unpaid" onclick="setEmailFilter('unpaid')">Unpaid Only</button>
+      </div>
+
       <!-- Template picker -->
       <div class="fg" style="margin-bottom:10px">
         <label>Load Template</label>
@@ -980,12 +992,13 @@
         <span class="var-pill" onclick="insertEmailVar('{{date}}')">{{date}}</span>
         <span class="var-pill" onclick="insertEmailVar('{{time}}')">{{time}}</span>
         <span class="var-pill" onclick="insertEmailVar('{{location}}')">{{location}}</span>
+        <span class="var-pill" onclick="insertEmailVar('{{instructor}}')">{{instructor}}</span>
         <span class="var-pill" onclick="insertEmailVar('{{charge}}')">{{charge}}</span>
         <span class="var-pill" onclick="insertEmailVar('{{dueDate}}')">{{dueDate}}</span>
         <span class="var-pill" onclick="insertEmailVar('{{note}}')">{{note}}</span>
       </div>
       <button class="btn primary full" id="send-email-btn">📨 Open in Email Client</button>
-      <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px">Opens your default mail app with all roster emails pre-filled</div>
+      <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px" id="send-email-hint">Opens your default mail app with all roster emails pre-filled</div>
     </div>
     <div id="cd-notes" style="display:none">
       <div class="fg"><label>Class Notes</label><textarea id="cd-notes-text" style="min-height:140px" placeholder="Notes about this class…"></textarea></div>
@@ -1537,6 +1550,7 @@
       <label>Category</label>
       <input type="hidden" id="etpl-e-cat" value="Class Confirmation">
       <div class="opt-group">
+        <button type="button" class="opt-btn" data-val="Class Details">Details</button>
         <button type="button" class="opt-btn sel" data-val="Class Confirmation">Confirmation</button>
         <button type="button" class="opt-btn" data-val="Class Reminder">Reminder</button>
         <button type="button" class="opt-btn" data-val="Payment">Payment</button>
@@ -1555,6 +1569,8 @@
       <span class="var-pill" onclick="insertTplVar('{{date}}')">{{date}}</span>
       <span class="var-pill" onclick="insertTplVar('{{time}}')">{{time}}</span>
       <span class="var-pill" onclick="insertTplVar('{{location}}')">{{location}}</span>
+      <span class="var-pill" onclick="insertTplVar('{{instructor}}')">{{instructor}}</span>
+      <span class="var-pill" onclick="insertTplVar('{{name}}')">{{name}}</span>
       <span class="var-pill" onclick="insertTplVar('{{charge}}')">{{charge}}</span>
       <span class="var-pill" onclick="insertTplVar('{{dueDate}}')">{{dueDate}}</span>
       <span class="var-pill" onclick="insertTplVar('{{note}}')">{{note}}</span>
@@ -1589,6 +1605,50 @@
       <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:4px">Body</div>
       <div id="etpld-body" style="font-size:13px;line-height:1.65;white-space:pre-wrap;background:var(--input-bg);border:1px solid var(--border);border-radius:10px;padding:12px;max-height:320px;overflow-y:auto"></div>
     </div>
+  </div>
+</div>
+
+<!-- SEND STUDENT EMAIL -->
+<div class="overlay hidden" id="modal-send-student-email">
+  <div class="modal" style="max-width:620px">
+    <div class="modal-hd">
+      <div>
+        <div class="modal-title" id="sse-title">Email Student</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px" id="sse-email-display"></div>
+      </div>
+      <button class="close-btn" data-close="modal-send-student-email">×</button>
+    </div>
+
+    <!-- Template picker -->
+    <div class="fg" style="margin-bottom:10px">
+      <label>Template</label>
+      <div style="display:flex;gap:8px">
+        <select id="sse-tpl-select" style="flex:1">
+          <option value="">— Choose a template or compose below —</option>
+        </select>
+        <button class="btn sm primary" id="sse-tpl-load-btn">Load</button>
+      </div>
+    </div>
+
+    <div class="fg"><label>Subject</label><input type="text" id="sse-subject" placeholder="Subject…" /></div>
+    <div class="fg">
+      <label>Message Body</label>
+      <textarea id="sse-body" style="min-height:220px" placeholder="Type your message here, or load a template above…"></textarea>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Click a variable to insert at cursor:</div>
+    <div style="margin-bottom:14px">
+      <span class="var-pill" onclick="insertSseVar('{{name}}')">{{name}}</span>
+      <span class="var-pill" onclick="insertSseVar('{{class}}')">{{class}}</span>
+      <span class="var-pill" onclick="insertSseVar('{{date}}')">{{date}}</span>
+      <span class="var-pill" onclick="insertSseVar('{{time}}')">{{time}}</span>
+      <span class="var-pill" onclick="insertSseVar('{{location}}')">{{location}}</span>
+      <span class="var-pill" onclick="insertSseVar('{{instructor}}')">{{instructor}}</span>
+      <span class="var-pill" onclick="insertSseVar('{{charge}}')">{{charge}}</span>
+      <span class="var-pill" onclick="insertSseVar('{{dueDate}}')">{{dueDate}}</span>
+      <span class="var-pill" onclick="insertSseVar('{{note}}')">{{note}}</span>
+    </div>
+    <button class="btn primary full" id="sse-send-btn">📨 Open in Email Client</button>
+    <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px">Opens your default mail app with this message pre-filled</div>
   </div>
 </div>
 
@@ -1939,11 +1999,14 @@ function setupListeners(){
     allFaq=snap.docs.map(d=>({id:d.id,...d.data()}));
     if($('subpanel-dash-info').style.display!=='none')renderInfo();
   },console.error));
+  let _etplSeeded=false;
   unsubs.push(col('email_templates').orderBy('createdAt','asc').onSnapshot(snap=>{
     allEmailTemplates=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(allEmailTemplates.length===0&&!_etplSeeded){_etplSeeded=true;seedDefaultEmailTemplates();}
     if(currentView==='email')renderEmailTemplates();
     populateEmailTplSelect();
     populateCtEmailTplSelect();
+    if(typeof populateSseTplSelect==='function')populateSseTplSelect();
   },console.error));
   unsubs.push(col('class_templates').orderBy('createdAt','asc').onSnapshot(snap=>{
     allClassTemplates=snap.docs.map(d=>({id:d.id,...d.data()}));
@@ -2184,10 +2247,9 @@ window.openClassDetail=function(classId){
 };
 
 function buildEmailPanel(c){
-  const emails=allRoster.filter(r=>r.classId===c.id&&r.email).map(r=>r.email);
-  $('cd-email-notice').textContent=emails.length
-    ?`${emails.length} student${emails.length!==1?'s':''} with email on file`
-    :'No student emails on roster yet — add emails when adding students.';
+  emailRosterFilter='';
+  ['all','paid','unpaid'].forEach(k=>{const btn=$(`email-filter-${k}`);if(btn)btn.classList.toggle('primary',k==='all');});
+  updateEmailNotice();
   // Pre-fill merge fields from class data
   $('email-mf-location').value=c.location||'';
   $('email-mf-time').value=formatTime(c.time)||'';
@@ -2204,16 +2266,18 @@ function buildEmailPanel(c){
   populateEmailTplSelect();
 }
 
-function getMergeValues(){
+function getMergeValues(extraName){
   const c=allClasses.find(x=>x.id===currentClassId)||{};
   return {
-    '{{class}}':    c.type||'',
-    '{{date}}':     formatDate(c.date),
-    '{{time}}':     $('email-mf-time').value||formatTime(c.time)||'TBD',
-    '{{location}}': $('email-mf-location').value||c.location||'TBD',
-    '{{charge}}':   $('email-mf-charge').value||c.defaultCharge||'',
-    '{{dueDate}}':  $('email-mf-due').value||'',
-    '{{note}}':     $('email-mf-note').value||'',
+    '{{class}}':      c.type||'',
+    '{{date}}':       formatDate(c.date),
+    '{{time}}':       $('email-mf-time').value||formatTime(c.time)||'TBD',
+    '{{location}}':   $('email-mf-location').value||c.location||'TBD',
+    '{{instructor}}': infoDoc.pdName||'',
+    '{{name}}':       extraName||'',
+    '{{charge}}':     $('email-mf-charge').value||c.defaultCharge||'',
+    '{{dueDate}}':    $('email-mf-due').value||'',
+    '{{note}}':       $('email-mf-note').value||'',
   };
 }
 
@@ -2246,8 +2310,8 @@ $('email-tpl-load-btn').addEventListener('click',()=>{
   if(!id)return;
   const tpl=allEmailTemplates.find(t=>t.id===id);
   if(!tpl)return;
-  $('email-subject').value=tpl.subject||'';
-  $('email-body').value=tpl.body||'';
+  $('email-subject').value=applyMerge(tpl.subject||'');
+  $('email-body').value=applyMerge(tpl.body||'');
 });
 
 window.insertEmailVar=function(v){
@@ -2258,10 +2322,33 @@ window.insertEmailVar=function(v){
   ta.focus();
 };
 
+let emailRosterFilter='';
+window.setEmailFilter=function(f){
+  emailRosterFilter=f;
+  ['all','paid','unpaid'].forEach(k=>{
+    const btn=$(`email-filter-${k}`);
+    if(btn)btn.classList.toggle('primary',(f===''&&k==='all')||(f===k));
+  });
+  updateEmailNotice();
+};
+function updateEmailNotice(){
+  const c=allClasses.find(x=>x.id===currentClassId);if(!c)return;
+  let entries=allRoster.filter(r=>r.classId===c.id&&r.email);
+  if(emailRosterFilter==='paid')entries=entries.filter(r=>r.paid);
+  if(emailRosterFilter==='unpaid')entries=entries.filter(r=>!r.paid);
+  const lbl=emailRosterFilter==='paid'?' (paid only)':emailRosterFilter==='unpaid'?' (unpaid only)':'';
+  $('cd-email-notice').textContent=entries.length
+    ?`${entries.length} recipient${entries.length!==1?'s':''}${lbl} with email on file`
+    :`No matching student emails${lbl}.`;
+  $('send-email-hint').textContent=`Opens your default mail app with ${entries.length} recipient${entries.length!==1?'s':''} pre-filled`;
+}
 $('send-email-btn').addEventListener('click',()=>{
   const c=allClasses.find(x=>x.id===currentClassId);if(!c)return;
-  const emails=allRoster.filter(r=>r.classId===c.id&&r.email).map(r=>r.email);
-  if(!emails.length){alert('No student emails on this roster.');return;}
+  let entries=allRoster.filter(r=>r.classId===c.id&&r.email);
+  if(emailRosterFilter==='paid')entries=entries.filter(r=>r.paid);
+  if(emailRosterFilter==='unpaid')entries=entries.filter(r=>!r.paid);
+  const emails=entries.map(r=>r.email);
+  if(!emails.length){alert('No matching student emails.');return;}
   const subject=applyMerge($('email-subject').value);
   const body=applyMerge($('email-body').value);
   window.open(`mailto:${emails.join(',')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,'_blank');
@@ -2304,11 +2391,12 @@ function renderRoster(classId){
       const cardCls=r.cardType==='eCard'?'card-issued':r.cardType==='Physical'?'card-physical':'card-none';
       const cardLbl=r.cardType==='eCard'?'eCard':r.cardType==='Physical'?'Physical':'Card';
       return `<div class="roster-row">
-        <div class="roster-name"><div class="name">${r.name||'—'}</div><div class="sub">${lvBadge(r.licenseLevel)} ${r.email||''}</div></div>
+        <div class="roster-name"><div class="name">${r.name||'—'}</div><div class="sub">${lvBadge(r.licenseLevel)} ${r.email?`<span style="cursor:pointer;color:var(--accent2)" onclick="openStudentEmailFromRoster('${r.id}')" title="Email ${r.name}">✉ ${r.email}</span>`:''}</div></div>
         <div style="display:flex;align-items:center;gap:6px;flex:none">
           ${r.charge?`<span style="font-size:13px;font-weight:600;color:var(--ok)">${fmt$(r.charge)}</span>`:''}
           <span class="paid-badge ${r.paid?'paid-y':'paid-n'}" style="cursor:pointer" onclick="togglePaid('${r.id}')">${r.paid?'Paid':'Unpaid'}</span>
           <span class="card-badge ${cardCls}" onclick="openAhaCard('${r.id}')">${cardLbl}</span>
+          ${r.email?`<button class="btn sm" onclick="openStudentEmailFromRoster('${r.id}')" title="Email">✉️</button>`:''}
           <button class="btn sm danger" onclick="removeFromRoster('${r.id}')">×</button>
         </div>
       </div>`;}).join('')
@@ -2458,7 +2546,7 @@ window.openStudentProfile=function(studentId){
   $('sp-phone').value=s.phone||'';$('sp-email').value=s.email||'';$('sp-notes-text').value=s.notes||'';
   const pLink=$('sp-phone-link'),eLink=$('sp-email-link');
   if(s.phone){pLink.href='tel:'+s.phone;pLink.style.display='';}else pLink.style.display='none';
-  if(s.email){eLink.href='mailto:'+s.email;eLink.style.display='';}else eLink.style.display='none';
+  if(s.email){eLink.href='#';eLink.onclick=e=>{e.preventDefault();openStudentEmailFromProfile(studentId);};eLink.style.display='';}else eLink.style.display='none';
   const entries=allRoster.filter(r=>r.studentId===studentId);
   $('sp-total').textContent=fmt$(entries.reduce((s,r)=>s+(+r.charge||0),0));
   $('sp-history-list').innerHTML=entries.length
@@ -2488,7 +2576,7 @@ $('sp-save-btn').addEventListener('click',async()=>{
   $('sp-save-btn').textContent='Saved ✓';setTimeout(()=>$('sp-save-btn').textContent='Save Changes',2000);
   const pLink=$('sp-phone-link'),eLink=$('sp-email-link');
   if(data.phone){pLink.href='tel:'+data.phone;pLink.style.display='';}else pLink.style.display='none';
-  if(data.email){eLink.href='mailto:'+data.email;eLink.style.display='';}else eLink.style.display='none';
+  if(data.email){eLink.href='#';eLink.onclick=e=>{e.preventDefault();openStudentEmailFromProfile(currentStudentId);};eLink.style.display='';}else eLink.style.display='none';
 });
 $('sp-notes-save').addEventListener('click',async()=>{
   const notes=$('sp-notes-text').value.trim();
@@ -3594,7 +3682,78 @@ $('ct-delete-btn').addEventListener('click',async()=>{
 // ============================================================
 // EMAIL TEMPLATES
 // ============================================================
+async function seedDefaultEmailTemplates(){
+  const defaults=[
+    {
+      name:'Class Details',
+      category:'Class Details',
+      subject:'{{class}} Class – {{date}} at {{location}}',
+      body:`Hello,
+
+Thank you for expressing interest in the {{class}} Provider Course with {{instructor}}, NRP on {{date}} at {{location}}.
+
+Course Information:
+
+Duration: Approximately 6 hours.
+Cost: ${{charge}} total, divided into two payments: a $60 deposit to reserve your seat and a $60 balance due upon successful course completion. The deposit is non-refundable and will only be refunded if the course is canceled or rescheduled by the instructor.
+Certification: Your AHA {{class}} Provider eCard will be issued through Baptist Health upon successful completion of the course.
+
+{{note}}
+
+Please reply with any questions.
+
+Thank you!`
+    },
+    {
+      name:'Class Confirmation',
+      category:'Class Confirmation',
+      subject:'{{class}} Class Confirmed – {{date}}',
+      body:`Hello {{name}},
+
+Your payment has been received and your seat in the {{class}} Provider Course is confirmed!
+
+Class Details:
+  Date: {{date}}
+  Time: {{time}}
+  Location: {{location}}
+
+Please plan to arrive 10–15 minutes early.
+
+{{note}}
+
+If you have any questions, please don't hesitate to reach out.
+
+Thank you!`
+    },
+    {
+      name:'Class Reminder',
+      category:'Class Reminder',
+      subject:'Reminder – {{class}} Class Tomorrow, {{date}}',
+      body:`Hello {{name}},
+
+This is a friendly reminder that your {{class}} Provider Course is tomorrow, {{date}} at {{time}}.
+
+Location: {{location}}
+
+Important reminders:
+  • Please ensure your remaining balance is paid in full prior to receiving your AHA eCard.
+  • Bring a valid photo ID.
+  • Arrive 10–15 minutes early.
+
+{{note}}
+
+See you tomorrow!
+
+Thank you!`
+    }
+  ];
+  for(const tpl of defaults){
+    await col('email_templates').add({...tpl,createdAt:Date.now()});
+  }
+}
+
 function etplCatClass(cat){
+  if(cat==='Class Details')return 'etpl-cat-details';
   if(cat==='Class Confirmation')return 'etpl-cat-confirm';
   if(cat==='Class Reminder')return 'etpl-cat-reminder';
   if(cat==='Payment')return 'etpl-cat-payment';
@@ -3638,6 +3797,10 @@ $('etpld-delete-btn').addEventListener('click',async()=>{
 });
 
 $('etpl-new-btn').addEventListener('click',()=>openTplEditModal(null));
+$('etpl-seed-btn').addEventListener('click',async()=>{
+  if(!confirm('Add the three default templates (Class Details, Class Confirmation, Class Reminder)? This will add them even if they already exist.'))return;
+  await seedDefaultEmailTemplates();
+});
 
 function openTplEditModal(t){
   currentTplId=t?t.id:null;
@@ -3672,6 +3835,91 @@ $('etpl-e-save-btn').addEventListener('click',async()=>{
     await col('email_templates').add(data);
   }
   closeModal('modal-etpl-edit');
+});
+
+// ============================================================
+// PER-STUDENT EMAIL COMPOSE
+// ============================================================
+let sseRosterId=null, sseStudentId=null;
+
+function populateSseTplSelect(){
+  const sel=$('sse-tpl-select');if(!sel)return;
+  sel.innerHTML='<option value="">— Choose a template or compose below —</option>';
+  const cats=[...new Set(allEmailTemplates.map(t=>t.category||'Custom'))];
+  cats.forEach(cat=>{
+    const grp=document.createElement('optgroup');grp.label=cat;
+    allEmailTemplates.filter(t=>(t.category||'Custom')===cat).forEach(t=>{
+      const opt=document.createElement('option');opt.value=t.id;opt.textContent=t.name;grp.appendChild(opt);
+    });
+    sel.appendChild(grp);
+  });
+}
+
+function getSseMergeValues(){
+  const r=sseRosterId?allRoster.find(x=>x.id===sseRosterId):null;
+  const c=r?allClasses.find(x=>x.id===r.classId):null;
+  const s=sseStudentId?allStudents.find(x=>x.id===sseStudentId):null;
+  const name=r?r.name:(s?`${s.firstName} ${s.lastName}`:'');
+  return {
+    '{{name}}':       name,
+    '{{class}}':      c?c.type||'':'',
+    '{{date}}':       c?formatDate(c.date):'',
+    '{{time}}':       c?formatTime(c.time)||'TBD':'',
+    '{{location}}':   c?c.location||'TBD':'',
+    '{{instructor}}': infoDoc.pdName||'',
+    '{{charge}}':     r?String(r.charge||''):(c?String(c.defaultCharge||''):''),
+    '{{dueDate}}':    '',
+    '{{note}}':       '',
+  };
+}
+
+function applySseMerge(text){
+  const vals=getSseMergeValues();
+  return Object.entries(vals).reduce((t,[k,v])=>t.replaceAll(k,v),text);
+}
+
+window.openStudentEmailFromRoster=function(rosterId){
+  sseRosterId=rosterId;sseStudentId=null;
+  const r=allRoster.find(x=>x.id===rosterId);if(!r||!r.email)return;
+  $('sse-title').textContent=`Email ${r.name||'Student'}`;
+  $('sse-email-display').textContent=r.email;
+  $('sse-subject').value='';$('sse-body').value='';$('sse-tpl-select').value='';
+  populateSseTplSelect();
+  openModal('modal-send-student-email');
+};
+
+window.openStudentEmailFromProfile=function(studentId){
+  sseStudentId=studentId;sseRosterId=null;
+  const s=allStudents.find(x=>x.id===studentId);if(!s||!s.email)return;
+  $('sse-title').textContent=`Email ${s.firstName} ${s.lastName}`;
+  $('sse-email-display').textContent=s.email;
+  $('sse-subject').value='';$('sse-body').value='';$('sse-tpl-select').value='';
+  populateSseTplSelect();
+  openModal('modal-send-student-email');
+};
+
+$('sse-tpl-load-btn').addEventListener('click',()=>{
+  const id=$('sse-tpl-select').value;if(!id)return;
+  const tpl=allEmailTemplates.find(t=>t.id===id);if(!tpl)return;
+  $('sse-subject').value=applySseMerge(tpl.subject||'');
+  $('sse-body').value=applySseMerge(tpl.body||'');
+});
+
+window.insertSseVar=function(v){
+  const ta=$('sse-body');
+  const s=ta.selectionStart,e=ta.selectionEnd;
+  ta.value=ta.value.slice(0,s)+v+ta.value.slice(e);
+  ta.selectionStart=ta.selectionEnd=s+v.length;ta.focus();
+};
+
+$('sse-send-btn').addEventListener('click',()=>{
+  const r=sseRosterId?allRoster.find(x=>x.id===sseRosterId):null;
+  const s=sseStudentId?allStudents.find(x=>x.id===sseStudentId):null;
+  const email=r?r.email:(s?s.email:'');
+  if(!email){alert('No email address on file.');return;}
+  const subject=applySseMerge($('sse-subject').value);
+  const body=applySseMerge($('sse-body').value);
+  window.open(`mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,'_blank');
 });
 
 // Category filter chips
