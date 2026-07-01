@@ -2634,6 +2634,7 @@ function renderRoster(classId){
         <div class="roster-name"><div class="name">${r.name||'—'}</div><div class="sub">${lvBadge(r.licenseLevel)} ${r.email?`<span style="cursor:pointer;color:var(--accent2)" onclick="openStudentEmailFromRoster('${r.id}')" title="Email ${r.name}">✉ ${r.email}</span>`:''}</div></div>
         <div style="display:flex;align-items:center;gap:6px;flex:none">
           ${r.charge?`<span style="font-size:13px;font-weight:600;color:var(--ok)">${fmt$(r.charge)}</span>`:''}
+          <input type="number" value="${r.balanceDue!=null?r.balanceDue:''}" placeholder="Bal" title="Balance due (defaults to half of charge if left blank)" style="width:58px;font-size:12px;padding:3px 5px;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:var(--input-bg);color:var(--text)" onchange="setBalanceDue('${r.id}',this.value)" />
           <span class="paid-badge ${r.paid?'paid-y':'paid-n'}" style="cursor:pointer" onclick="togglePaid('${r.id}')">${r.paid?'Paid':'Unpaid'}</span>
           <span class="card-badge ${cardCls}" onclick="openAhaCard('${r.id}')">${cardLbl}</span>
           ${commsLogBadge(r)}
@@ -2645,6 +2646,10 @@ function renderRoster(classId){
     :`<div class="empty" style="padding:24px 0"><div class="empty-text">No students on roster yet</div></div>`;
 }
 window.togglePaid=async function(id){const r=allRoster.find(x=>x.id===id);if(!r)return;await col('roster').doc(id).update({paid:!r.paid});};
+window.setBalanceDue=async function(id,val){
+  const num=val===''?null:parseFloat(val);
+  await col('roster').doc(id).update({balanceDue:Number.isFinite(num)?num:null});
+};
 window.removeFromRoster=async function(id){if(!confirm('Remove from roster?'))return;await col('roster').doc(id).delete();};
 
 // ============================================================
@@ -4573,7 +4578,7 @@ function getSseMergeValues(){
     '{{duration}}':   c?.duration?`Approximately ${c.duration}`:'',
     '{{certName}}':   c?.certName||(c?.type?`${c.type} Provider`:''),
     '{{deposit}}':    fmt$((parseFloat(r?r.charge:c?.defaultCharge)||0)/2),
-    '{{balance}}':    fmt$((parseFloat(r?r.charge:c?.defaultCharge)||0)/2),
+    '{{balance}}':    fmt$(r?.balanceDue!=null?r.balanceDue:(parseFloat(r?r.charge:c?.defaultCharge)||0)/2),
   };
 }
 
