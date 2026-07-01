@@ -2365,26 +2365,32 @@ function renderClasses(){
 function renderNcAdjList(){
   $('nc-adj-list').innerHTML=ncAdjInstructors.map((n,i)=>`<span class="adj-chip">${n}<button onclick="ncAdjInstructors.splice(${i},1);renderNcAdjList()" title="Remove">×</button></span>`).join('');
 }
+// Shared by openNewClassModal (initial prefill/edit) and the class-template
+// "Load" button — both fill the same set of new-class form fields from a
+// class-shaped source object (a class record, a class template, or {}).
+function applyClassFieldsToForm(src){
+  syncOptGroup('nc-type',src.type||'');
+  syncOptGroup('nc-variant',src.variant||'');
+  updateNcVariantVisibility();
+  $('nc-location').value=src.location||'';
+  $('nc-time').value=src.time||'';
+  $('nc-max').value=src.maxStudents||'';
+  $('nc-charge').value=src.defaultCharge||'';
+  $('nc-duration').value=src.duration||'';
+  $('nc-cert-name').value=src.certName||'';
+  $('nc-notes').value=src.notes||'';
+  $('nc-instructor-course').checked=!!src.isInstructorCourse;
+  $('nc-pretest-required').checked=!!src.requiresPretest;
+  ncAdjInstructors=[...(src.adjunctInstructors||[])];
+  $('nc-adj-input').value='';renderNcAdjList();
+}
 function openNewClassModal(prefill, classIdToEdit){
   editingClassId=classIdToEdit||null;
   $('nc-modal-title').textContent=editingClassId?'Edit Class':'Schedule New Class';
   $('nc-save-btn').textContent=editingClassId?'Save Changes':'Schedule Class';
   $('nc-tpl-row').style.display=editingClassId?'none':'';
-  syncOptGroup('nc-type',prefill.type||'');
-  syncOptGroup('nc-variant',prefill.variant||'');
-  updateNcVariantVisibility();
   $('nc-date').value=prefill.date||today();
-  $('nc-time').value=prefill.time||'';
-  $('nc-location').value=prefill.location||'';
-  $('nc-max').value=prefill.maxStudents||'';
-  $('nc-charge').value=prefill.defaultCharge||'';
-  $('nc-duration').value=prefill.duration||'';
-  $('nc-cert-name').value=prefill.certName||'';
-  $('nc-notes').value=prefill.notes||'';
-  $('nc-instructor-course').checked=!!prefill.isInstructorCourse;
-  $('nc-pretest-required').checked=!!prefill.requiresPretest;
-  ncAdjInstructors=[...(prefill.adjunctInstructors||[])];
-  $('nc-adj-input').value='';renderNcAdjList();
+  applyClassFieldsToForm(prefill);
   $('nc-err').textContent='';
   if(!editingClassId){$('nc-tpl-select').value='';populateNcTplSelect();}
   openModal('modal-new-class');
@@ -2411,19 +2417,7 @@ $('nc-adj-input').addEventListener('input',()=>{
 $('nc-tpl-load-btn').addEventListener('click',()=>{
   const id=$('nc-tpl-select').value;if(!id)return;
   const t=allClassTemplates.find(x=>x.id===id);if(!t)return;
-  syncOptGroup('nc-type',t.type||'');
-  syncOptGroup('nc-variant',t.variant||'');
-  updateNcVariantVisibility();
-  $('nc-location').value=t.location||'';
-  $('nc-time').value=t.time||'';
-  $('nc-max').value=t.maxStudents||'';
-  $('nc-charge').value=t.defaultCharge||'';
-  $('nc-duration').value=t.duration||'';
-  $('nc-cert-name').value=t.certName||'';
-  $('nc-notes').value=t.notes||'';
-  $('nc-instructor-course').checked=!!t.isInstructorCourse;
-  $('nc-pretest-required').checked=!!t.requiresPretest;
-  ncAdjInstructors=[...(t.adjunctInstructors||[])];$('nc-adj-input').value='';renderNcAdjList();
+  applyClassFieldsToForm(t);
 });
 $('nc-save-btn').addEventListener('click',async()=>{
   const type=$('nc-type').value,date=$('nc-date').value,variant=$('nc-variant').value;
