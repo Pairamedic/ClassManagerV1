@@ -406,12 +406,14 @@
     <div class="stabs">
       <button class="stab active" id="stab-dash-overview">📊 Overview</button>
       <button class="stab" id="stab-dash-finances">💰 Finances</button>
+      <button class="stab" id="stab-dash-inventory">🛒 Inventory</button>
       <button class="stab" id="stab-dash-records">📁 Records</button>
       <button class="stab" id="stab-dash-info">📋 Info &amp; FAQ</button>
     </div>
 
     <!-- Overview sub-panel -->
     <div id="subpanel-dash-overview">
+      <div id="dash-reorder-alert"></div>
       <div class="stats">
         <div class="stat-card"><div class="stat-val" id="stat-upcoming">—</div><div class="stat-lbl">Upcoming Classes</div></div>
         <div class="stat-card"><div class="stat-val" id="stat-students">—</div><div class="stat-lbl">Total Students</div></div>
@@ -462,6 +464,30 @@
           <div id="income-by-class"></div>
         </div>
       </div>
+    </div>
+
+    <!-- Inventory / Reorder sub-panel -->
+    <div id="subpanel-dash-inventory" style="display:none">
+      <div class="stats">
+        <div class="stat-card"><div class="stat-val" id="inv-total">—</div><div class="stat-lbl">Items Tracked</div></div>
+        <div class="stat-card"><div class="stat-val exp-danger" id="inv-reorder">—</div><div class="stat-lbl">Need Reorder</div></div>
+        <div class="stat-card"><div class="stat-val exp-warn" id="inv-low">—</div><div class="stat-lbl">Running Low</div></div>
+        <div class="stat-card"><div class="stat-val" id="inv-value">—</div><div class="stat-lbl">Stock Value</div></div>
+      </div>
+      <div class="sec-hd">
+        <div class="sec-title">Supplies &amp; Reorder List</div>
+        <button class="btn primary sm" id="new-supply-btn">+ Add Item</button>
+      </div>
+      <div class="filter-chips" id="inv-filter-chips">
+        <button class="fchip active" data-invcat="">All</button>
+        <button class="fchip" data-invcat="reorder">🔴 Needs Reorder</button>
+        <button class="fchip" data-invcat="eCards">eCards</button>
+        <button class="fchip" data-invcat="AED Pads">AED Pads</button>
+        <button class="fchip" data-invcat="Instructor Materials">Instructor Materials</button>
+        <button class="fchip" data-invcat="Consumables">Consumables</button>
+        <button class="fchip" data-invcat="Other">Other</button>
+      </div>
+      <div id="inventory-list"></div>
     </div>
 
     <!-- Records + OCR sub-panel -->
@@ -1280,6 +1306,9 @@
       <input type="hidden" id="exp-type" value="Supplies / Materials">
       <div class="opt-group">
         <button type="button" class="opt-btn sel" data-val="Supplies / Materials">Supplies / Materials</button>
+        <button type="button" class="opt-btn" data-val="Course eCards">Course eCards</button>
+        <button type="button" class="opt-btn" data-val="AED Trainer Pads">AED Trainer Pads</button>
+        <button type="button" class="opt-btn" data-val="Instructor Materials">Instructor Materials</button>
         <button type="button" class="opt-btn" data-val="Equipment">Equipment</button>
         <button type="button" class="opt-btn" data-val="Venue / Space Rental">Venue / Space Rental</button>
         <button type="button" class="opt-btn" data-val="Manikins / AED Trainers">Manikins / AED Trainers</button>
@@ -1302,6 +1331,58 @@
     </div>
     <div id="exp-err" style="color:#f87171;font-size:13px;min-height:18px;margin-bottom:8px"></div>
     <button class="btn primary full" id="exp-save-btn">Save Expense</button>
+  </div>
+</div>
+
+<!-- ADD / EDIT SUPPLY -->
+<div class="overlay hidden" id="modal-new-supply">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-title" id="supply-modal-title">Add Inventory Item</div><button class="close-btn" data-close="modal-new-supply">×</button></div>
+    <div class="fg"><label>Item Name *</label><input type="text" id="sup-name" placeholder="e.g. ACLS course eCards" /></div>
+    <div class="fg"><label>Category</label>
+      <input type="hidden" id="sup-category" value="eCards">
+      <div class="opt-group">
+        <button type="button" class="opt-btn sel" data-val="eCards">eCards</button>
+        <button type="button" class="opt-btn" data-val="AED Pads">AED Pads</button>
+        <button type="button" class="opt-btn" data-val="Instructor Materials">Instructor Materials</button>
+        <button type="button" class="opt-btn" data-val="Consumables">Consumables</button>
+        <button type="button" class="opt-btn" data-val="Other">Other</button>
+      </div>
+    </div>
+    <div class="row2">
+      <div class="fg" style="margin:0"><label>Qty On Hand</label><input type="number" id="sup-onhand" placeholder="0" min="0" step="1" /></div>
+      <div class="fg" style="margin:0"><label>Reorder At (≤)</label><input type="number" id="sup-reorderat" placeholder="0" min="0" step="1" /></div>
+    </div>
+    <div class="row2" style="margin-top:10px">
+      <div class="fg" style="margin:0"><label>Unit Cost ($)</label><input type="number" id="sup-unitcost" placeholder="0.00" min="0" step="0.01" /></div>
+      <div class="fg" style="margin:0"><label>Supplier</label><input type="text" id="sup-supplier" placeholder="e.g. AHA ShopCPR" /></div>
+    </div>
+    <div class="fg" style="margin-top:10px"><label>Order Link (optional)</label><input type="url" id="sup-link" placeholder="https://shopcpr.heart.org/…" /></div>
+    <div class="fg"><label>Notes (optional)</label><input type="text" id="sup-notes" placeholder="e.g. ~1 pad set per 15–20 classes" /></div>
+    <div id="sup-err" style="color:#f87171;font-size:13px;min-height:18px;margin-bottom:8px"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn danger sm" id="sup-delete-btn" style="display:none">Delete</button>
+      <button class="btn primary full" id="sup-save-btn">Save Item</button>
+    </div>
+  </div>
+</div>
+
+<!-- MARK ORDERED -->
+<div class="overlay hidden" id="modal-order-supply">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-title">Mark Ordered</div><button class="close-btn" data-close="modal-order-supply">×</button></div>
+    <div id="ord-item-name" style="font-size:15px;font-weight:600;margin-bottom:12px"></div>
+    <div class="row2">
+      <div class="fg" style="margin:0"><label>Qty Received</label><input type="number" id="ord-qty" placeholder="0" min="0" step="1" /></div>
+      <div class="fg" style="margin:0"><label>Total Cost ($)</label><input type="number" id="ord-cost" placeholder="0.00" min="0" step="0.01" /></div>
+    </div>
+    <label style="display:flex;align-items:center;gap:8px;margin-top:14px;font-size:14px;cursor:pointer">
+      <input type="checkbox" id="ord-log-expense" checked style="width:16px;height:16px" />
+      Log this purchase as an expense
+    </label>
+    <div class="fg" style="margin-top:12px"><label>Order Date</label><input type="date" id="ord-date" /></div>
+    <div id="ord-err" style="color:#f87171;font-size:13px;min-height:18px;margin-bottom:8px"></div>
+    <button class="btn primary full" id="ord-save-btn">Confirm Order</button>
   </div>
 </div>
 
@@ -1626,7 +1707,8 @@ const stgRef  = path => fbStorage ? fbStorage.ref(path) : null;
 // ============================================================
 // STATE
 // ============================================================
-let allClasses=[], allStudents=[], allRoster=[], allCerts=[], allExpenses=[], allMaterials=[], allInstructors=[];
+let allClasses=[], allStudents=[], allRoster=[], allCerts=[], allExpenses=[], allMaterials=[], allInstructors=[], allSupplies=[];
+let invFilterCat='', currentSupplyId=null;
 let currentInstructorId=null;
 let allFaq=[], infoDoc={};
 let allEmailTemplates=[], allClassTemplates=[], allCheckoffs=[];
@@ -1816,15 +1898,16 @@ $('faq-delete-btn').addEventListener('click',async()=>{
   await col('faq').doc(currentFaqId).delete();closeModal('modal-faq');
 });
 function activateDashTab(which){
-  ['overview','finances','records','info'].forEach(n=>{
+  ['overview','finances','inventory','records','info'].forEach(n=>{
     $(`stab-dash-${n}`).classList.toggle('active',n===which);
     $(`subpanel-dash-${n}`).style.display=n===which?'':'none';
   });
   if(which==='finances')renderFinances();
+  if(which==='inventory')renderInventory();
   if(which==='records')renderDocBrowser();
   if(which==='info')renderInfo();
 }
-['overview','finances','records','info'].forEach(n=>{
+['overview','finances','inventory','records','info'].forEach(n=>{
   $(`stab-dash-${n}`).addEventListener('click',()=>activateDashTab(n));
 });
 
@@ -1930,6 +2013,11 @@ function setupListeners(){
     allMaterials=snap.docs.map(d=>({id:d.id,...d.data()}));
     if(currentView==='materials')renderMaterials();
     $('loading-screen').classList.add('hidden');
+  },errAndShow));
+  unsubs.push(col('supplies').orderBy('name','asc').onSnapshot(snap=>{
+    allSupplies=snap.docs.map(d=>({id:d.id,...d.data()}));
+    renderReorderAlert();
+    if($('subpanel-dash-inventory').style.display!=='none')renderInventory();
   },errAndShow));
   col('settings').doc('info').onSnapshot(snap=>{
     infoDoc=snap.exists?snap.data():{};
@@ -2798,6 +2886,157 @@ $('exp-save-btn').addEventListener('click',async()=>{
   $('exp-save-btn').disabled=false;
 });
 window.deleteExpense=async function(id){if(!confirm('Delete this expense?'))return;await col('expenses').doc(id).delete();};
+
+// ============================================================
+// INVENTORY / REORDER
+// ============================================================
+function supplyStatus(s){
+  const on=+s.onHand||0, at=+s.reorderAt||0;
+  if(on<=at)return{key:'reorder',label:'🔴 Reorder',cls:'exp-danger'};
+  if(on<=Math.ceil(at*1.5))return{key:'low',label:'Low',cls:'exp-warn'};
+  return{key:'ok',label:'OK',cls:'exp-ok'};
+}
+function catToExpenseType(cat){
+  return {'eCards':'Course eCards','AED Pads':'AED Trainer Pads','Instructor Materials':'Instructor Materials','Consumables':'Supplies / Materials'}[cat]||'Supplies / Materials';
+}
+function renderReorderAlert(){
+  const el=$('dash-reorder-alert');if(!el)return;
+  const need=allSupplies.filter(s=>supplyStatus(s).key==='reorder');
+  if(!need.length){el.innerHTML='';el.style.display='none';return;}
+  el.style.display='';
+  el.innerHTML=`<div class="card-sm" style="border-color:rgba(248,113,113,.4);background:rgba(248,113,113,.08);cursor:pointer;display:flex;align-items:center;gap:12px;margin-bottom:16px" onclick="activateDashTab('inventory')">
+    <div style="font-size:26px;flex:none">🛒</div>
+    <div style="flex:1;min-width:0">
+      <div style="font-weight:700;color:var(--danger);font-size:14px">${need.length} item${need.length!==1?'s':''} need reordering</div>
+      <div style="font-size:12px;color:var(--muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${need.map(s=>s.name).slice(0,3).join(', ')}${need.length>3?' +'+(need.length-3)+' more':''}</div>
+    </div>
+    <div style="font-size:18px;color:var(--muted);flex:none">→</div>
+  </div>`;
+}
+function renderInventory(){
+  const reorder=allSupplies.filter(s=>supplyStatus(s).key==='reorder').length;
+  const low=allSupplies.filter(s=>supplyStatus(s).key==='low').length;
+  const value=allSupplies.reduce((t,s)=>t+(+s.onHand||0)*(+s.unitCost||0),0);
+  $('inv-total').textContent=allSupplies.length;
+  $('inv-reorder').textContent=reorder;
+  $('inv-low').textContent=low;
+  $('inv-value').textContent=fmt$(value);
+  const cat=invFilterCat;
+  const list=allSupplies.filter(s=>{
+    if(cat==='reorder')return supplyStatus(s).key==='reorder';
+    if(cat)return s.category===cat;
+    return true;
+  });
+  $('inventory-list').innerHTML=list.length
+    ? list.map(s=>{
+        const st=supplyStatus(s), on=+s.onHand||0, at=+s.reorderAt||0;
+        const link=s.link?`<a class="contact-chip" href="${s.link}" target="_blank" rel="noopener" onclick="event.stopPropagation()">🔗 Order</a>`:'';
+        return `<div class="card-sm" style="cursor:pointer" onclick="openSupplyModal('${s.id}')">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap">${s.name}<span class="lv-badge ${st.cls}" style="border-color:currentColor">${st.label}</span></div>
+              <div class="fin-meta">${s.category||'Other'}${s.supplier?' · '+s.supplier:''}${s.lastOrdered?' · last ordered '+formatDate(s.lastOrdered):''}</div>
+            </div>
+            <div style="text-align:right;flex:none">
+              <div style="font-size:20px;font-weight:700" class="${st.cls}">${on}</div>
+              <div style="font-size:11px;color:var(--muted)">reorder ≤ ${at}</div>
+            </div>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap" onclick="event.stopPropagation()">
+            <button class="btn sm" onclick="adjustSupply('${s.id}',-1)">−1</button>
+            <button class="btn sm" onclick="adjustSupply('${s.id}',1)">+1</button>
+            <button class="btn sm primary" onclick="openOrderModal('${s.id}')">📦 Mark Ordered</button>
+            ${link}
+            <span style="margin-left:auto;font-size:12px;color:var(--muted)">${s.unitCost?fmt$(s.unitCost)+' ea':''}</span>
+          </div>
+        </div>`;
+      }).join('')
+    : `<div class="empty"><div class="empty-icon">🛒</div><div class="empty-text">${cat?'No items match this filter':'No inventory items yet — add eCards, AED pads, and other supplies to track'}</div></div>`;
+}
+document.querySelectorAll('#inv-filter-chips .fchip').forEach(chip=>{
+  chip.addEventListener('click',()=>{
+    document.querySelectorAll('#inv-filter-chips .fchip').forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');invFilterCat=chip.dataset.invcat;renderInventory();
+  });
+});
+$('new-supply-btn').addEventListener('click',()=>openSupplyModal(null));
+window.openSupplyModal=function(id){
+  currentSupplyId=id;
+  const s=id?allSupplies.find(x=>x.id===id):null;
+  $('supply-modal-title').textContent=s?'Edit Inventory Item':'Add Inventory Item';
+  $('sup-name').value=s?s.name||'':'';
+  syncOptGroup('sup-category',s?s.category||'eCards':'eCards');
+  $('sup-onhand').value=s&&s.onHand!=null?s.onHand:'';
+  $('sup-reorderat').value=s&&s.reorderAt!=null?s.reorderAt:'';
+  $('sup-unitcost').value=s&&s.unitCost!=null?s.unitCost:'';
+  $('sup-supplier').value=s?s.supplier||'':'';
+  $('sup-link').value=s?s.link||'':'';
+  $('sup-notes').value=s?s.notes||'':'';
+  $('sup-err').textContent='';
+  $('sup-delete-btn').style.display=s?'':'none';
+  openModal('modal-new-supply');
+};
+$('sup-save-btn').addEventListener('click',async()=>{
+  const name=$('sup-name').value.trim();
+  if(!name){$('sup-err').textContent='Item name is required.';return;}
+  const data={
+    name,category:$('sup-category').value,
+    onHand:parseInt($('sup-onhand').value)||0,
+    reorderAt:parseInt($('sup-reorderat').value)||0,
+    unitCost:parseFloat($('sup-unitcost').value)||0,
+    supplier:$('sup-supplier').value.trim(),
+    link:$('sup-link').value.trim(),
+    notes:$('sup-notes').value.trim()
+  };
+  $('sup-save-btn').disabled=true;
+  try{
+    if(currentSupplyId)await col('supplies').doc(currentSupplyId).update(data);
+    else{data.createdAt=Date.now();await col('supplies').add(data);}
+    closeModal('modal-new-supply');
+  }catch(e){$('sup-err').textContent='Error: '+e.message;}
+  $('sup-save-btn').disabled=false;
+});
+$('sup-delete-btn').addEventListener('click',async()=>{
+  if(!currentSupplyId||!confirm('Delete this inventory item?'))return;
+  await col('supplies').doc(currentSupplyId).delete();
+  closeModal('modal-new-supply');
+});
+window.adjustSupply=async function(id,delta){
+  const s=allSupplies.find(x=>x.id===id);if(!s)return;
+  const next=Math.max(0,(+s.onHand||0)+delta);
+  await col('supplies').doc(id).update({onHand:next});
+};
+window.openOrderModal=function(id){
+  currentSupplyId=id;
+  const s=allSupplies.find(x=>x.id===id);if(!s)return;
+  $('ord-item-name').textContent=s.name;
+  const suggestQty=Math.max(0,(+s.reorderAt||0)*2-(+s.onHand||0))||10;
+  $('ord-qty').value=suggestQty;
+  $('ord-cost').value=((+s.unitCost||0)*suggestQty).toFixed(2);
+  $('ord-log-expense').checked=true;
+  $('ord-date').value=today();
+  $('ord-err').textContent='';
+  openModal('modal-order-supply');
+};
+$('ord-qty').addEventListener('input',()=>{
+  const s=allSupplies.find(x=>x.id===currentSupplyId);
+  if(s&&s.unitCost)$('ord-cost').value=((+s.unitCost)*(parseInt($('ord-qty').value)||0)).toFixed(2);
+});
+$('ord-save-btn').addEventListener('click',async()=>{
+  const s=allSupplies.find(x=>x.id===currentSupplyId);if(!s)return;
+  const qty=parseInt($('ord-qty').value)||0;
+  const cost=parseFloat($('ord-cost').value)||0;
+  const date=$('ord-date').value||today();
+  $('ord-save-btn').disabled=true;
+  try{
+    await col('supplies').doc(currentSupplyId).update({onHand:(+s.onHand||0)+qty,lastOrdered:date});
+    if($('ord-log-expense').checked&&cost>0){
+      await col('expenses').add({type:catToExpenseType(s.category),description:`${qty} × ${s.name}`,amount:cost,date,classId:null,createdAt:Date.now()});
+    }
+    closeModal('modal-order-supply');
+  }catch(e){$('ord-err').textContent='Error: '+e.message;}
+  $('ord-save-btn').disabled=false;
+});
 
 // ============================================================
 // MATERIALS
@@ -3905,8 +4144,27 @@ function classStatusBadge(status){
 }
 window.updateClassStatus=async function(status){
   if(!currentClassId)return;
-  await col('classes').doc(currentClassId).update({status});
+  const cls=allClasses.find(c=>c.id===currentClassId);
+  const wasCompleted=cls&&cls.status==='Completed';
+  const classId=currentClassId;
+  await col('classes').doc(classId).update({status});
+  if(status==='Completed'&&!wasCompleted)maybeDeductECards(classId,cls);
 };
+// When a class is completed, offer to deduct eCards from inventory by the
+// number of students on the roster. If multiple eCard items are tracked,
+// match the one whose name aligns with the class type (ACLS/BLS/…).
+async function maybeDeductECards(classId,cls){
+  const count=allRoster.filter(r=>r.classId===classId).length;
+  if(!count)return;
+  const ecards=allSupplies.filter(s=>s.category==='eCards');
+  if(!ecards.length)return;
+  let target=ecards.length===1?ecards[0]:(ecards.find(s=>classTypeKey(s.name)===classTypeKey(cls?cls.type:''))||null);
+  if(!target)return;
+  const on=+target.onHand||0;
+  if(!confirm(`Class completed with ${count} student${count!==1?'s':''}.\n\nDeduct ${count} from "${target.name}" inventory? (${on} → ${Math.max(0,on-count)} on hand)`))return;
+  try{await col('supplies').doc(target.id).update({onHand:Math.max(0,on-count)});}
+  catch(e){alert('Could not update inventory: '+e.message);}
+}
 
 // ============================================================
 // PRE-CLASS CHECKLIST
