@@ -1064,8 +1064,8 @@
         <span class="var-pill" onclick="insertEmailVar('{{deposit}}')">{{deposit}}</span>
         <span class="var-pill" onclick="insertEmailVar('{{balance}}')">{{balance}}</span>
       </div>
-      <button class="btn primary full" id="send-email-btn">📨 Open in Email Client</button>
-      <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px" id="send-email-hint">Opens your default mail app with all roster emails pre-filled</div>
+      <button class="btn primary full" id="send-email-btn">📨 Open in Gmail</button>
+      <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px" id="send-email-hint">Opens Gmail with all roster emails pre-filled</div>
     </div>
     <div id="cd-notes" style="display:none">
       <div class="fg"><label>Class Notes</label><textarea id="cd-notes-text" style="min-height:140px" placeholder="Notes about this class…"></textarea></div>
@@ -1177,7 +1177,7 @@
           <button type="button" class="opt-btn" data-val="Other">Other</button>
         </div>
       </div>
-      <div class="fg"><label style="display:flex;justify-content:space-between;align-items:center">Phone <a id="sp-phone-link" href="#" style="font-size:12px;color:var(--accent2);text-decoration:none;display:none">📞 Call</a></label><input type="tel" id="sp-phone" /></div>
+      <div class="fg"><label style="display:flex;justify-content:space-between;align-items:center">Phone <span><a id="sp-phone-link" href="#" style="font-size:12px;color:var(--accent2);text-decoration:none;display:none">📞 Call</a> <a id="sp-text-link" href="#" style="font-size:12px;color:var(--accent2);text-decoration:none;display:none">📱 Text</a></span></label><input type="tel" id="sp-phone" /></div>
       <div class="fg"><label style="display:flex;justify-content:space-between;align-items:center">Email <a id="sp-email-link" href="#" style="font-size:12px;color:var(--accent2);text-decoration:none;display:none">✉️ Send</a></label><input type="email" id="sp-email" /></div>
       <button class="btn primary full" id="sp-save-btn">Save Changes</button>
     </div>
@@ -1762,6 +1762,14 @@
       <button class="close-btn" data-close="modal-send-student-email">×</button>
     </div>
 
+    <div class="fg" style="margin-bottom:10px">
+      <label>Send via</label>
+      <div class="opt-group">
+        <button type="button" class="opt-btn sel" id="sse-channel-email" onclick="setSseChannel('email')">✉️ Email</button>
+        <button type="button" class="opt-btn" id="sse-channel-text" onclick="setSseChannel('text')">📱 Text</button>
+      </div>
+    </div>
+
     <!-- Template picker -->
     <div class="fg" style="margin-bottom:10px">
       <label>Template</label>
@@ -1773,7 +1781,7 @@
       </div>
     </div>
 
-    <div class="fg"><label>Subject</label><input type="text" id="sse-subject" placeholder="Subject…" /></div>
+    <div class="fg" id="sse-subject-row"><label>Subject</label><input type="text" id="sse-subject" placeholder="Subject…" /></div>
     <div class="fg">
       <label>Message Body</label>
       <textarea id="sse-body" style="min-height:220px" placeholder="Type your message here, or load a template above…"></textarea>
@@ -1797,8 +1805,8 @@
       <span class="var-pill" onclick="insertSseVar('{{deposit}}')">{{deposit}}</span>
       <span class="var-pill" onclick="insertSseVar('{{balance}}')">{{balance}}</span>
     </div>
-    <button class="btn primary full" id="sse-send-btn">📨 Open in Email Client</button>
-    <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px">Opens your default mail app with this message pre-filled</div>
+    <button class="btn primary full" id="sse-send-btn">📨 Open in Gmail</button>
+    <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px" id="sse-send-hint">Opens Gmail with this message pre-filled</div>
   </div>
 </div>
 
@@ -2555,7 +2563,7 @@ function updateEmailNotice(){
   $('cd-email-notice').textContent=entries.length
     ?`${entries.length} recipient${entries.length!==1?'s':''}${lbl} with email on file`
     :`No matching student emails${lbl}.`;
-  $('send-email-hint').textContent=`Opens your default mail app with ${entries.length} recipient${entries.length!==1?'s':''} pre-filled`;
+  $('send-email-hint').textContent=`Opens Gmail with ${entries.length} recipient${entries.length!==1?'s':''} pre-filled`;
 }
 $('send-email-btn').addEventListener('click',()=>{
   const c=allClasses.find(x=>x.id===currentClassId);if(!c)return;
@@ -2566,8 +2574,8 @@ $('send-email-btn').addEventListener('click',()=>{
   if(!emails.length){alert('No matching student emails.');return;}
   const subject=applyMerge($('email-subject').value);
   const body=applyMerge($('email-body').value);
-  window.open(`mailto:${emails.join(',')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,'_blank');
-  logEmailSent(entries.map(r=>r.id),$('email-tpl-select').value||null);
+  window.open(gmailComposeUrl(emails.join(','),subject,body),'_blank');
+  logCommsSent(entries.map(r=>r.id),$('email-tpl-select').value||null,'email');
 });
 $('cd-notes-save').addEventListener('click',async()=>{
   const notes=$('cd-notes-text').value.trim();
@@ -2599,19 +2607,20 @@ $('cd-delete-btn').addEventListener('click',async()=>{
 // ============================================================
 // ROSTER
 // ============================================================
-async function logEmailSent(rosterIds,templateId){
+async function logCommsSent(rosterIds,templateId,channel){
   const tpl=templateId?allEmailTemplates.find(t=>t.id===templateId):null;
   const key=templateId||'custom';
-  const entry={name:tpl?tpl.name:'Custom message',sentAt:Date.now()};
-  await Promise.all(rosterIds.map(id=>col('roster').doc(id).update({[`emailLog.${key}`]:entry})));
+  const entry={name:tpl?tpl.name:'Custom message',sentAt:Date.now(),channel:channel||'email'};
+  await Promise.all(rosterIds.map(id=>col('roster').doc(id).update({[`commsLog.${key}`]:entry})));
 }
-function emailLogBadge(r){
-  if(!r.emailLog)return '';
-  const sent=Object.values(r.emailLog);
+function commsLogBadge(r){
+  if(!r.commsLog)return '';
+  const sent=Object.values(r.commsLog);
   const pre=sent.filter(e=>/precourse/i.test(e.name||''));
   if(!pre.length)return '';
   const latest=pre.reduce((a,b)=>a.sentAt>b.sentAt?a:b);
-  return `<span class="paid-badge paid-y" title="Precourse letter sent ${formatDate(new Date(latest.sentAt).toISOString().slice(0,10))}">✓ Precourse</span>`;
+  const via=latest.channel==='text'?'texted':'emailed';
+  return `<span class="paid-badge paid-y" title="Precourse letter ${via} ${formatDate(new Date(latest.sentAt).toISOString().slice(0,10))}">✓ Precourse</span>`;
 }
 function renderRoster(classId){
   const entries=allRoster.filter(r=>r.classId===classId);
@@ -2627,8 +2636,9 @@ function renderRoster(classId){
           ${r.charge?`<span style="font-size:13px;font-weight:600;color:var(--ok)">${fmt$(r.charge)}</span>`:''}
           <span class="paid-badge ${r.paid?'paid-y':'paid-n'}" style="cursor:pointer" onclick="togglePaid('${r.id}')">${r.paid?'Paid':'Unpaid'}</span>
           <span class="card-badge ${cardCls}" onclick="openAhaCard('${r.id}')">${cardLbl}</span>
-          ${emailLogBadge(r)}
+          ${commsLogBadge(r)}
           ${r.email?`<button class="btn sm" onclick="openStudentEmailFromRoster('${r.id}')" title="Email">✉️</button>`:''}
+          ${r.phone?`<button class="btn sm" onclick="openStudentTextFromRoster('${r.id}')" title="Text">📱</button>`:''}
           <button class="btn sm danger" onclick="removeFromRoster('${r.id}')">×</button>
         </div>
       </div>`;}).join('')
@@ -2776,15 +2786,16 @@ window.openStudentProfile=function(studentId){
   $('sp-title').textContent=`${s.firstName} ${s.lastName}`;
   $('sp-first').value=s.firstName||'';$('sp-last').value=s.lastName||'';$('sp-level').value=s.licenseLevel||'';
   $('sp-phone').value=s.phone||'';$('sp-email').value=s.email||'';$('sp-notes-text').value=s.notes||'';
-  const pLink=$('sp-phone-link'),eLink=$('sp-email-link');
+  const pLink=$('sp-phone-link'),eLink=$('sp-email-link'),tLink=$('sp-text-link');
   if(s.phone){pLink.href='tel:'+s.phone;pLink.style.display='';}else pLink.style.display='none';
   if(s.email){eLink.href='#';eLink.onclick=e=>{e.preventDefault();openStudentEmailFromProfile(studentId);};eLink.style.display='';}else eLink.style.display='none';
+  if(s.phone){tLink.href='#';tLink.onclick=e=>{e.preventDefault();openStudentTextFromProfile(studentId);};tLink.style.display='';}else tLink.style.display='none';
   const entries=allRoster.filter(r=>r.studentId===studentId);
   $('sp-total').textContent=fmt$(entries.reduce((s,r)=>s+(+r.charge||0),0));
   $('sp-history-list').innerHTML=entries.length
     ?entries.map(r=>{const c=allClasses.find(x=>x.id===r.classId)||{};
       return `<div class="fin-row"><div><div style="font-size:14px;font-weight:500">${c.type||'Class'}</div><div class="fin-meta">${formatDate(c.date)} · ${c.location||'—'}</div></div>
-        <div style="text-align:right;display:flex;align-items:center;gap:8px">${r.email?`<button class="btn sm" onclick="openStudentEmailFromRoster('${r.id}')" title="Email for this course">✉️</button>`:''}<div><div class="fin-amount income">${fmt$(r.charge)}</div><span class="paid-badge ${r.paid?'paid-y':'paid-n'}">${r.paid?'Paid':'Unpaid'}</span></div></div></div>`;}).join('')
+        <div style="text-align:right;display:flex;align-items:center;gap:8px">${r.email?`<button class="btn sm" onclick="openStudentEmailFromRoster('${r.id}')" title="Email for this course">✉️</button>`:''}${r.phone?`<button class="btn sm" onclick="openStudentTextFromRoster('${r.id}')" title="Text for this course">📱</button>`:''}<div><div class="fin-amount income">${fmt$(r.charge)}</div><span class="paid-badge ${r.paid?'paid-y':'paid-n'}">${r.paid?'Paid':'Unpaid'}</span></div></div></div>`;}).join('')
     :`<div class="empty" style="padding:20px 0"><div class="empty-text">No class history</div></div>`;
   const cards=allRoster.filter(r=>r.studentId===studentId&&r.cardType);
   $('sp-aha-list').innerHTML=cards.length
@@ -2806,9 +2817,10 @@ $('sp-save-btn').addEventListener('click',async()=>{
   await col('students').doc(currentStudentId).update(data);
   $('sp-title').textContent=`${data.firstName} ${data.lastName}`;
   $('sp-save-btn').textContent='Saved ✓';setTimeout(()=>$('sp-save-btn').textContent='Save Changes',2000);
-  const pLink=$('sp-phone-link'),eLink=$('sp-email-link');
+  const pLink=$('sp-phone-link'),eLink=$('sp-email-link'),tLink=$('sp-text-link');
   if(data.phone){pLink.href='tel:'+data.phone;pLink.style.display='';}else pLink.style.display='none';
   if(data.email){eLink.href='#';eLink.onclick=e=>{e.preventDefault();openStudentEmailFromProfile(currentStudentId);};eLink.style.display='';}else eLink.style.display='none';
+  if(data.phone){tLink.href='#';tLink.onclick=e=>{e.preventDefault();openStudentTextFromProfile(currentStudentId);};tLink.style.display='';}else tLink.style.display='none';
 });
 $('sp-notes-save').addEventListener('click',async()=>{
   const notes=$('sp-notes-text').value.trim();
@@ -4500,9 +4512,32 @@ $('etpl-e-save-btn').addEventListener('click',async()=>{
 });
 
 // ============================================================
-// PER-STUDENT EMAIL COMPOSE
+// PER-STUDENT EMAIL/TEXT COMPOSE
 // ============================================================
-let sseRosterId=null, sseStudentId=null;
+let sseRosterId=null, sseStudentId=null, sseChannel='email';
+
+function gmailComposeUrl(to,subject,body){
+  return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+function smsUrl(phone,body){
+  return `sms:${encodeURIComponent(phone)}?body=${encodeURIComponent(body)}`;
+}
+function refreshSseModal(){
+  const r=sseRosterId?allRoster.find(x=>x.id===sseRosterId):null;
+  const s=sseStudentId?allStudents.find(x=>x.id===sseStudentId):null;
+  const name=r?r.name:(s?`${s.firstName} ${s.lastName}`:'Student');
+  $('sse-title').textContent=`${sseChannel==='email'?'Email':'Text'} ${name}`;
+  $('sse-email-display').textContent=sseChannel==='email'?((r?r.email:s?.email)||''):((r?r.phone:s?.phone)||'');
+}
+window.setSseChannel=function(ch){
+  sseChannel=ch;
+  $('sse-channel-email').classList.toggle('sel',ch==='email');
+  $('sse-channel-text').classList.toggle('sel',ch==='text');
+  $('sse-subject-row').style.display=ch==='email'?'':'none';
+  $('sse-send-btn').textContent=ch==='email'?'📨 Open in Gmail':'💬 Open in Messages';
+  $('sse-send-hint').textContent=ch==='email'?'Opens Gmail with this message pre-filled':'Opens your messaging app with this text pre-filled';
+  refreshSseModal();
+};
 
 function populateSseTplSelect(){
   const sel=$('sse-tpl-select');if(!sel)return;
@@ -4547,30 +4582,40 @@ function applySseMerge(text){
   return Object.entries(vals).reduce((t,[k,v])=>t.replaceAll(k,v),text);
 }
 
+function openSseModal(){
+  $('sse-subject').value='';$('sse-body').value='';$('sse-tpl-select').value='';
+  populateSseTplSelect();
+  setSseChannel(sseChannel);
+  openModal('modal-send-student-email');
+}
 window.openStudentEmailFromRoster=function(rosterId){
   sseRosterId=rosterId;sseStudentId=null;
   const r=allRoster.find(x=>x.id===rosterId);if(!r||!r.email)return;
-  $('sse-title').textContent=`Email ${r.name||'Student'}`;
-  $('sse-email-display').textContent=r.email;
-  $('sse-subject').value='';$('sse-body').value='';$('sse-tpl-select').value='';
-  populateSseTplSelect();
-  openModal('modal-send-student-email');
+  sseChannel='email';openSseModal();
 };
 
 window.openStudentEmailFromProfile=function(studentId){
   sseStudentId=studentId;sseRosterId=null;
   const s=allStudents.find(x=>x.id===studentId);if(!s||!s.email)return;
-  $('sse-title').textContent=`Email ${s.firstName} ${s.lastName}`;
-  $('sse-email-display').textContent=s.email;
-  $('sse-subject').value='';$('sse-body').value='';$('sse-tpl-select').value='';
-  populateSseTplSelect();
-  openModal('modal-send-student-email');
+  sseChannel='email';openSseModal();
+};
+
+window.openStudentTextFromRoster=function(rosterId){
+  sseRosterId=rosterId;sseStudentId=null;
+  const r=allRoster.find(x=>x.id===rosterId);if(!r||!r.phone)return;
+  sseChannel='text';openSseModal();
+};
+
+window.openStudentTextFromProfile=function(studentId){
+  sseStudentId=studentId;sseRosterId=null;
+  const s=allStudents.find(x=>x.id===studentId);if(!s||!s.phone)return;
+  sseChannel='text';openSseModal();
 };
 
 $('sse-tpl-load-btn').addEventListener('click',()=>{
   const id=$('sse-tpl-select').value;if(!id)return;
   const tpl=allEmailTemplates.find(t=>t.id===id);if(!tpl)return;
-  $('sse-subject').value=applySseMerge(tpl.subject||'');
+  if(sseChannel==='email')$('sse-subject').value=applySseMerge(tpl.subject||'');
   $('sse-body').value=applySseMerge(tpl.body||'');
 });
 
@@ -4584,12 +4629,18 @@ window.insertSseVar=function(v){
 $('sse-send-btn').addEventListener('click',()=>{
   const r=sseRosterId?allRoster.find(x=>x.id===sseRosterId):null;
   const s=sseStudentId?allStudents.find(x=>x.id===sseStudentId):null;
-  const email=r?r.email:(s?s.email:'');
-  if(!email){alert('No email address on file.');return;}
-  const subject=applySseMerge($('sse-subject').value);
   const body=applySseMerge($('sse-body').value);
-  window.open(`mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,'_blank');
-  if(r)logEmailSent([r.id],$('sse-tpl-select').value||null);
+  if(sseChannel==='email'){
+    const email=r?r.email:(s?s.email:'');
+    if(!email){alert('No email address on file.');return;}
+    const subject=applySseMerge($('sse-subject').value);
+    window.open(gmailComposeUrl(email,subject,body),'_blank');
+  } else {
+    const phone=r?r.phone:(s?s.phone:'');
+    if(!phone){alert('No phone number on file.');return;}
+    window.open(smsUrl(phone,body),'_blank');
+  }
+  if(r)logCommsSent([r.id],$('sse-tpl-select').value||null,sseChannel);
 });
 
 // Category filter chips
