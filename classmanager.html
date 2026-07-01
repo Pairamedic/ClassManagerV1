@@ -2742,7 +2742,7 @@ window.openStudentProfile=function(studentId){
   $('sp-history-list').innerHTML=entries.length
     ?entries.map(r=>{const c=allClasses.find(x=>x.id===r.classId)||{};
       return `<div class="fin-row"><div><div style="font-size:14px;font-weight:500">${c.type||'Class'}</div><div class="fin-meta">${formatDate(c.date)} · ${c.location||'—'}</div></div>
-        <div style="text-align:right"><div class="fin-amount income">${fmt$(r.charge)}</div><span class="paid-badge ${r.paid?'paid-y':'paid-n'}">${r.paid?'Paid':'Unpaid'}</span></div></div>`;}).join('')
+        <div style="text-align:right;display:flex;align-items:center;gap:8px">${r.email?`<button class="btn sm" onclick="openStudentEmailFromRoster('${r.id}')" title="Email for this course">✉️</button>`:''}<div><div class="fin-amount income">${fmt$(r.charge)}</div><span class="paid-badge ${r.paid?'paid-y':'paid-n'}">${r.paid?'Paid':'Unpaid'}</span></div></div></div>`;}).join('')
     :`<div class="empty" style="padding:20px 0"><div class="empty-text">No class history</div></div>`;
   const cards=allRoster.filter(r=>r.studentId===studentId&&r.cardType);
   $('sp-aha-list').innerHTML=cards.length
