@@ -1048,21 +1048,21 @@
       </div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Click a variable to insert at cursor:</div>
       <div style="margin-bottom:14px">
-        <span class="var-pill" onclick="insertEmailVar('{{class}}')">{{class}}</span>
-        <span class="var-pill" onclick="insertEmailVar('{{date}}')">{{date}}</span>
-        <span class="var-pill" onclick="insertEmailVar('{{time}}')">{{time}}</span>
-        <span class="var-pill" onclick="insertEmailVar('{{location}}')">{{location}}</span>
-        <span class="var-pill" onclick="insertEmailVar('{{instructor}}')">{{instructor}}</span>
-        <span class="var-pill" onclick="insertEmailVar('{{charge}}')">{{charge}}</span>
-        <span class="var-pill" onclick="insertEmailVar('{{dueDate}}')">{{dueDate}}</span>
-        <span class="var-pill" onclick="insertEmailVar('{{note}}')">{{note}}</span>
-        <span class="var-pill" onclick="insertEmailVar('{{pretest}}')">{{pretest}}</span>
-        <span class="var-pill" onclick="insertEmailVar('{{phone}}')">{{phone}}</span>
-        <span class="var-pill" onclick="insertEmailVar('{{today}}')">{{today}}</span>
-        <span class="var-pill" onclick="insertEmailVar('{{duration}}')">{{duration}}</span>
-        <span class="var-pill" onclick="insertEmailVar('{{certName}}')">{{certName}}</span>
-        <span class="var-pill" onclick="insertEmailVar('{{deposit}}')">{{deposit}}</span>
-        <span class="var-pill" onclick="insertEmailVar('{{balance}}')">{{balance}}</span>
+        <span class="var-pill" onclick="insertVarInto('email-body','{{class}}')">{{class}}</span>
+        <span class="var-pill" onclick="insertVarInto('email-body','{{date}}')">{{date}}</span>
+        <span class="var-pill" onclick="insertVarInto('email-body','{{time}}')">{{time}}</span>
+        <span class="var-pill" onclick="insertVarInto('email-body','{{location}}')">{{location}}</span>
+        <span class="var-pill" onclick="insertVarInto('email-body','{{instructor}}')">{{instructor}}</span>
+        <span class="var-pill" onclick="insertVarInto('email-body','{{charge}}')">{{charge}}</span>
+        <span class="var-pill" onclick="insertVarInto('email-body','{{dueDate}}')">{{dueDate}}</span>
+        <span class="var-pill" onclick="insertVarInto('email-body','{{note}}')">{{note}}</span>
+        <span class="var-pill" onclick="insertVarInto('email-body','{{pretest}}')">{{pretest}}</span>
+        <span class="var-pill" onclick="insertVarInto('email-body','{{phone}}')">{{phone}}</span>
+        <span class="var-pill" onclick="insertVarInto('email-body','{{today}}')">{{today}}</span>
+        <span class="var-pill" onclick="insertVarInto('email-body','{{duration}}')">{{duration}}</span>
+        <span class="var-pill" onclick="insertVarInto('email-body','{{certName}}')">{{certName}}</span>
+        <span class="var-pill" onclick="insertVarInto('email-body','{{deposit}}')">{{deposit}}</span>
+        <span class="var-pill" onclick="insertVarInto('email-body','{{balance}}')">{{balance}}</span>
       </div>
       <button class="btn primary full" id="send-email-btn">📨 Open in Email App</button>
       <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px" id="send-email-hint">Opens your default email app (Gmail, if set as default) with all roster emails pre-filled</div>
@@ -1708,15 +1708,22 @@
     </div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Click to insert a variable:</div>
     <div style="margin-bottom:14px">
-      <span class="var-pill" onclick="insertTplVar('{{class}}')">{{class}}</span>
-      <span class="var-pill" onclick="insertTplVar('{{date}}')">{{date}}</span>
-      <span class="var-pill" onclick="insertTplVar('{{time}}')">{{time}}</span>
-      <span class="var-pill" onclick="insertTplVar('{{location}}')">{{location}}</span>
-      <span class="var-pill" onclick="insertTplVar('{{instructor}}')">{{instructor}}</span>
-      <span class="var-pill" onclick="insertTplVar('{{name}}')">{{name}}</span>
-      <span class="var-pill" onclick="insertTplVar('{{charge}}')">{{charge}}</span>
-      <span class="var-pill" onclick="insertTplVar('{{dueDate}}')">{{dueDate}}</span>
-      <span class="var-pill" onclick="insertTplVar('{{note}}')">{{note}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{class}}')">{{class}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{date}}')">{{date}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{time}}')">{{time}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{location}}')">{{location}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{instructor}}')">{{instructor}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{name}}')">{{name}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{charge}}')">{{charge}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{dueDate}}')">{{dueDate}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{note}}')">{{note}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{pretest}}')">{{pretest}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{phone}}')">{{phone}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{today}}')">{{today}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{duration}}')">{{duration}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{certName}}')">{{certName}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{deposit}}')">{{deposit}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{balance}}')">{{balance}}</span>
     </div>
     <div id="etpl-e-err" style="color:#f87171;font-size:13px;min-height:18px;margin-bottom:8px"></div>
     <div style="display:flex;gap:10px">
@@ -1788,22 +1795,22 @@
     </div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Click a variable to insert at cursor:</div>
     <div style="margin-bottom:14px">
-      <span class="var-pill" onclick="insertSseVar('{{name}}')">{{name}}</span>
-      <span class="var-pill" onclick="insertSseVar('{{class}}')">{{class}}</span>
-      <span class="var-pill" onclick="insertSseVar('{{date}}')">{{date}}</span>
-      <span class="var-pill" onclick="insertSseVar('{{time}}')">{{time}}</span>
-      <span class="var-pill" onclick="insertSseVar('{{location}}')">{{location}}</span>
-      <span class="var-pill" onclick="insertSseVar('{{instructor}}')">{{instructor}}</span>
-      <span class="var-pill" onclick="insertSseVar('{{charge}}')">{{charge}}</span>
-      <span class="var-pill" onclick="insertSseVar('{{dueDate}}')">{{dueDate}}</span>
-      <span class="var-pill" onclick="insertSseVar('{{note}}')">{{note}}</span>
-      <span class="var-pill" onclick="insertSseVar('{{pretest}}')">{{pretest}}</span>
-      <span class="var-pill" onclick="insertSseVar('{{phone}}')">{{phone}}</span>
-      <span class="var-pill" onclick="insertSseVar('{{today}}')">{{today}}</span>
-      <span class="var-pill" onclick="insertSseVar('{{duration}}')">{{duration}}</span>
-      <span class="var-pill" onclick="insertSseVar('{{certName}}')">{{certName}}</span>
-      <span class="var-pill" onclick="insertSseVar('{{deposit}}')">{{deposit}}</span>
-      <span class="var-pill" onclick="insertSseVar('{{balance}}')">{{balance}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{name}}')">{{name}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{class}}')">{{class}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{date}}')">{{date}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{time}}')">{{time}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{location}}')">{{location}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{instructor}}')">{{instructor}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{charge}}')">{{charge}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{dueDate}}')">{{dueDate}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{note}}')">{{note}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{pretest}}')">{{pretest}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{phone}}')">{{phone}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{today}}')">{{today}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{duration}}')">{{duration}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{certName}}')">{{certName}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{deposit}}')">{{deposit}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{balance}}')">{{balance}}</span>
     </div>
     <button class="btn primary full" id="sse-send-btn">📨 Open in Email App</button>
     <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px" id="sse-send-hint">Opens your default email app (Gmail, if set as default) with this message pre-filled</div>
@@ -2482,31 +2489,45 @@ function buildEmailPanel(c){
   populateEmailTplSelect();
 }
 
-function getMergeValues(extraName){
-  const c=allClasses.find(x=>x.id===currentClassId)||{};
+// Shared merge-field builder used by both the bulk roster composer and the
+// per-student composer — see getMergeValues/getSseMergeValues for callers.
+function buildMergeValues({c=null,r=null,name='',time='',location='',charge='',dueDate='',note=''}={}){
+  c=c||{};
+  const effCharge=charge||(r?r.charge:c.defaultCharge)||'';
   return {
     '{{class}}':      c.type||'',
     '{{date}}':       formatDate(c.date),
-    '{{time}}':       $('email-mf-time').value||formatTime(c.time)||'TBD',
-    '{{location}}':   $('email-mf-location').value||c.location||'TBD',
+    '{{time}}':       time||formatTime(c.time)||'TBD',
+    '{{location}}':   location||c.location||'TBD',
     '{{instructor}}': infoDoc.pdName||'',
-    '{{name}}':       extraName||'',
-    '{{charge}}':     $('email-mf-charge').value||c.defaultCharge||'',
-    '{{dueDate}}':    $('email-mf-due').value||'',
-    '{{note}}':       $('email-mf-note').value||'',
+    '{{name}}':       name||'',
+    '{{charge}}':     effCharge,
+    '{{dueDate}}':    dueDate||'',
+    '{{note}}':       note||'',
     '{{pretest}}':    c.requiresPretest?PRETEST_BLOCK:'',
     '{{phone}}':      infoDoc.pdPhone||'',
     '{{today}}':      formatDate(today()),
     '{{duration}}':   c.duration?`Approximately ${c.duration}`:'',
     '{{certName}}':   c.certName||(c.type?`${c.type} Provider`:''),
-    '{{deposit}}':    fmt$((parseFloat($('email-mf-charge').value||c.defaultCharge)||0)/2),
-    '{{balance}}':    fmt$((parseFloat($('email-mf-charge').value||c.defaultCharge)||0)/2),
+    '{{deposit}}':    fmt$((parseFloat(effCharge)||0)/2),
+    '{{balance}}':    fmt$(r?.balanceDue!=null?r.balanceDue:(parseFloat(effCharge)||0)/2),
   };
+}
+function mergeText(text,values){
+  return Object.entries(values).reduce((t,[k,v])=>t.replaceAll(k,v),text);
+}
+
+function getMergeValues(extraName){
+  const c=allClasses.find(x=>x.id===currentClassId)||{};
+  return buildMergeValues({
+    c,name:extraName,
+    time:$('email-mf-time').value,location:$('email-mf-location').value,
+    charge:$('email-mf-charge').value,dueDate:$('email-mf-due').value,note:$('email-mf-note').value,
+  });
 }
 
 function applyMerge(text){
-  const vals=getMergeValues();
-  return Object.entries(vals).reduce((t,[k,v])=>t.replaceAll(k,v),text);
+  return mergeText(text,getMergeValues());
 }
 
 function populateEmailTplSelect(){
@@ -2537,8 +2558,8 @@ $('email-tpl-load-btn').addEventListener('click',()=>{
   $('email-body').value=applyMerge(tpl.body||'');
 });
 
-window.insertEmailVar=function(v){
-  const ta=$('email-body');
+window.insertVarInto=function(textareaId,v){
+  const ta=$(textareaId);
   const s=ta.selectionStart,e=ta.selectionEnd;
   ta.value=ta.value.slice(0,s)+v+ta.value.slice(e);
   ta.selectionStart=ta.selectionEnd=s+v.length;
@@ -4493,14 +4514,6 @@ function openTplEditModal(t){
   openModal('modal-etpl-edit');
 }
 
-window.insertTplVar=function(v){
-  const ta=$('etpl-e-body');
-  const s=ta.selectionStart,e=ta.selectionEnd;
-  ta.value=ta.value.slice(0,s)+v+ta.value.slice(e);
-  ta.selectionStart=ta.selectionEnd=s+v.length;
-  ta.focus();
-};
-
 $('etpl-e-save-btn').addEventListener('click',async()=>{
   const name=$('etpl-e-name').value.trim();
   const subject=$('etpl-e-subject').value.trim();
@@ -4562,29 +4575,11 @@ function getSseMergeValues(){
   const c=r?allClasses.find(x=>x.id===r.classId):null;
   const s=sseStudentId?allStudents.find(x=>x.id===sseStudentId):null;
   const name=r?r.name:(s?`${s.firstName} ${s.lastName}`:'');
-  return {
-    '{{name}}':       name,
-    '{{class}}':      c?c.type||'':'',
-    '{{date}}':       c?formatDate(c.date):'',
-    '{{time}}':       c?formatTime(c.time)||'TBD':'',
-    '{{location}}':   c?c.location||'TBD':'',
-    '{{instructor}}': infoDoc.pdName||'',
-    '{{charge}}':     r?String(r.charge||''):(c?String(c.defaultCharge||''):''),
-    '{{dueDate}}':    '',
-    '{{note}}':       '',
-    '{{pretest}}':    c?.requiresPretest?PRETEST_BLOCK:'',
-    '{{phone}}':      infoDoc.pdPhone||'',
-    '{{today}}':      formatDate(today()),
-    '{{duration}}':   c?.duration?`Approximately ${c.duration}`:'',
-    '{{certName}}':   c?.certName||(c?.type?`${c.type} Provider`:''),
-    '{{deposit}}':    fmt$((parseFloat(r?r.charge:c?.defaultCharge)||0)/2),
-    '{{balance}}':    fmt$(r?.balanceDue!=null?r.balanceDue:(parseFloat(r?r.charge:c?.defaultCharge)||0)/2),
-  };
+  return buildMergeValues({c,r,name});
 }
 
 function applySseMerge(text){
-  const vals=getSseMergeValues();
-  return Object.entries(vals).reduce((t,[k,v])=>t.replaceAll(k,v),text);
+  return mergeText(text,getSseMergeValues());
 }
 
 function openSseModal(){
@@ -4623,13 +4618,6 @@ $('sse-tpl-load-btn').addEventListener('click',()=>{
   if(sseChannel==='email')$('sse-subject').value=applySseMerge(tpl.subject||'');
   $('sse-body').value=applySseMerge(tpl.body||'');
 });
-
-window.insertSseVar=function(v){
-  const ta=$('sse-body');
-  const s=ta.selectionStart,e=ta.selectionEnd;
-  ta.value=ta.value.slice(0,s)+v+ta.value.slice(e);
-  ta.selectionStart=ta.selectionEnd=s+v.length;ta.focus();
-};
 
 $('sse-send-btn').addEventListener('click',()=>{
   const r=sseRosterId?allRoster.find(x=>x.id===sseRosterId):null;
