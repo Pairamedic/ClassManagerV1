@@ -1061,6 +1061,8 @@
         <span class="var-pill" onclick="insertEmailVar('{{today}}')">{{today}}</span>
         <span class="var-pill" onclick="insertEmailVar('{{duration}}')">{{duration}}</span>
         <span class="var-pill" onclick="insertEmailVar('{{certName}}')">{{certName}}</span>
+        <span class="var-pill" onclick="insertEmailVar('{{deposit}}')">{{deposit}}</span>
+        <span class="var-pill" onclick="insertEmailVar('{{balance}}')">{{balance}}</span>
       </div>
       <button class="btn primary full" id="send-email-btn">📨 Open in Email Client</button>
       <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px" id="send-email-hint">Opens your default mail app with all roster emails pre-filled</div>
@@ -1792,6 +1794,8 @@
       <span class="var-pill" onclick="insertSseVar('{{today}}')">{{today}}</span>
       <span class="var-pill" onclick="insertSseVar('{{duration}}')">{{duration}}</span>
       <span class="var-pill" onclick="insertSseVar('{{certName}}')">{{certName}}</span>
+      <span class="var-pill" onclick="insertSseVar('{{deposit}}')">{{deposit}}</span>
+      <span class="var-pill" onclick="insertSseVar('{{balance}}')">{{balance}}</span>
     </div>
     <button class="btn primary full" id="sse-send-btn">📨 Open in Email Client</button>
     <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px">Opens your default mail app with this message pre-filled</div>
@@ -2487,6 +2491,8 @@ function getMergeValues(extraName){
     '{{today}}':      formatDate(today()),
     '{{duration}}':   c.duration?`Approximately ${c.duration}`:'',
     '{{certName}}':   c.certName||(c.type?`${c.type} Provider`:''),
+    '{{deposit}}':    fmt$((parseFloat($('email-mf-charge').value||c.defaultCharge)||0)/2),
+    '{{balance}}':    fmt$((parseFloat($('email-mf-charge').value||c.defaultCharge)||0)/2),
   };
 }
 
@@ -4294,7 +4300,7 @@ Thank you!`
 
 This is a reminder that payment for your {{class}} class on {{date}} is due.
 
-Amount due: {{charge}}
+Amount due: \${{charge}}
 Payment due date: {{dueDate}}
 
 You can pay securely via Square here: https://square.link/u/ySsq2zyy?src=sheet
@@ -4374,7 +4380,7 @@ Location: {{location}}
 Please plan to arrive on time — it's difficult to catch up once we start.
 
 Before class:
-- Total cost is {{charge}}. Half is due as a non-refundable deposit to reserve your seat (refundable only if the course is canceled or rescheduled by the instructor); the remaining half is due upon successful completion.
+- Total cost is \${{charge}}. A non-refundable deposit of {{deposit}} is due to reserve your seat (refundable only if the course is canceled or rescheduled by the instructor); the remaining balance of {{balance}} is due upon successful completion.
 - Complete the required precourse self-assessment here: https://shopcpr.heart.org/acls-prework. Print your certificate and score report and bring them to class, or be ready to show proof of completion.
 - Make sure your BLS skills are current — you'll be tested on adult high-quality CPR/AED skills using a feedback manikin at the start of class.
 
@@ -4515,6 +4521,8 @@ function getSseMergeValues(){
     '{{today}}':      formatDate(today()),
     '{{duration}}':   c?.duration?`Approximately ${c.duration}`:'',
     '{{certName}}':   c?.certName||(c?.type?`${c.type} Provider`:''),
+    '{{deposit}}':    fmt$((parseFloat(r?r.charge:c?.defaultCharge)||0)/2),
+    '{{balance}}':    fmt$((parseFloat(r?r.charge:c?.defaultCharge)||0)/2),
   };
 }
 
