@@ -1241,9 +1241,13 @@
     </div>
     <div class="fg" style="margin-top:10px"><label>Notes</label><textarea id="cert-notes" placeholder="Additional notes…"></textarea></div>
     <div class="fg">
-      <label>Google Drive Link (photo/scan of cert)</label>
-      <input type="url" id="cert-photo-url" placeholder="https://drive.google.com/file/d/…" />
-      <div style="font-size:11px;color:var(--muted);margin-top:5px">Right-click image in Google Drive → Share → Copy link</div>
+      <label>Certificate Photos / Scans</label>
+      <input type="file" id="cert-photo-files" accept="image/*,application/pdf" multiple style="display:none" />
+      <button type="button" class="btn sm" id="cert-photo-btn">📷 Upload Photos / Files</button>
+      <div id="cert-photo-list" style="font-size:12px;color:var(--muted);margin-top:8px"></div>
+      <div class="notice" id="cert-storage-notice" style="display:none;margin-top:6px">Firebase Storage isn't enabled — enable it in the Firebase console to upload files.</div>
+      <div style="font-size:11px;color:var(--muted);margin-top:10px">Or paste an external link (Google Drive, etc.):</div>
+      <input type="url" id="cert-photo-url" placeholder="https://drive.google.com/file/d/…" style="margin-top:4px" />
     </div>
     <div id="cert-err" style="color:#f87171;font-size:13px;min-height:18px;margin-bottom:8px"></div>
     <button class="btn primary full" id="cert-save-btn">Save Certification</button>
@@ -1287,7 +1291,16 @@
       </div>
       <div class="fg" style="margin-top:10px"><label>Expiry Date</label><input type="date" id="certd-e-expiry" /></div>
       <div class="fg"><label>Login / Renewal URL</label><input type="url" id="certd-e-loginurl" placeholder="https://…" /></div>
-      <div class="fg"><label>Photo / Certificate Image (Drive link)</label><input type="url" id="certd-e-photourl" placeholder="https://drive.google.com/file/d/…" /></div>
+      <div class="fg">
+        <label>Certificate Photos / Scans</label>
+        <div id="certd-e-attach-list" style="margin-bottom:8px"></div>
+        <input type="file" id="certd-e-photo-files" accept="image/*,application/pdf" multiple style="display:none" />
+        <button type="button" class="btn sm" id="certd-e-photo-btn">📷 Upload Photos / Files</button>
+        <div id="certd-e-photo-pending" style="font-size:12px;color:var(--muted);margin-top:8px"></div>
+        <div class="notice" id="certd-e-storage-notice" style="display:none;margin-top:6px">Firebase Storage isn't enabled — enable it in the Firebase console to upload files.</div>
+        <div style="font-size:11px;color:var(--muted);margin-top:10px">Or external link:</div>
+        <input type="url" id="certd-e-photourl" placeholder="https://drive.google.com/file/d/…" style="margin-top:4px" />
+      </div>
       <div class="fg"><label>Notes</label><textarea id="certd-e-notes" style="min-height:60px"></textarea></div>
       <div id="certd-e-err" style="color:#f87171;font-size:13px;min-height:18px;margin-bottom:8px"></div>
       <div style="display:flex;gap:8px">
@@ -2708,15 +2721,68 @@ function certCard(c,icon){
   const cls=expiryClass(c.expiry);
   return `<div class="cert-card" onclick="openCertDetail('${c.id}')">
     <div class="cert-icon">${icon}</div>
-    <div class="cert-body"><div class="cert-name">${c.name}</div><div class="cert-sub">${c.certNumber?'#'+c.certNumber+' · ':''} ${c.state||''}</div><div class="cert-exp exp-${cls}">${c.expiry?expiryLabel(c.expiry):'No expiry set'}</div></div>
+    <div class="cert-body"><div class="cert-name">${c.name}</div><div class="cert-sub">${c.certNumber?'#'+c.certNumber+' · ':''} ${c.state||''}${(c.attachments&&c.attachments.length)?' · 📎'+c.attachments.length:''}</div><div class="cert-exp exp-${cls}">${c.expiry?expiryLabel(c.expiry):'No expiry set'}</div></div>
     ${c.loginUrl?'<span class="cert-link-dot" title="Login URL saved"></span>':''}
     <span class="exp-dot ${cls}" style="margin-left:${c.loginUrl?'6px':'auto'}"></span>
   </div>`;
 }
+// ---- Cert photo/document upload helpers ----
+let newCertFiles=[];              // files chosen in the Add-Cert modal (uploaded after doc is created)
+let editCertAttachments=[];       // existing attachments kept while editing
+let editCertNewFiles=[];          // files chosen while editing (uploaded on save)
+
+function certAttachIcon(a){ return fileIcon(a.type||'').icon; }
+
+// Upload a list of File objects to certs/{uid}/{certId}/ and return attachment metadata.
+async function uploadCertFiles(certId, files, onProg){
+  const out=[];
+  for(const file of files){
+    const safe=file.name.replace(/[#?\[\]*]/g,'_');
+    const path=`certs/${UID}/${certId}/${Date.now()}_${safe}`;
+    const task=stgRef(path).put(file);
+    await new Promise((res,rej)=>task.on('state_changed',
+      s=>{ if(onProg) onProg(file.name, Math.round(s.bytesTransferred/s.totalBytes*100)); }, rej, res));
+    const url=await stgRef(path).getDownloadURL();
+    out.push({name:file.name, url, path, size:file.size, type:file.type});
+  }
+  return out;
+}
+
+// Best-effort delete of a cert's stored files.
+async function deleteCertStorage(cert){
+  if(!fbStorage||!cert) return;
+  const atts=cert.attachments||[];
+  await Promise.all(atts.filter(a=>a.path).map(a=>stgRef(a.path).delete().catch(()=>{})));
+}
+
+// ---- Add-Cert modal photo picker ----
+$('cert-photo-btn').addEventListener('click',()=>{
+  if(!fbStorage){$('cert-storage-notice').style.display='';return;}
+  $('cert-photo-files').click();
+});
+$('cert-photo-files').addEventListener('change',function(){
+  newCertFiles=newCertFiles.concat(Array.from(this.files));
+  this.value='';
+  renderNewCertFileList();
+});
+function renderNewCertFileList(){
+  $('cert-photo-list').innerHTML=newCertFiles.length
+    ? newCertFiles.map((f,i)=>`<div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+        <span>${fileIcon(f.type||'').icon}</span>
+        <span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f.name}</span>
+        <span style="color:var(--muted)">${fmtBytes(f.size)}</span>
+        <button type="button" class="btn sm danger" onclick="removeNewCertFile(${i})">×</button>
+      </div>`).join('')
+    : '';
+}
+window.removeNewCertFile=function(i){ newCertFiles.splice(i,1); renderNewCertFileList(); };
+
 $('new-cert-btn').addEventListener('click',()=>{
   ['cert-name','cert-state','cert-number','cert-notes','cert-loginurl','cert-photo-url'].forEach(id=>$(id).value='');
   $('cert-category').value='instructor';$('cert-issue').value='';$('cert-expiry').value='';
   $('cert-err').textContent='';$('cert-state-field').style.display='none';$('cert-loginurl-field').style.display='';
+  newCertFiles=[];renderNewCertFileList();
+  $('cert-storage-notice').style.display=!fbStorage?'':'none';
   openModal('modal-new-cert');
 });
 $('cert-category').addEventListener('change',()=>{
@@ -2726,13 +2792,63 @@ $('cert-category').addEventListener('change',()=>{
 });
 $('cert-save-btn').addEventListener('click',async()=>{
   const name=$('cert-name').value.trim();if(!name){$('cert-err').textContent='Name required.';return;}
+  if(newCertFiles.length&&!fbStorage){$('cert-err').textContent='Firebase Storage not enabled — can\'t upload files.';return;}
   $('cert-save-btn').disabled=true;
   try{
-    await col('certs').add({category:$('cert-category').value,name,state:$('cert-state').value.trim(),certNumber:$('cert-number').value.trim(),issue:$('cert-issue').value,expiry:$('cert-expiry').value,notes:$('cert-notes').value.trim(),loginUrl:$('cert-loginurl').value.trim(),photoUrl:$('cert-photo-url').value.trim(),createdAt:Date.now()});
+    const ref=await col('certs').add({category:$('cert-category').value,name,state:$('cert-state').value.trim(),certNumber:$('cert-number').value.trim(),issue:$('cert-issue').value,expiry:$('cert-expiry').value,notes:$('cert-notes').value.trim(),loginUrl:$('cert-loginurl').value.trim(),photoUrl:$('cert-photo-url').value.trim(),attachments:[],createdAt:Date.now()});
+    if(newCertFiles.length){
+      $('cert-err').style.color='var(--muted)';
+      const attachments=await uploadCertFiles(ref.id,newCertFiles,(n,p)=>{$('cert-err').textContent=`Uploading ${n}… ${p}%`;});
+      await col('certs').doc(ref.id).update({attachments});
+      $('cert-err').style.color='#f87171';
+    }
+    newCertFiles=[];
     closeModal('modal-new-cert');
-  }catch(e){$('cert-err').textContent='Error: '+e.message;}
+  }catch(e){$('cert-err').style.color='#f87171';$('cert-err').textContent='Error: '+e.message;}
   $('cert-save-btn').disabled=false;
 });
+// Render the read-only photo/document gallery in the cert detail view.
+function renderCertPhotos(c){
+  const wrap=$('certd-photo-wrap');
+  const atts=(c.attachments||[]).slice();
+  const legacy=c.photoUrl||c.photoBase64||'';
+  if(!atts.length&&!legacy){wrap.style.display='none';wrap.innerHTML='';return;}
+  wrap.style.display='';
+  let html='<div style="font-size:12px;color:var(--muted);margin-bottom:8px">Certificate Photos / Documents</div>';
+  const imgs=atts.filter(a=>(a.type||'').startsWith('image'));
+  const others=atts.filter(a=>!(a.type||'').startsWith('image'));
+  if(imgs.length){
+    html+='<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;margin-bottom:10px">'
+      +imgs.map(a=>`<a href="${a.url}" target="_blank" rel="noopener" title="${a.name}"><img src="${a.url}" alt="${a.name}" style="width:100%;height:110px;object-fit:cover;border-radius:10px;border:1px solid var(--border)"></a>`).join('')
+      +'</div>';
+  }
+  others.forEach(a=>{html+=`<a href="${a.url}" target="_blank" rel="noopener" class="open-url-btn" style="margin-bottom:6px">${certAttachIcon(a)} ${a.name}</a>`;});
+  if(legacy){html+=`<a href="${legacy}" target="_blank" rel="noopener" class="open-url-btn">📷 Open Certificate Photo (external link)</a>`;}
+  wrap.innerHTML=html;
+}
+
+// Render the editable attachment list (existing + newly picked) inside the edit form.
+function renderEditCertAttachments(){
+  const rows=[];
+  editCertAttachments.forEach((a,i)=>rows.push(`<div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+    <span>${certAttachIcon(a)}</span>
+    <a href="${a.url}" target="_blank" rel="noopener" style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${a.name}</a>
+    <span style="color:var(--muted)">${fmtBytes(a.size)}</span>
+    <button type="button" class="btn sm danger" onclick="removeEditCertAttachment(${i})">×</button>
+  </div>`));
+  editCertNewFiles.forEach((f,i)=>rows.push(`<div style="display:flex;align-items:center;gap:8px;margin-top:4px;opacity:.7">
+    <span>${fileIcon(f.type||'').icon}</span>
+    <span style="flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${f.name} (new)</span>
+    <span style="color:var(--muted)">${fmtBytes(f.size)}</span>
+    <button type="button" class="btn sm danger" onclick="removeEditCertNewFile(${i})">×</button>
+  </div>`));
+  $('certd-e-attach-list').innerHTML=rows.join('');
+}
+window.removeEditCertAttachment=function(i){editCertAttachments.splice(i,1);renderEditCertAttachments();};
+window.removeEditCertNewFile=function(i){editCertNewFiles.splice(i,1);renderEditCertAttachments();};
+$('certd-e-photo-btn').addEventListener('click',()=>{if(!fbStorage){$('certd-e-storage-notice').style.display='';return;}$('certd-e-photo-files').click();});
+$('certd-e-photo-files').addEventListener('change',function(){editCertNewFiles=editCertNewFiles.concat(Array.from(this.files));this.value='';renderEditCertAttachments();});
+
 window.openCertDetail=function(certId){
   currentCertId=certId;const c=allCerts.find(x=>x.id===certId);if(!c)return;
   $('certd-title').textContent=c.name;
@@ -2747,13 +2863,17 @@ window.openCertDetail=function(certId){
   </div>
   ${c.loginUrl?`<div style="margin-top:12px"><div style="font-size:12px;color:var(--muted);margin-bottom:6px">Renewal Portal</div><a href="${c.loginUrl}" target="_blank" rel="noopener" class="open-url-btn">🔗 Open Login Page</a></div>`:''}
   `;
-  const photoUrl=c.photoUrl||c.photoBase64||'';
-  if(photoUrl){$('certd-photo-wrap').style.display='';$('certd-photo-link').href=photoUrl;}
-  else{$('certd-photo-wrap').style.display='none';}
+  renderCertPhotos(c);
+  $('certd-body').style.display='';
+  $('certd-edit-form').style.display='none';
+  $('certd-edit-btn').style.display='';
+  $('certd-delete-btn').style.display='';
   openModal('modal-cert-detail');
 };
 $('certd-delete-btn').addEventListener('click',async()=>{
-  if(!confirm('Delete this certification?'))return;
+  if(!confirm('Delete this certification? Any uploaded photos/documents will also be removed.'))return;
+  const cert=allCerts.find(x=>x.id===currentCertId);
+  await deleteCertStorage(cert);
   await col('certs').doc(currentCertId).delete();closeModal('modal-cert-detail');
 });
 $('certd-edit-btn').addEventListener('click',()=>{
@@ -2767,6 +2887,11 @@ $('certd-edit-btn').addEventListener('click',()=>{
   $('certd-e-loginurl').value=c.loginUrl||'';
   $('certd-e-photourl').value=c.photoUrl||'';
   $('certd-e-notes').value=c.notes||'';
+  editCertAttachments=(c.attachments||[]).slice();
+  editCertNewFiles=[];
+  renderEditCertAttachments();
+  $('certd-e-photo-pending').textContent='';
+  $('certd-e-storage-notice').style.display=!fbStorage?'':'none';
   $('certd-e-err').textContent='';
   $('certd-body').style.display='none';
   $('certd-photo-wrap').style.display='none';
@@ -2779,20 +2904,37 @@ $('certd-e-cancel').addEventListener('click',()=>{
   $('certd-edit-form').style.display='none';
   $('certd-edit-btn').style.display='';
   $('certd-delete-btn').style.display='';
+  editCertNewFiles=[];editCertAttachments=[];
   const c=allCerts.find(x=>x.id===currentCertId);
-  if(c){const photoUrl=c.photoUrl||c.photoBase64||'';$('certd-photo-wrap').style.display=photoUrl?'':'none';if(photoUrl)$('certd-photo-link').href=photoUrl;}
+  if(c)renderCertPhotos(c);
 });
 $('certd-e-save').addEventListener('click',async()=>{
   const name=$('certd-e-name').value.trim();
   if(!name){$('certd-e-err').textContent='Name required.';return;}
+  if(editCertNewFiles.length&&!fbStorage){$('certd-e-err').textContent='Firebase Storage not enabled — can\'t upload files.';return;}
   $('certd-e-save').disabled=true;
   try{
+    const cert=allCerts.find(x=>x.id===currentCertId)||{};
+    let uploaded=[];
+    if(editCertNewFiles.length){
+      uploaded=await uploadCertFiles(currentCertId,editCertNewFiles,(n,p)=>{$('certd-e-photo-pending').textContent=`Uploading ${n}… ${p}%`;});
+      $('certd-e-photo-pending').textContent='';
+    }
+    const attachments=editCertAttachments.concat(uploaded);
+    // Delete any previously-stored files the user removed while editing.
+    if(fbStorage){
+      const keptPaths=new Set(attachments.map(a=>a.path).filter(Boolean));
+      const removed=(cert.attachments||[]).filter(a=>a.path&&!keptPaths.has(a.path));
+      await Promise.all(removed.map(a=>stgRef(a.path).delete().catch(()=>{})));
+    }
     await col('certs').doc(currentCertId).update({
       name,category:$('certd-e-category').value,state:$('certd-e-state').value.trim(),
       certNumber:$('certd-e-number').value.trim(),issue:$('certd-e-issue').value,
       expiry:$('certd-e-expiry').value,loginUrl:$('certd-e-loginurl').value.trim(),
-      photoUrl:$('certd-e-photourl').value.trim(),notes:$('certd-e-notes').value.trim()
+      photoUrl:$('certd-e-photourl').value.trim(),notes:$('certd-e-notes').value.trim(),
+      attachments
     });
+    editCertNewFiles=[];editCertAttachments=[];
     closeModal('modal-cert-detail');
   }catch(e){$('certd-e-err').textContent='Error: '+e.message;}
   $('certd-e-save').disabled=false;

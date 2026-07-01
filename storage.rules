@@ -1,0 +1,43 @@
+rules_version = '2';
+
+// Firebase Storage security rules for Class Manager.
+//
+// HOW TO APPLY:
+//   Firebase Console -> Build -> Storage -> Rules tab -> paste this whole file
+//   -> Publish.  (Or run `firebase deploy --only storage` if you use the CLI.)
+//
+// Model: every file lives under a folder named with the owner's auth UID, so a
+// signed-in user can only read/write their own files and nobody else's.
+//   records/{uid}/...  -> student record documents (Dashboard -> Records)
+//   certs/{uid}/...    -> certification photos / scans (Certifications)
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // Student record documents: the owner may upload/read/delete anything they
+    // put under their own uid folder. 50 MB per-file cap.
+    match /records/{uid}/{allPaths=**} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if request.auth != null
+                   && request.auth.uid == uid
+                   && request.resource.size < 50 * 1024 * 1024;
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Certification photos / scans. Restricted to images and PDFs, 25 MB cap.
+    match /certs/{uid}/{allPaths=**} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if request.auth != null
+                   && request.auth.uid == uid
+                   && request.resource.size < 25 * 1024 * 1024
+                   && (request.resource.contentType.matches('image/.*')
+                       || request.resource.contentType == 'application/pdf');
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // Everything else: locked down.
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
