@@ -2445,7 +2445,7 @@ function buildEmailPanel(c){
   // Default subject/body (used when no template loaded)
   $('email-subject').value=`Upcoming ${c.type} Class – ${formatDate(c.date)}`;
   let body=`Hello,\n\nYour upcoming {{class}} class is confirmed for {{date}} at {{time}}.\n\nLocation: {{location}}\n`;
-  if(c.defaultCharge)body+=`\nClass fee: ${{charge}}. Payment due: {{dueDate}}\n`;
+  if(c.defaultCharge)body+=`\nClass fee: \${{charge}}. Payment due: {{dueDate}}\n`;
   if(c.isInstructorCourse)body+=`\nSince this is an instructor course, please ensure you have:\n1. An AHA account at https://www.heart.org — create one if you don't have one yet.\n2. An Atlas account — your AHA Training Center will send setup instructions.\n\nPlease complete both before the class.\n`;
   if(c.requiresPretest)body+=`\n${PRETEST_BLOCK}\n`;
   body+=`\n{{note}}\n\nPlease reply with any questions.\n\nThank you!`;
@@ -4205,7 +4205,7 @@ Thank you for expressing interest in the {{class}} Provider Course with {{instru
 Course Information:
 
 Duration: Approximately 6 hours.
-Cost: ${{charge}} total, divided into two payments: a $60 deposit to reserve your seat and a $60 balance due upon successful course completion. The deposit is non-refundable and will only be refunded if the course is canceled or rescheduled by the instructor.
+Cost: \${{charge}} total, divided into two payments: a $60 deposit to reserve your seat and a $60 balance due upon successful course completion. The deposit is non-refundable and will only be refunded if the course is canceled or rescheduled by the instructor.
 Certification: Your AHA {{class}} Provider eCard will be issued through Baptist Health upon successful completion of the course.
 
 {{pretest}}
