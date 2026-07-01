@@ -648,6 +648,7 @@
       <button class="stab" id="stab-students">👥 Students</button>
       <button class="stab" id="stab-instructors">👨‍🏫 Instructors</button>
       <button class="stab" id="stab-classtpl">📋 Templates</button>
+      <button class="stab" id="stab-pricing">💲 Pricing</button>
     </div>
 
     <!-- Classes sub-panel -->
@@ -689,6 +690,20 @@
         <button class="btn primary sm" id="new-classtpl-btn">+ New Template</button>
       </div>
       <div id="classtpl-list"></div>
+    </div>
+
+    <!-- Pricing sub-panel -->
+    <div id="subpanel-pricing" style="display:none">
+      <div class="sec-hd">
+        <div class="sec-title">Recommended Pricing</div>
+      </div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:14px">These show up as a one-click "Use this price" fill-in when scheduling ACLS, PALS, or BLS classes. Adjust them to match your own rates.</div>
+      <div id="pricing-grid" style="display:flex;flex-direction:column;gap:10px"></div>
+      <div style="display:flex;gap:10px;margin-top:16px">
+        <button class="btn primary" id="pricing-save-btn">Save Pricing</button>
+        <button class="btn" id="pricing-reset-btn">Reset to Defaults</button>
+      </div>
+      <div id="pricing-err" style="color:#f87171;font-size:13px;min-height:18px;margin-top:8px"></div>
     </div>
 
     <!-- Instructors sub-panel -->
@@ -1834,15 +1849,20 @@ function classTypeKey(t=''){
 function ctBadge(type){return `<span class="ct-badge ct-${classTypeKey(type)}">${type||'—'}</span>`;}
 
 // Recommended pricing/CEUs by course type + Initial/Renewal, based on typical 2026 AHA course rates.
-const COURSE_PRICING={
+// Editable per-user overrides live in Firestore (settings/pricing) — see PRICING SETTINGS below.
+const DEFAULT_COURSE_PRICING={
   ACLS:{Initial:{price:235,ceu:8},Renewal:{price:150,ceu:4}},
   PALS:{Initial:{price:225,ceu:8},Renewal:{price:165,ceu:6}},
   BLS:{Initial:{price:90,ceu:4},Renewal:{price:65,ceu:2}},
 };
+let pricingOverrides={};
+function getCoursePricing(type,variant){
+  return pricingOverrides[type]?.[variant]||DEFAULT_COURSE_PRICING[type]?.[variant];
+}
 function updateNcVariantVisibility(){
   const type=$('nc-type').value;
   const wrap=$('nc-variant-wrap');
-  if(COURSE_PRICING[type]){
+  if(DEFAULT_COURSE_PRICING[type]){
     wrap.style.display='';
     if(!$('nc-variant').value)syncOptGroup('nc-variant','Initial');
   } else {
@@ -1852,7 +1872,7 @@ function updateNcVariantVisibility(){
   updateNcPriceHint();
 }
 function updateNcPriceHint(){
-  const rec=COURSE_PRICING[$('nc-type').value]?.[$('nc-variant').value];
+  const rec=getCoursePricing($('nc-type').value,$('nc-variant').value);
   const hint=$('nc-price-hint');
   hint.innerHTML=rec?`Recommended: ${fmt$(rec.price)} · ${rec.ceu} CEUs · <span style="color:var(--accent);cursor:pointer;text-decoration:underline" onclick="$('nc-charge').value='${rec.price}'">Use this price</span>`:'';
 }
@@ -2133,6 +2153,10 @@ function setupListeners(){
     infoDoc=snap.exists?snap.data():{};
     if($('subpanel-dash-info').style.display!=='none')renderInfo();
   },console.error);
+  col('settings').doc('pricing').onSnapshot(snap=>{
+    pricingOverrides=snap.exists?snap.data():{};
+    if($('subpanel-pricing')&&$('subpanel-pricing').style.display!=='none')renderPricingGrid();
+  },console.error);
   unsubs.push(col('faq').orderBy('createdAt','asc').onSnapshot(snap=>{
     allFaq=snap.docs.map(d=>({id:d.id,...d.data()}));
     if($('subpanel-dash-info').style.display!=='none')renderInfo();
@@ -2198,7 +2222,7 @@ document.getElementById('tabs').querySelectorAll('.tab').forEach(tab=>{
   });
 });
 function activateClassesTab(which){
-  ['classes','students','instructors','classtpl'].forEach(n=>{
+  ['classes','students','instructors','classtpl','pricing'].forEach(n=>{
     $(`stab-${n}`).classList.toggle('active',n===which);
     $(`subpanel-${n}`).style.display=n===which?'':'none';
   });
@@ -2206,8 +2230,9 @@ function activateClassesTab(which){
   else if(which==='students'){currentView='students';renderStudents();}
   else if(which==='instructors'){currentView='classes';renderInstructors();}
   else if(which==='classtpl'){currentView='classes';renderClassTemplates();}
+  else if(which==='pricing'){currentView='classes';renderPricingGrid();}
 }
-['classes','students','instructors','classtpl'].forEach(n=>{
+['classes','students','instructors','classtpl','pricing'].forEach(n=>{
   $(`stab-${n}`).addEventListener('click',()=>activateClassesTab(n));
 });
 
@@ -2356,7 +2381,7 @@ $('nc-save-btn').addEventListener('click',async()=>{
     maxStudents:parseInt($('nc-max').value)||null,defaultCharge:parseFloat($('nc-charge').value)||0,
     notes:$('nc-notes').value.trim(),isInstructorCourse:$('nc-instructor-course').checked,
     adjunctInstructors:[...ncAdjInstructors],
-    variant:variant||null,ceuCredits:COURSE_PRICING[type]?.[variant]?.ceu||null};
+    variant:variant||null,ceuCredits:getCoursePricing(type,variant)?.ceu||null};
   try{
     if(editingClassId){
       await col('classes').doc(editingClassId).update(fields);
@@ -4028,6 +4053,44 @@ function renderClassTemplates(){
       </div>`).join('')
     :`<div class="empty"><div class="empty-icon">📋</div><div class="empty-text">No class templates yet.<br>Create one or tap 📋 on any class to save it as a template.</div></div>`;
 }
+
+// ============================================================
+// PRICING SETTINGS
+// ============================================================
+function renderPricingGrid(table){
+  table=table||{ACLS:{...DEFAULT_COURSE_PRICING.ACLS,...pricingOverrides.ACLS},PALS:{...DEFAULT_COURSE_PRICING.PALS,...pricingOverrides.PALS},BLS:{...DEFAULT_COURSE_PRICING.BLS,...pricingOverrides.BLS}};
+  $('pricing-grid').innerHTML=['ACLS','PALS','BLS'].map(type=>['Initial','Renewal'].map(variant=>{
+    const rec=table[type][variant];
+    return `<div class="row2" style="align-items:flex-end">
+      <div class="fg" style="margin:0"><label>${type} ${variant} — Price ($)</label><input type="number" class="pricing-price-input" data-type="${type}" data-variant="${variant}" value="${rec.price}" min="0" step="0.01" /></div>
+      <div class="fg" style="margin:0"><label>${type} ${variant} — CEUs</label><input type="number" class="pricing-ceu-input" data-type="${type}" data-variant="${variant}" value="${rec.ceu}" min="0" step="0.25" /></div>
+    </div>`;
+  }).join('')).join('');
+  $('pricing-err').textContent='';
+}
+$('pricing-save-btn').addEventListener('click',async()=>{
+  $('pricing-save-btn').disabled=true;$('pricing-err').textContent='';
+  const overrides={};
+  document.querySelectorAll('.pricing-price-input').forEach(inp=>{
+    const {type,variant}=inp.dataset;
+    overrides[type]=overrides[type]||{};
+    overrides[type][variant]={...(overrides[type][variant]||{}),price:parseFloat(inp.value)||0};
+  });
+  document.querySelectorAll('.pricing-ceu-input').forEach(inp=>{
+    const {type,variant}=inp.dataset;
+    overrides[type]=overrides[type]||{};
+    overrides[type][variant]={...(overrides[type][variant]||{}),ceu:parseFloat(inp.value)||0};
+  });
+  try{
+    await col('settings').doc('pricing').set(overrides);
+    $('pricing-save-btn').textContent='Saved ✓';setTimeout(()=>$('pricing-save-btn').textContent='Save Pricing',2000);
+  }catch(e){$('pricing-err').textContent='Error: '+e.message;}
+  $('pricing-save-btn').disabled=false;
+});
+$('pricing-reset-btn').addEventListener('click',()=>{
+  if(!confirm('Reset all recommended prices and CEUs to defaults? This clears your custom values (click Save Pricing to persist).'))return;
+  renderPricingGrid(DEFAULT_COURSE_PRICING);
+});
 
 function openClassTplEditModal(prefill, isNew, existingId){
   currentClassTplId = isNew ? null : (existingId || null);
