@@ -944,6 +944,10 @@
       <div><div class="toggle-lbl">Instructor Course</div><div class="toggle-sub">Adds AHA/Atlas setup info to emails</div></div>
       <label class="toggle"><input type="checkbox" id="nc-instructor-course"><span class="slider"></span></label>
     </div>
+    <div class="toggle-row" style="margin-bottom:14px">
+      <div><div class="toggle-lbl">Pretest Required</div><div class="toggle-sub">Adds pretest instructions & link to emails</div></div>
+      <label class="toggle"><input type="checkbox" id="nc-pretest-required"><span class="slider"></span></label>
+    </div>
     <div id="nc-err" style="color:#f87171;font-size:13px;min-height:18px;margin-bottom:8px"></div>
     <button class="btn primary full" id="nc-save-btn">Schedule Class</button>
   </div>
@@ -1048,6 +1052,7 @@
         <span class="var-pill" onclick="insertEmailVar('{{charge}}')">{{charge}}</span>
         <span class="var-pill" onclick="insertEmailVar('{{dueDate}}')">{{dueDate}}</span>
         <span class="var-pill" onclick="insertEmailVar('{{note}}')">{{note}}</span>
+        <span class="var-pill" onclick="insertEmailVar('{{pretest}}')">{{pretest}}</span>
       </div>
       <button class="btn primary full" id="send-email-btn">📨 Open in Email Client</button>
       <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px" id="send-email-hint">Opens your default mail app with all roster emails pre-filled</div>
@@ -1649,6 +1654,10 @@
       <div><div class="toggle-lbl">Instructor Course</div><div class="toggle-sub">Adds AHA/Atlas setup info to emails</div></div>
       <label class="toggle"><input type="checkbox" id="ct-instructor-course"><span class="slider"></span></label>
     </div>
+    <div class="toggle-row" style="margin-bottom:14px">
+      <div><div class="toggle-lbl">Pretest Required</div><div class="toggle-sub">Adds pretest instructions & link to emails</div></div>
+      <label class="toggle"><input type="checkbox" id="ct-pretest-required"><span class="slider"></span></label>
+    </div>
     <div id="ct-err" style="color:#f87171;font-size:13px;min-height:18px;margin-bottom:8px"></div>
     <div style="display:flex;gap:10px">
       <button class="btn danger" id="ct-delete-btn" style="display:none">Delete</button>
@@ -1766,6 +1775,7 @@
       <span class="var-pill" onclick="insertSseVar('{{charge}}')">{{charge}}</span>
       <span class="var-pill" onclick="insertSseVar('{{dueDate}}')">{{dueDate}}</span>
       <span class="var-pill" onclick="insertSseVar('{{note}}')">{{note}}</span>
+      <span class="var-pill" onclick="insertSseVar('{{pretest}}')">{{pretest}}</span>
     </div>
     <button class="btn primary full" id="sse-send-btn">📨 Open in Email Client</button>
     <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px">Opens your default mail app with this message pre-filled</div>
@@ -1820,6 +1830,7 @@ let allDocFolders=[];
 let currentDocStudentId=null, currentDocSubfolder=null;
 let ncAdjInstructors=[], editingClassId=null;
 const unsubs=[];
+const PRETEST_BLOCK='Please complete the required pretest prior to arriving: https://shopcpr.heart.org/acls-prework\nYou must either bring a printed copy of your completion certificate or be prepared to show proof of completion at the beginning of class.';
 
 // ============================================================
 // HELPERS
@@ -2303,7 +2314,7 @@ function renderClasses(){
     ?list.map(c=>{const cnt=allRoster.filter(r=>r.classId===c.id).length,rev=allRoster.filter(r=>r.classId===c.id).reduce((s,r)=>s+(+r.charge||0),0);
       return `<div class="class-card" onclick="openClassDetail('${c.id}')">
         <div class="class-card-hd">
-          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">${ctBadge(c.type)}${c.variant?`<span class="ct-badge ct-other">${c.variant}</span>`:''}${c.isInstructorCourse?'<span class="ct-badge ct-inst">Instructor</span>':''}${classStatusBadge(c.status)}</div>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">${ctBadge(c.type)}${c.variant?`<span class="ct-badge ct-other">${c.variant}</span>`:''}${c.isInstructorCourse?'<span class="ct-badge ct-inst">Instructor</span>':''}${c.requiresPretest?'<span class="ct-badge ct-other">Pretest</span>':''}${classStatusBadge(c.status)}</div>
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-size:13px;color:var(--ok);font-weight:600">${fmt$(rev)}</span>
             <button class="btn sm primary" onclick="event.stopPropagation();openClassEdit('${c.id}')" style="font-size:12px;padding:4px 8px">✏️ Edit</button>
@@ -2334,6 +2345,7 @@ function openNewClassModal(prefill, classIdToEdit){
   $('nc-charge').value=prefill.defaultCharge||'';
   $('nc-notes').value=prefill.notes||'';
   $('nc-instructor-course').checked=!!prefill.isInstructorCourse;
+  $('nc-pretest-required').checked=!!prefill.requiresPretest;
   ncAdjInstructors=[...(prefill.adjunctInstructors||[])];
   $('nc-adj-input').value='';renderNcAdjList();
   $('nc-err').textContent='';
@@ -2371,6 +2383,7 @@ $('nc-tpl-load-btn').addEventListener('click',()=>{
   $('nc-charge').value=t.defaultCharge||'';
   $('nc-notes').value=t.notes||'';
   $('nc-instructor-course').checked=!!t.isInstructorCourse;
+  $('nc-pretest-required').checked=!!t.requiresPretest;
   ncAdjInstructors=[...(t.adjunctInstructors||[])];$('nc-adj-input').value='';renderNcAdjList();
 });
 $('nc-save-btn').addEventListener('click',async()=>{
@@ -2380,6 +2393,7 @@ $('nc-save-btn').addEventListener('click',async()=>{
   const fields={type,date,time:$('nc-time').value,location:$('nc-location').value.trim(),
     maxStudents:parseInt($('nc-max').value)||null,defaultCharge:parseFloat($('nc-charge').value)||0,
     notes:$('nc-notes').value.trim(),isInstructorCourse:$('nc-instructor-course').checked,
+    requiresPretest:$('nc-pretest-required').checked,
     adjunctInstructors:[...ncAdjInstructors],
     variant:variant||null,ceuCredits:getCoursePricing(type,variant)?.ceu||null};
   try{
@@ -2403,7 +2417,7 @@ window.openClassDetail=function(classId){
   currentClassId=classId;
   const c=allClasses.find(x=>x.id===classId);if(!c)return;
   $('cd-title').textContent=c.type+(c.variant?` — ${c.variant}`:'');
-  $('cd-badges').innerHTML=ctBadge(c.type)+(c.isInstructorCourse?'<span class="ct-badge ct-inst" style="margin-left:6px">Instructor Course</span>':'')+(c.ceuCredits?`<span class="ct-badge ct-other" style="margin-left:6px">${c.ceuCredits} CEUs</span>`:'');
+  $('cd-badges').innerHTML=ctBadge(c.type)+(c.isInstructorCourse?'<span class="ct-badge ct-inst" style="margin-left:6px">Instructor Course</span>':'')+(c.requiresPretest?'<span class="ct-badge ct-other" style="margin-left:6px">Pretest Required</span>':'')+(c.ceuCredits?`<span class="ct-badge ct-other" style="margin-left:6px">${c.ceuCredits} CEUs</span>`:'');
   $('cd-meta').innerHTML=`<span>📅 ${formatDate(c.date)}${c.time?' '+formatTime(c.time):''}</span><span>📍 ${c.location||'Location TBD'}</span>${c.adjunctInstructors?.length?`<span>👨‍🏫 ${c.adjunctInstructors.join(', ')}</span>`:''}`;
   document.querySelectorAll('.mtab[data-mtab="cd"]').forEach((t,i)=>t.classList.toggle('active',i===0));
   ['cd-roster','cd-attend','cd-checklist','cd-email','cd-notes'].forEach((id,i)=>$(id).style.display=i===0?'':'none');
@@ -2429,6 +2443,7 @@ function buildEmailPanel(c){
   let body=`Hello,\n\nYour upcoming {{class}} class is confirmed for {{date}} at {{time}}.\n\nLocation: {{location}}\n`;
   if(c.defaultCharge)body+=`\nClass fee: ${{charge}}. Payment due: {{dueDate}}\n`;
   if(c.isInstructorCourse)body+=`\nSince this is an instructor course, please ensure you have:\n1. An AHA account at https://www.heart.org — create one if you don't have one yet.\n2. An Atlas account — your AHA Training Center will send setup instructions.\n\nPlease complete both before the class.\n`;
+  if(c.requiresPretest)body+=`\n${PRETEST_BLOCK}\n`;
   body+=`\n{{note}}\n\nPlease reply with any questions.\n\nThank you!`;
   $('email-body').value=body;
   populateEmailTplSelect();
@@ -2446,6 +2461,7 @@ function getMergeValues(extraName){
     '{{charge}}':     $('email-mf-charge').value||c.defaultCharge||'',
     '{{dueDate}}':    $('email-mf-due').value||'',
     '{{note}}':       $('email-mf-note').value||'',
+    '{{pretest}}':    c.requiresPretest?PRETEST_BLOCK:'',
   };
 }
 
@@ -2537,7 +2553,7 @@ $('cd-save-tpl-btn').addEventListener('click',()=>{
     name:`${c.type} – ${c.location||'Template'}`,
     type:c.type,location:c.location,time:c.time,
     maxStudents:c.maxStudents,defaultCharge:c.defaultCharge,
-    notes:c.notes,isInstructorCourse:c.isInstructorCourse
+    notes:c.notes,isInstructorCourse:c.isInstructorCourse,requiresPretest:c.requiresPretest
   },true);
 });
 $('cd-delete-btn').addEventListener('click',async()=>{
@@ -4102,6 +4118,7 @@ function openClassTplEditModal(prefill, isNew, existingId){
   $('ct-charge').value = prefill.defaultCharge || '';
   $('ct-notes').value = prefill.notes || '';
   $('ct-instructor-course').checked = !!prefill.isInstructorCourse;
+  $('ct-pretest-required').checked = !!prefill.requiresPretest;
   $('ct-err').textContent = '';
   $('ct-delete-btn').style.display = currentClassTplId ? '' : 'none';
   syncOptGroup('ct-type', prefill.type || '');
@@ -4146,6 +4163,7 @@ $('ct-save-btn').addEventListener('click',async()=>{
     defaultCharge:parseFloat($('ct-charge').value)||0,
     notes:$('ct-notes').value.trim(),
     isInstructorCourse:$('ct-instructor-course').checked,
+    requiresPretest:$('ct-pretest-required').checked,
     emailTemplateId:$('ct-email-tpl').value||null,
     createdAt:Date.now()
   };
@@ -4184,6 +4202,8 @@ Duration: Approximately 6 hours.
 Cost: ${{charge}} total, divided into two payments: a $60 deposit to reserve your seat and a $60 balance due upon successful course completion. The deposit is non-refundable and will only be refunded if the course is canceled or rescheduled by the instructor.
 Certification: Your AHA {{class}} Provider eCard will be issued through Baptist Health upon successful completion of the course.
 
+{{pretest}}
+
 {{note}}
 
 Please reply with any questions.
@@ -4205,6 +4225,8 @@ Class Details:
 
 Please plan to arrive 10–15 minutes early.
 
+{{pretest}}
+
 {{note}}
 
 If you have any questions, please don't hesitate to reach out.
@@ -4225,6 +4247,8 @@ Important reminders:
   • Please ensure your remaining balance is paid in full prior to receiving your AHA eCard.
   • Bring a valid photo ID.
   • Arrive 10–15 minutes early.
+
+{{pretest}}
 
 {{note}}
 
@@ -4356,6 +4380,7 @@ function getSseMergeValues(){
     '{{charge}}':     r?String(r.charge||''):(c?String(c.defaultCharge||''):''),
     '{{dueDate}}':    '',
     '{{note}}':       '',
+    '{{pretest}}':    c?.requiresPretest?PRETEST_BLOCK:'',
   };
 }
 
