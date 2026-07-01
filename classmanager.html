@@ -1048,22 +1048,24 @@
       </div>
       <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Click a variable to insert at cursor:</div>
       <div style="margin-bottom:14px">
-        <span class="var-pill" onclick="insertEmailVar('{{class}}')">{{class}}</span>
-        <span class="var-pill" onclick="insertEmailVar('{{date}}')">{{date}}</span>
-        <span class="var-pill" onclick="insertEmailVar('{{time}}')">{{time}}</span>
-        <span class="var-pill" onclick="insertEmailVar('{{location}}')">{{location}}</span>
-        <span class="var-pill" onclick="insertEmailVar('{{instructor}}')">{{instructor}}</span>
-        <span class="var-pill" onclick="insertEmailVar('{{charge}}')">{{charge}}</span>
-        <span class="var-pill" onclick="insertEmailVar('{{dueDate}}')">{{dueDate}}</span>
-        <span class="var-pill" onclick="insertEmailVar('{{note}}')">{{note}}</span>
-        <span class="var-pill" onclick="insertEmailVar('{{pretest}}')">{{pretest}}</span>
-        <span class="var-pill" onclick="insertEmailVar('{{phone}}')">{{phone}}</span>
-        <span class="var-pill" onclick="insertEmailVar('{{today}}')">{{today}}</span>
-        <span class="var-pill" onclick="insertEmailVar('{{duration}}')">{{duration}}</span>
-        <span class="var-pill" onclick="insertEmailVar('{{certName}}')">{{certName}}</span>
+        <span class="var-pill" onclick="insertVarInto('email-body','{{class}}')">{{class}}</span>
+        <span class="var-pill" onclick="insertVarInto('email-body','{{date}}')">{{date}}</span>
+        <span class="var-pill" onclick="insertVarInto('email-body','{{time}}')">{{time}}</span>
+        <span class="var-pill" onclick="insertVarInto('email-body','{{location}}')">{{location}}</span>
+        <span class="var-pill" onclick="insertVarInto('email-body','{{instructor}}')">{{instructor}}</span>
+        <span class="var-pill" onclick="insertVarInto('email-body','{{charge}}')">{{charge}}</span>
+        <span class="var-pill" onclick="insertVarInto('email-body','{{dueDate}}')">{{dueDate}}</span>
+        <span class="var-pill" onclick="insertVarInto('email-body','{{note}}')">{{note}}</span>
+        <span class="var-pill" onclick="insertVarInto('email-body','{{pretest}}')">{{pretest}}</span>
+        <span class="var-pill" onclick="insertVarInto('email-body','{{phone}}')">{{phone}}</span>
+        <span class="var-pill" onclick="insertVarInto('email-body','{{today}}')">{{today}}</span>
+        <span class="var-pill" onclick="insertVarInto('email-body','{{duration}}')">{{duration}}</span>
+        <span class="var-pill" onclick="insertVarInto('email-body','{{certName}}')">{{certName}}</span>
+        <span class="var-pill" onclick="insertVarInto('email-body','{{deposit}}')">{{deposit}}</span>
+        <span class="var-pill" onclick="insertVarInto('email-body','{{balance}}')">{{balance}}</span>
       </div>
-      <button class="btn primary full" id="send-email-btn">📨 Open in Email Client</button>
-      <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px" id="send-email-hint">Opens your default mail app with all roster emails pre-filled</div>
+      <button class="btn primary full" id="send-email-btn">📨 Open in Email App</button>
+      <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px" id="send-email-hint">Opens your default email app (Gmail, if set as default) with all roster emails pre-filled</div>
     </div>
     <div id="cd-notes" style="display:none">
       <div class="fg"><label>Class Notes</label><textarea id="cd-notes-text" style="min-height:140px" placeholder="Notes about this class…"></textarea></div>
@@ -1175,7 +1177,7 @@
           <button type="button" class="opt-btn" data-val="Other">Other</button>
         </div>
       </div>
-      <div class="fg"><label style="display:flex;justify-content:space-between;align-items:center">Phone <a id="sp-phone-link" href="#" style="font-size:12px;color:var(--accent2);text-decoration:none;display:none">📞 Call</a></label><input type="tel" id="sp-phone" /></div>
+      <div class="fg"><label style="display:flex;justify-content:space-between;align-items:center">Phone <span><a id="sp-phone-link" href="#" style="font-size:12px;color:var(--accent2);text-decoration:none;display:none">📞 Call</a> <a id="sp-text-link" href="#" style="font-size:12px;color:var(--accent2);text-decoration:none;display:none">📱 Text</a></span></label><input type="tel" id="sp-phone" /></div>
       <div class="fg"><label style="display:flex;justify-content:space-between;align-items:center">Email <a id="sp-email-link" href="#" style="font-size:12px;color:var(--accent2);text-decoration:none;display:none">✉️ Send</a></label><input type="email" id="sp-email" /></div>
       <button class="btn primary full" id="sp-save-btn">Save Changes</button>
     </div>
@@ -1706,15 +1708,22 @@
     </div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Click to insert a variable:</div>
     <div style="margin-bottom:14px">
-      <span class="var-pill" onclick="insertTplVar('{{class}}')">{{class}}</span>
-      <span class="var-pill" onclick="insertTplVar('{{date}}')">{{date}}</span>
-      <span class="var-pill" onclick="insertTplVar('{{time}}')">{{time}}</span>
-      <span class="var-pill" onclick="insertTplVar('{{location}}')">{{location}}</span>
-      <span class="var-pill" onclick="insertTplVar('{{instructor}}')">{{instructor}}</span>
-      <span class="var-pill" onclick="insertTplVar('{{name}}')">{{name}}</span>
-      <span class="var-pill" onclick="insertTplVar('{{charge}}')">{{charge}}</span>
-      <span class="var-pill" onclick="insertTplVar('{{dueDate}}')">{{dueDate}}</span>
-      <span class="var-pill" onclick="insertTplVar('{{note}}')">{{note}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{class}}')">{{class}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{date}}')">{{date}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{time}}')">{{time}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{location}}')">{{location}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{instructor}}')">{{instructor}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{name}}')">{{name}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{charge}}')">{{charge}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{dueDate}}')">{{dueDate}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{note}}')">{{note}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{pretest}}')">{{pretest}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{phone}}')">{{phone}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{today}}')">{{today}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{duration}}')">{{duration}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{certName}}')">{{certName}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{deposit}}')">{{deposit}}</span>
+      <span class="var-pill" onclick="insertVarInto('etpl-e-body','{{balance}}')">{{balance}}</span>
     </div>
     <div id="etpl-e-err" style="color:#f87171;font-size:13px;min-height:18px;margin-bottom:8px"></div>
     <div style="display:flex;gap:10px">
@@ -1760,6 +1769,14 @@
       <button class="close-btn" data-close="modal-send-student-email">×</button>
     </div>
 
+    <div class="fg" style="margin-bottom:10px">
+      <label>Send via</label>
+      <div class="opt-group">
+        <button type="button" class="opt-btn sel" id="sse-channel-email" onclick="setSseChannel('email')">✉️ Email</button>
+        <button type="button" class="opt-btn" id="sse-channel-text" onclick="setSseChannel('text')">📱 Text</button>
+      </div>
+    </div>
+
     <!-- Template picker -->
     <div class="fg" style="margin-bottom:10px">
       <label>Template</label>
@@ -1771,30 +1788,32 @@
       </div>
     </div>
 
-    <div class="fg"><label>Subject</label><input type="text" id="sse-subject" placeholder="Subject…" /></div>
+    <div class="fg" id="sse-subject-row"><label>Subject</label><input type="text" id="sse-subject" placeholder="Subject…" /></div>
     <div class="fg">
       <label>Message Body</label>
       <textarea id="sse-body" style="min-height:220px" placeholder="Type your message here, or load a template above…"></textarea>
     </div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:4px">Click a variable to insert at cursor:</div>
     <div style="margin-bottom:14px">
-      <span class="var-pill" onclick="insertSseVar('{{name}}')">{{name}}</span>
-      <span class="var-pill" onclick="insertSseVar('{{class}}')">{{class}}</span>
-      <span class="var-pill" onclick="insertSseVar('{{date}}')">{{date}}</span>
-      <span class="var-pill" onclick="insertSseVar('{{time}}')">{{time}}</span>
-      <span class="var-pill" onclick="insertSseVar('{{location}}')">{{location}}</span>
-      <span class="var-pill" onclick="insertSseVar('{{instructor}}')">{{instructor}}</span>
-      <span class="var-pill" onclick="insertSseVar('{{charge}}')">{{charge}}</span>
-      <span class="var-pill" onclick="insertSseVar('{{dueDate}}')">{{dueDate}}</span>
-      <span class="var-pill" onclick="insertSseVar('{{note}}')">{{note}}</span>
-      <span class="var-pill" onclick="insertSseVar('{{pretest}}')">{{pretest}}</span>
-      <span class="var-pill" onclick="insertSseVar('{{phone}}')">{{phone}}</span>
-      <span class="var-pill" onclick="insertSseVar('{{today}}')">{{today}}</span>
-      <span class="var-pill" onclick="insertSseVar('{{duration}}')">{{duration}}</span>
-      <span class="var-pill" onclick="insertSseVar('{{certName}}')">{{certName}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{name}}')">{{name}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{class}}')">{{class}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{date}}')">{{date}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{time}}')">{{time}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{location}}')">{{location}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{instructor}}')">{{instructor}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{charge}}')">{{charge}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{dueDate}}')">{{dueDate}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{note}}')">{{note}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{pretest}}')">{{pretest}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{phone}}')">{{phone}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{today}}')">{{today}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{duration}}')">{{duration}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{certName}}')">{{certName}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{deposit}}')">{{deposit}}</span>
+      <span class="var-pill" onclick="insertVarInto('sse-body','{{balance}}')">{{balance}}</span>
     </div>
-    <button class="btn primary full" id="sse-send-btn">📨 Open in Email Client</button>
-    <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px">Opens your default mail app with this message pre-filled</div>
+    <button class="btn primary full" id="sse-send-btn">📨 Open in Email App</button>
+    <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px" id="sse-send-hint">Opens your default email app (Gmail, if set as default) with this message pre-filled</div>
   </div>
 </div>
 
@@ -2346,26 +2365,32 @@ function renderClasses(){
 function renderNcAdjList(){
   $('nc-adj-list').innerHTML=ncAdjInstructors.map((n,i)=>`<span class="adj-chip">${n}<button onclick="ncAdjInstructors.splice(${i},1);renderNcAdjList()" title="Remove">×</button></span>`).join('');
 }
+// Shared by openNewClassModal (initial prefill/edit) and the class-template
+// "Load" button — both fill the same set of new-class form fields from a
+// class-shaped source object (a class record, a class template, or {}).
+function applyClassFieldsToForm(src){
+  syncOptGroup('nc-type',src.type||'');
+  syncOptGroup('nc-variant',src.variant||'');
+  updateNcVariantVisibility();
+  $('nc-location').value=src.location||'';
+  $('nc-time').value=src.time||'';
+  $('nc-max').value=src.maxStudents||'';
+  $('nc-charge').value=src.defaultCharge||'';
+  $('nc-duration').value=src.duration||'';
+  $('nc-cert-name').value=src.certName||'';
+  $('nc-notes').value=src.notes||'';
+  $('nc-instructor-course').checked=!!src.isInstructorCourse;
+  $('nc-pretest-required').checked=!!src.requiresPretest;
+  ncAdjInstructors=[...(src.adjunctInstructors||[])];
+  $('nc-adj-input').value='';renderNcAdjList();
+}
 function openNewClassModal(prefill, classIdToEdit){
   editingClassId=classIdToEdit||null;
   $('nc-modal-title').textContent=editingClassId?'Edit Class':'Schedule New Class';
   $('nc-save-btn').textContent=editingClassId?'Save Changes':'Schedule Class';
   $('nc-tpl-row').style.display=editingClassId?'none':'';
-  syncOptGroup('nc-type',prefill.type||'');
-  syncOptGroup('nc-variant',prefill.variant||'');
-  updateNcVariantVisibility();
   $('nc-date').value=prefill.date||today();
-  $('nc-time').value=prefill.time||'';
-  $('nc-location').value=prefill.location||'';
-  $('nc-max').value=prefill.maxStudents||'';
-  $('nc-charge').value=prefill.defaultCharge||'';
-  $('nc-duration').value=prefill.duration||'';
-  $('nc-cert-name').value=prefill.certName||'';
-  $('nc-notes').value=prefill.notes||'';
-  $('nc-instructor-course').checked=!!prefill.isInstructorCourse;
-  $('nc-pretest-required').checked=!!prefill.requiresPretest;
-  ncAdjInstructors=[...(prefill.adjunctInstructors||[])];
-  $('nc-adj-input').value='';renderNcAdjList();
+  applyClassFieldsToForm(prefill);
   $('nc-err').textContent='';
   if(!editingClassId){$('nc-tpl-select').value='';populateNcTplSelect();}
   openModal('modal-new-class');
@@ -2392,19 +2417,7 @@ $('nc-adj-input').addEventListener('input',()=>{
 $('nc-tpl-load-btn').addEventListener('click',()=>{
   const id=$('nc-tpl-select').value;if(!id)return;
   const t=allClassTemplates.find(x=>x.id===id);if(!t)return;
-  syncOptGroup('nc-type',t.type||'');
-  syncOptGroup('nc-variant',t.variant||'');
-  updateNcVariantVisibility();
-  $('nc-location').value=t.location||'';
-  $('nc-time').value=t.time||'';
-  $('nc-max').value=t.maxStudents||'';
-  $('nc-charge').value=t.defaultCharge||'';
-  $('nc-duration').value=t.duration||'';
-  $('nc-cert-name').value=t.certName||'';
-  $('nc-notes').value=t.notes||'';
-  $('nc-instructor-course').checked=!!t.isInstructorCourse;
-  $('nc-pretest-required').checked=!!t.requiresPretest;
-  ncAdjInstructors=[...(t.adjunctInstructors||[])];$('nc-adj-input').value='';renderNcAdjList();
+  applyClassFieldsToForm(t);
 });
 $('nc-save-btn').addEventListener('click',async()=>{
   const type=$('nc-type').value,date=$('nc-date').value,variant=$('nc-variant').value;
@@ -2470,36 +2483,55 @@ function buildEmailPanel(c){
   populateEmailTplSelect();
 }
 
-function getMergeValues(extraName){
-  const c=allClasses.find(x=>x.id===currentClassId)||{};
+// Shared merge-field builder used by both the bulk roster composer and the
+// per-student composer — see getMergeValues/getSseMergeValues for callers.
+function buildMergeValues({c=null,r=null,name='',time='',location='',charge='',dueDate='',note=''}={}){
+  c=c||{};
+  const effCharge=charge||(r?r.charge:c.defaultCharge)||'';
   return {
     '{{class}}':      c.type||'',
     '{{date}}':       formatDate(c.date),
-    '{{time}}':       $('email-mf-time').value||formatTime(c.time)||'TBD',
-    '{{location}}':   $('email-mf-location').value||c.location||'TBD',
+    '{{time}}':       time||formatTime(c.time)||'TBD',
+    '{{location}}':   location||c.location||'TBD',
     '{{instructor}}': infoDoc.pdName||'',
-    '{{name}}':       extraName||'',
-    '{{charge}}':     $('email-mf-charge').value||c.defaultCharge||'',
-    '{{dueDate}}':    $('email-mf-due').value||'',
-    '{{note}}':       $('email-mf-note').value||'',
+    '{{name}}':       name||'',
+    '{{charge}}':     effCharge,
+    '{{dueDate}}':    dueDate||'',
+    '{{note}}':       note||'',
     '{{pretest}}':    c.requiresPretest?PRETEST_BLOCK:'',
     '{{phone}}':      infoDoc.pdPhone||'',
     '{{today}}':      formatDate(today()),
     '{{duration}}':   c.duration?`Approximately ${c.duration}`:'',
     '{{certName}}':   c.certName||(c.type?`${c.type} Provider`:''),
+    '{{deposit}}':    fmt$((parseFloat(effCharge)||0)/2),
+    '{{balance}}':    fmt$(r?.balanceDue!=null?r.balanceDue:(parseFloat(effCharge)||0)/2),
   };
+}
+function mergeText(text,values){
+  return Object.entries(values).reduce((t,[k,v])=>t.replaceAll(k,v),text);
+}
+
+function getMergeValues(extraName){
+  const c=allClasses.find(x=>x.id===currentClassId)||{};
+  return buildMergeValues({
+    c,name:extraName,
+    time:$('email-mf-time').value,location:$('email-mf-location').value,
+    charge:$('email-mf-charge').value,dueDate:$('email-mf-due').value,note:$('email-mf-note').value,
+  });
 }
 
 function applyMerge(text){
-  const vals=getMergeValues();
-  return Object.entries(vals).reduce((t,[k,v])=>t.replaceAll(k,v),text);
+  return mergeText(text,getMergeValues());
 }
 
-function populateEmailTplSelect(){
-  const sel=$('email-tpl-select');
+// Shared by both template-select dropdowns (bulk composer, per-student
+// composer) — they only differ in target select id, placeholder text, and
+// whether the previous selection should be preserved on refresh.
+function populateTplSelect(selectId,placeholder,preserveSelection){
+  const sel=$(selectId);
   if(!sel)return;
-  const cur=sel.value;
-  sel.innerHTML='<option value="">— Select a template —</option>';
+  const cur=preserveSelection?sel.value:'';
+  sel.innerHTML=`<option value="">${placeholder}</option>`;
   const cats=[...new Set(allEmailTemplates.map(t=>t.category||'Custom'))];
   cats.forEach(cat=>{
     const grp=document.createElement('optgroup');
@@ -2511,7 +2543,10 @@ function populateEmailTplSelect(){
     });
     sel.appendChild(grp);
   });
-  if(cur)sel.value=cur;
+  if(preserveSelection&&cur)sel.value=cur;
+}
+function populateEmailTplSelect(){
+  populateTplSelect('email-tpl-select','— Select a template —',true);
 }
 
 $('email-tpl-load-btn').addEventListener('click',()=>{
@@ -2523,8 +2558,8 @@ $('email-tpl-load-btn').addEventListener('click',()=>{
   $('email-body').value=applyMerge(tpl.body||'');
 });
 
-window.insertEmailVar=function(v){
-  const ta=$('email-body');
+window.insertVarInto=function(textareaId,v){
+  const ta=$(textareaId);
   const s=ta.selectionStart,e=ta.selectionEnd;
   ta.value=ta.value.slice(0,s)+v+ta.value.slice(e);
   ta.selectionStart=ta.selectionEnd=s+v.length;
@@ -2549,7 +2584,7 @@ function updateEmailNotice(){
   $('cd-email-notice').textContent=entries.length
     ?`${entries.length} recipient${entries.length!==1?'s':''}${lbl} with email on file`
     :`No matching student emails${lbl}.`;
-  $('send-email-hint').textContent=`Opens your default mail app with ${entries.length} recipient${entries.length!==1?'s':''} pre-filled`;
+  $('send-email-hint').textContent=`Opens your default email app with ${entries.length} recipient${entries.length!==1?'s':''} pre-filled`;
 }
 $('send-email-btn').addEventListener('click',()=>{
   const c=allClasses.find(x=>x.id===currentClassId);if(!c)return;
@@ -2560,7 +2595,8 @@ $('send-email-btn').addEventListener('click',()=>{
   if(!emails.length){alert('No matching student emails.');return;}
   const subject=applyMerge($('email-subject').value);
   const body=applyMerge($('email-body').value);
-  window.open(`mailto:${emails.join(',')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,'_blank');
+  window.open(mailtoUrl(emails.join(','),subject,body),'_blank');
+  logCommsSent(entries.map(r=>r.id),$('email-tpl-select').value||null,'email');
 });
 $('cd-notes-save').addEventListener('click',async()=>{
   const notes=$('cd-notes-text').value.trim();
@@ -2592,6 +2628,21 @@ $('cd-delete-btn').addEventListener('click',async()=>{
 // ============================================================
 // ROSTER
 // ============================================================
+async function logCommsSent(rosterIds,templateId,channel){
+  const tpl=templateId?allEmailTemplates.find(t=>t.id===templateId):null;
+  const key=templateId||'custom';
+  const entry={name:tpl?tpl.name:'Custom message',sentAt:Date.now(),channel:channel||'email'};
+  await Promise.all(rosterIds.map(id=>col('roster').doc(id).update({[`commsLog.${key}`]:entry})));
+}
+function commsLogBadge(r){
+  if(!r.commsLog)return '';
+  const sent=Object.values(r.commsLog);
+  const pre=sent.filter(e=>/precourse/i.test(e.name||''));
+  if(!pre.length)return '';
+  const latest=pre.reduce((a,b)=>a.sentAt>b.sentAt?a:b);
+  const via=latest.channel==='text'?'texted':'emailed';
+  return `<span class="paid-badge paid-y" title="Precourse letter ${via} ${formatDate(new Date(latest.sentAt).toISOString().slice(0,10))}">✓ Precourse</span>`;
+}
 function renderRoster(classId){
   const entries=allRoster.filter(r=>r.classId===classId);
   const total=entries.reduce((s,r)=>s+(+r.charge||0),0);
@@ -2604,15 +2655,22 @@ function renderRoster(classId){
         <div class="roster-name"><div class="name">${r.name||'—'}</div><div class="sub">${lvBadge(r.licenseLevel)} ${r.email?`<span style="cursor:pointer;color:var(--accent2)" onclick="openStudentEmailFromRoster('${r.id}')" title="Email ${r.name}">✉ ${r.email}</span>`:''}</div></div>
         <div style="display:flex;align-items:center;gap:6px;flex:none">
           ${r.charge?`<span style="font-size:13px;font-weight:600;color:var(--ok)">${fmt$(r.charge)}</span>`:''}
+          <input type="number" value="${r.balanceDue!=null?r.balanceDue:''}" placeholder="Bal" title="Balance due (defaults to half of charge if left blank)" style="width:58px;font-size:12px;padding:3px 5px;border-radius:6px;border:1px solid rgba(255,255,255,.15);background:var(--input-bg);color:var(--text)" onchange="setBalanceDue('${r.id}',this.value)" />
           <span class="paid-badge ${r.paid?'paid-y':'paid-n'}" style="cursor:pointer" onclick="togglePaid('${r.id}')">${r.paid?'Paid':'Unpaid'}</span>
           <span class="card-badge ${cardCls}" onclick="openAhaCard('${r.id}')">${cardLbl}</span>
+          ${commsLogBadge(r)}
           ${r.email?`<button class="btn sm" onclick="openStudentEmailFromRoster('${r.id}')" title="Email">✉️</button>`:''}
+          ${r.phone?`<button class="btn sm" onclick="openStudentTextFromRoster('${r.id}')" title="Text">📱</button>`:''}
           <button class="btn sm danger" onclick="removeFromRoster('${r.id}')">×</button>
         </div>
       </div>`;}).join('')
     :`<div class="empty" style="padding:24px 0"><div class="empty-text">No students on roster yet</div></div>`;
 }
 window.togglePaid=async function(id){const r=allRoster.find(x=>x.id===id);if(!r)return;await col('roster').doc(id).update({paid:!r.paid});};
+window.setBalanceDue=async function(id,val){
+  const num=val===''?null:parseFloat(val);
+  await col('roster').doc(id).update({balanceDue:Number.isFinite(num)?num:null});
+};
 window.removeFromRoster=async function(id){if(!confirm('Remove from roster?'))return;await col('roster').doc(id).delete();};
 
 // ============================================================
@@ -2754,15 +2812,16 @@ window.openStudentProfile=function(studentId){
   $('sp-title').textContent=`${s.firstName} ${s.lastName}`;
   $('sp-first').value=s.firstName||'';$('sp-last').value=s.lastName||'';$('sp-level').value=s.licenseLevel||'';
   $('sp-phone').value=s.phone||'';$('sp-email').value=s.email||'';$('sp-notes-text').value=s.notes||'';
-  const pLink=$('sp-phone-link'),eLink=$('sp-email-link');
+  const pLink=$('sp-phone-link'),eLink=$('sp-email-link'),tLink=$('sp-text-link');
   if(s.phone){pLink.href='tel:'+s.phone;pLink.style.display='';}else pLink.style.display='none';
   if(s.email){eLink.href='#';eLink.onclick=e=>{e.preventDefault();openStudentEmailFromProfile(studentId);};eLink.style.display='';}else eLink.style.display='none';
+  if(s.phone){tLink.href='#';tLink.onclick=e=>{e.preventDefault();openStudentTextFromProfile(studentId);};tLink.style.display='';}else tLink.style.display='none';
   const entries=allRoster.filter(r=>r.studentId===studentId);
   $('sp-total').textContent=fmt$(entries.reduce((s,r)=>s+(+r.charge||0),0));
   $('sp-history-list').innerHTML=entries.length
     ?entries.map(r=>{const c=allClasses.find(x=>x.id===r.classId)||{};
       return `<div class="fin-row"><div><div style="font-size:14px;font-weight:500">${c.type||'Class'}</div><div class="fin-meta">${formatDate(c.date)} · ${c.location||'—'}</div></div>
-        <div style="text-align:right;display:flex;align-items:center;gap:8px">${r.email?`<button class="btn sm" onclick="openStudentEmailFromRoster('${r.id}')" title="Email for this course">✉️</button>`:''}<div><div class="fin-amount income">${fmt$(r.charge)}</div><span class="paid-badge ${r.paid?'paid-y':'paid-n'}">${r.paid?'Paid':'Unpaid'}</span></div></div></div>`;}).join('')
+        <div style="text-align:right;display:flex;align-items:center;gap:8px">${r.email?`<button class="btn sm" onclick="openStudentEmailFromRoster('${r.id}')" title="Email for this course">✉️</button>`:''}${r.phone?`<button class="btn sm" onclick="openStudentTextFromRoster('${r.id}')" title="Text for this course">📱</button>`:''}<div><div class="fin-amount income">${fmt$(r.charge)}</div><span class="paid-badge ${r.paid?'paid-y':'paid-n'}">${r.paid?'Paid':'Unpaid'}</span></div></div></div>`;}).join('')
     :`<div class="empty" style="padding:20px 0"><div class="empty-text">No class history</div></div>`;
   const cards=allRoster.filter(r=>r.studentId===studentId&&r.cardType);
   $('sp-aha-list').innerHTML=cards.length
@@ -2784,9 +2843,10 @@ $('sp-save-btn').addEventListener('click',async()=>{
   await col('students').doc(currentStudentId).update(data);
   $('sp-title').textContent=`${data.firstName} ${data.lastName}`;
   $('sp-save-btn').textContent='Saved ✓';setTimeout(()=>$('sp-save-btn').textContent='Save Changes',2000);
-  const pLink=$('sp-phone-link'),eLink=$('sp-email-link');
+  const pLink=$('sp-phone-link'),eLink=$('sp-email-link'),tLink=$('sp-text-link');
   if(data.phone){pLink.href='tel:'+data.phone;pLink.style.display='';}else pLink.style.display='none';
   if(data.email){eLink.href='#';eLink.onclick=e=>{e.preventDefault();openStudentEmailFromProfile(currentStudentId);};eLink.style.display='';}else eLink.style.display='none';
+  if(data.phone){tLink.href='#';tLink.onclick=e=>{e.preventDefault();openStudentTextFromProfile(currentStudentId);};tLink.style.display='';}else tLink.style.display='none';
 });
 $('sp-notes-save').addEventListener('click',async()=>{
   const notes=$('sp-notes-text').value.trim();
@@ -4287,6 +4347,23 @@ See you tomorrow!
 Thank you!`
     },
     {
+      name:'Payment Request',
+      category:'Payment Request',
+      subject:'{{class}} Class – Payment Due',
+      body:`Hi {{name}},
+
+This is a reminder that payment for your {{class}} class on {{date}} is due.
+
+Amount due: \${{charge}}
+Payment due date: {{dueDate}}
+
+You can pay securely via Square here: https://square.link/u/ySsq2zyy?src=sheet
+
+Thank you, and let me know if you have any questions!
+
+{{instructor}}`
+    },
+    {
       name:'AHA Precourse Letter (Full Prework)',
       category:'AHA Default',
       subject:'{{class}} Provider Course – Precourse Instructions',
@@ -4357,6 +4434,7 @@ Location: {{location}}
 Please plan to arrive on time — it's difficult to catch up once we start.
 
 Before class:
+- Pay your course deposit ({{deposit}}); the full amount (\${{charge}}) is due prior to class. If payment is required for your course, you'll have already been notified — otherwise it may be employer-sponsored at no cost to you. Contact your instructor if this is unclear.
 - Complete the required precourse self-assessment here: https://shopcpr.heart.org/acls-prework. Print your certificate and score report and bring them to class, or be ready to show proof of completion.
 - Make sure your BLS skills are current — you'll be tested on adult high-quality CPR/AED skills using a feedback manikin at the start of class.
 
@@ -4420,7 +4498,7 @@ $('etpld-delete-btn').addEventListener('click',async()=>{
 
 $('etpl-new-btn').addEventListener('click',()=>openTplEditModal(null));
 $('etpl-seed-btn').addEventListener('click',async()=>{
-  if(!confirm('Add the default templates (Class Details, Class Confirmation, Class Reminder, and 2 AHA precourse letters)? This will add them even if they already exist.'))return;
+  if(!confirm('Add the default templates (Class Details, Class Confirmation, Class Reminder, Payment Request, and 2 AHA precourse letters)? This will add them even if they already exist.'))return;
   await seedDefaultEmailTemplates();
 });
 
@@ -4435,14 +4513,6 @@ function openTplEditModal(t){
   syncOptGroup('etpl-e-cat',cat);
   openModal('modal-etpl-edit');
 }
-
-window.insertTplVar=function(v){
-  const ta=$('etpl-e-body');
-  const s=ta.selectionStart,e=ta.selectionEnd;
-  ta.value=ta.value.slice(0,s)+v+ta.value.slice(e);
-  ta.selectionStart=ta.selectionEnd=s+v.length;
-  ta.focus();
-};
 
 $('etpl-e-save-btn').addEventListener('click',async()=>{
   const name=$('etpl-e-name').value.trim();
@@ -4460,21 +4530,35 @@ $('etpl-e-save-btn').addEventListener('click',async()=>{
 });
 
 // ============================================================
-// PER-STUDENT EMAIL COMPOSE
+// PER-STUDENT EMAIL/TEXT COMPOSE
 // ============================================================
-let sseRosterId=null, sseStudentId=null;
+let sseRosterId=null, sseStudentId=null, sseChannel='email';
+
+function mailtoUrl(to,subject,body){
+  return `mailto:${encodeURIComponent(to).replace(/%2C/g,',')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+}
+function smsUrl(phone,body){
+  return `sms:${encodeURIComponent(phone)}?body=${encodeURIComponent(body)}`;
+}
+function refreshSseModal(){
+  const r=sseRosterId?allRoster.find(x=>x.id===sseRosterId):null;
+  const s=sseStudentId?allStudents.find(x=>x.id===sseStudentId):null;
+  const name=r?r.name:(s?`${s.firstName} ${s.lastName}`:'Student');
+  $('sse-title').textContent=`${sseChannel==='email'?'Email':'Text'} ${name}`;
+  $('sse-email-display').textContent=sseChannel==='email'?((r?r.email:s?.email)||''):((r?r.phone:s?.phone)||'');
+}
+window.setSseChannel=function(ch){
+  sseChannel=ch;
+  $('sse-channel-email').classList.toggle('sel',ch==='email');
+  $('sse-channel-text').classList.toggle('sel',ch==='text');
+  $('sse-subject-row').style.display=ch==='email'?'':'none';
+  $('sse-send-btn').textContent=ch==='email'?'📨 Open in Email App':'💬 Open in Messages';
+  $('sse-send-hint').textContent=ch==='email'?'Opens your default email app (Gmail, if set as default) with this message pre-filled':'Opens your messaging app with this text pre-filled';
+  refreshSseModal();
+};
 
 function populateSseTplSelect(){
-  const sel=$('sse-tpl-select');if(!sel)return;
-  sel.innerHTML='<option value="">— Choose a template or compose below —</option>';
-  const cats=[...new Set(allEmailTemplates.map(t=>t.category||'Custom'))];
-  cats.forEach(cat=>{
-    const grp=document.createElement('optgroup');grp.label=cat;
-    allEmailTemplates.filter(t=>(t.category||'Custom')===cat).forEach(t=>{
-      const opt=document.createElement('option');opt.value=t.id;opt.textContent=t.name;grp.appendChild(opt);
-    });
-    sel.appendChild(grp);
-  });
+  populateTplSelect('sse-tpl-select','— Choose a template or compose below —',false);
 }
 
 function getSseMergeValues(){
@@ -4482,71 +4566,65 @@ function getSseMergeValues(){
   const c=r?allClasses.find(x=>x.id===r.classId):null;
   const s=sseStudentId?allStudents.find(x=>x.id===sseStudentId):null;
   const name=r?r.name:(s?`${s.firstName} ${s.lastName}`:'');
-  return {
-    '{{name}}':       name,
-    '{{class}}':      c?c.type||'':'',
-    '{{date}}':       c?formatDate(c.date):'',
-    '{{time}}':       c?formatTime(c.time)||'TBD':'',
-    '{{location}}':   c?c.location||'TBD':'',
-    '{{instructor}}': infoDoc.pdName||'',
-    '{{charge}}':     r?String(r.charge||''):(c?String(c.defaultCharge||''):''),
-    '{{dueDate}}':    '',
-    '{{note}}':       '',
-    '{{pretest}}':    c?.requiresPretest?PRETEST_BLOCK:'',
-    '{{phone}}':      infoDoc.pdPhone||'',
-    '{{today}}':      formatDate(today()),
-    '{{duration}}':   c?.duration?`Approximately ${c.duration}`:'',
-    '{{certName}}':   c?.certName||(c?.type?`${c.type} Provider`:''),
-  };
+  return buildMergeValues({c,r,name});
 }
 
 function applySseMerge(text){
-  const vals=getSseMergeValues();
-  return Object.entries(vals).reduce((t,[k,v])=>t.replaceAll(k,v),text);
+  return mergeText(text,getSseMergeValues());
 }
 
+function openSseModal(){
+  $('sse-subject').value='';$('sse-body').value='';$('sse-tpl-select').value='';
+  populateSseTplSelect();
+  setSseChannel(sseChannel);
+  openModal('modal-send-student-email');
+}
 window.openStudentEmailFromRoster=function(rosterId){
   sseRosterId=rosterId;sseStudentId=null;
   const r=allRoster.find(x=>x.id===rosterId);if(!r||!r.email)return;
-  $('sse-title').textContent=`Email ${r.name||'Student'}`;
-  $('sse-email-display').textContent=r.email;
-  $('sse-subject').value='';$('sse-body').value='';$('sse-tpl-select').value='';
-  populateSseTplSelect();
-  openModal('modal-send-student-email');
+  sseChannel='email';openSseModal();
 };
 
 window.openStudentEmailFromProfile=function(studentId){
   sseStudentId=studentId;sseRosterId=null;
   const s=allStudents.find(x=>x.id===studentId);if(!s||!s.email)return;
-  $('sse-title').textContent=`Email ${s.firstName} ${s.lastName}`;
-  $('sse-email-display').textContent=s.email;
-  $('sse-subject').value='';$('sse-body').value='';$('sse-tpl-select').value='';
-  populateSseTplSelect();
-  openModal('modal-send-student-email');
+  sseChannel='email';openSseModal();
+};
+
+window.openStudentTextFromRoster=function(rosterId){
+  sseRosterId=rosterId;sseStudentId=null;
+  const r=allRoster.find(x=>x.id===rosterId);if(!r||!r.phone)return;
+  sseChannel='text';openSseModal();
+};
+
+window.openStudentTextFromProfile=function(studentId){
+  sseStudentId=studentId;sseRosterId=null;
+  const s=allStudents.find(x=>x.id===studentId);if(!s||!s.phone)return;
+  sseChannel='text';openSseModal();
 };
 
 $('sse-tpl-load-btn').addEventListener('click',()=>{
   const id=$('sse-tpl-select').value;if(!id)return;
   const tpl=allEmailTemplates.find(t=>t.id===id);if(!tpl)return;
-  $('sse-subject').value=applySseMerge(tpl.subject||'');
+  if(sseChannel==='email')$('sse-subject').value=applySseMerge(tpl.subject||'');
   $('sse-body').value=applySseMerge(tpl.body||'');
 });
-
-window.insertSseVar=function(v){
-  const ta=$('sse-body');
-  const s=ta.selectionStart,e=ta.selectionEnd;
-  ta.value=ta.value.slice(0,s)+v+ta.value.slice(e);
-  ta.selectionStart=ta.selectionEnd=s+v.length;ta.focus();
-};
 
 $('sse-send-btn').addEventListener('click',()=>{
   const r=sseRosterId?allRoster.find(x=>x.id===sseRosterId):null;
   const s=sseStudentId?allStudents.find(x=>x.id===sseStudentId):null;
-  const email=r?r.email:(s?s.email:'');
-  if(!email){alert('No email address on file.');return;}
-  const subject=applySseMerge($('sse-subject').value);
   const body=applySseMerge($('sse-body').value);
-  window.open(`mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,'_blank');
+  if(sseChannel==='email'){
+    const email=r?r.email:(s?s.email:'');
+    if(!email){alert('No email address on file.');return;}
+    const subject=applySseMerge($('sse-subject').value);
+    window.open(mailtoUrl(email,subject,body),'_blank');
+  } else {
+    const phone=r?r.phone:(s?s.phone:'');
+    if(!phone){alert('No phone number on file.');return;}
+    window.open(smsUrl(phone,body),'_blank');
+  }
+  if(r)logCommsSent([r.id],$('sse-tpl-select').value||null,sseChannel);
 });
 
 // Category filter chips
