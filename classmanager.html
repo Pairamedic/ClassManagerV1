@@ -445,11 +445,20 @@
 
     <!-- Finances sub-panel -->
     <div id="subpanel-dash-finances" style="display:none">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+        <input type="hidden" id="fin-period" value="all">
+        <div class="opt-group">
+          <button type="button" class="opt-btn sel" data-val="all">All Time</button>
+          <button type="button" class="opt-btn" data-val="ytd">Year to Date</button>
+          <button type="button" class="opt-btn" data-val="year">Last 12 Months</button>
+        </div>
+        <button class="btn sm" id="fin-export-btn" style="margin-left:auto">⬇ Export CSV</button>
+      </div>
       <div class="stats">
         <div class="stat-card"><div class="stat-val exp-ok" id="fin-income">—</div><div class="stat-lbl">Total Income</div></div>
         <div class="stat-card"><div class="stat-val exp-danger" id="fin-expenses">—</div><div class="stat-lbl">Total Expenses</div></div>
         <div class="stat-card"><div class="stat-val" id="fin-net">—</div><div class="stat-lbl">Net Profit</div></div>
-        <div class="stat-card"><div class="stat-val" id="fin-classes">—</div><div class="stat-lbl">Classes Taught</div></div>
+        <div class="stat-card"><div class="stat-val exp-warn" id="fin-oop">—</div><div class="stat-lbl">Out of Pocket</div></div>
       </div>
       <div class="row2" style="gap:14px">
         <div>
@@ -474,9 +483,13 @@
         <div class="stat-card"><div class="stat-val exp-warn" id="inv-low">—</div><div class="stat-lbl">Running Low</div></div>
         <div class="stat-card"><div class="stat-val" id="inv-value">—</div><div class="stat-lbl">Stock Value</div></div>
       </div>
+      <div id="inv-forecast"></div>
       <div class="sec-hd">
         <div class="sec-title">Supplies &amp; Reorder List</div>
-        <button class="btn primary sm" id="new-supply-btn">+ Add Item</button>
+        <div style="display:flex;gap:8px">
+          <button class="btn sm" id="seed-supply-btn">✨ Starter Items</button>
+          <button class="btn primary sm" id="new-supply-btn">+ Add Item</button>
+        </div>
       </div>
       <div class="filter-chips" id="inv-filter-chips">
         <button class="fchip active" data-invcat="">All</button>
@@ -1265,6 +1278,14 @@
     <div id="certd-photo-wrap" style="margin-top:14px;display:none">
       <a id="certd-photo-link" class="open-url-btn" target="_blank" rel="noopener">📷 Open Certificate Photo</a>
     </div>
+    <!-- Continuing Education (CEU) section -->
+    <div id="certd-ceu-section" style="margin-top:18px">
+      <div class="sec-hd" style="margin-bottom:10px">
+        <div class="sec-title" style="font-size:14px">📚 Continuing Education <span id="certd-ceu-total" style="color:var(--muted);font-weight:500"></span></div>
+        <button class="btn sm primary" id="certd-add-ceu-btn">+ Add CEU</button>
+      </div>
+      <div id="certd-ceu-list"></div>
+    </div>
     <!-- Edit form (hidden by default) -->
     <div id="certd-edit-form" style="display:none;margin-top:14px">
       <div class="fg"><label>Cert Name *</label><input type="text" id="certd-e-name" /></div>
@@ -1294,6 +1315,48 @@
         <button class="btn primary" id="certd-e-save">Save Changes</button>
         <button class="btn" id="certd-e-cancel">Cancel</button>
       </div>
+    </div>
+  </div>
+</div>
+
+<!-- ADD / EDIT CEU -->
+<div class="overlay hidden" id="modal-new-ceu">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-title" id="ceu-modal-title">Add Continuing Education</div><button class="close-btn" data-close="modal-new-ceu">×</button></div>
+    <div id="ceu-for-cert" style="font-size:13px;color:var(--muted);margin-bottom:12px"></div>
+    <div class="fg"><label>Course / Activity Title *</label><input type="text" id="ceu-title" placeholder="e.g. Advanced Airway Management" /></div>
+    <div class="row2">
+      <div class="fg" style="margin:0"><label>Provider</label><input type="text" id="ceu-provider" placeholder="e.g. AHA, CAPCE" /></div>
+      <div class="fg" style="margin:0"><label>Hours / Credits *</label><input type="number" id="ceu-hours" placeholder="0" min="0" step="0.25" /></div>
+    </div>
+    <div class="row2" style="margin-top:10px">
+      <div class="fg" style="margin:0"><label>Date Completed</label><input type="date" id="ceu-date" /></div>
+      <div class="fg" style="margin:0"><label>Category</label>
+        <input type="hidden" id="ceu-category" value="Clinical">
+        <div class="opt-group">
+          <button type="button" class="opt-btn sel" data-val="Clinical">Clinical</button>
+          <button type="button" class="opt-btn" data-val="Instructor">Instructor</button>
+          <button type="button" class="opt-btn" data-val="Skills">Skills</button>
+          <button type="button" class="opt-btn" data-val="Other">Other</button>
+        </div>
+      </div>
+    </div>
+    <div class="fg" style="margin-top:10px"><label>Certificate File (optional)</label>
+      <div id="ceu-file-current" style="font-size:12px;color:var(--muted);margin-bottom:6px;display:none"></div>
+      <button type="button" class="btn sm" id="ceu-file-btn">📎 Attach file</button>
+      <span id="ceu-file-name" style="font-size:12px;color:var(--muted);margin-left:8px"></span>
+      <input type="file" id="ceu-file-input" accept="image/*,.pdf,.doc,.docx" style="display:none" />
+      <div id="ceu-storage-notice" style="font-size:11px;color:var(--warn);margin-top:5px;display:none">Firebase Storage is not enabled — the CEU will still save, just without a file.</div>
+    </div>
+    <div class="upload-prog" id="ceu-upload-prog" style="margin-top:8px">
+      <div class="upload-prog-label"><span id="ceu-prog-name"></span><span id="ceu-prog-pct"></span></div>
+      <div class="prog-bar"><div class="prog-fill" id="ceu-prog-bar" style="width:0%"></div></div>
+    </div>
+    <div class="fg" style="margin-top:10px"><label>Notes</label><input type="text" id="ceu-notes" placeholder="Optional" /></div>
+    <div id="ceu-err" style="color:#f87171;font-size:13px;min-height:18px;margin-bottom:8px"></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn danger sm" id="ceu-delete-btn" style="display:none">Delete</button>
+      <button class="btn primary full" id="ceu-save-btn">Save CEU</button>
     </div>
   </div>
 </div>
@@ -1329,6 +1392,10 @@
         <button type="button" class="opt-btn sel" data-val="">General expense (no class)</button>
       </div>
     </div>
+    <label style="display:flex;align-items:center;gap:8px;margin:6px 0 10px;font-size:13px;cursor:pointer">
+      <input type="checkbox" id="exp-reimbursable" style="width:16px;height:16px" />
+      Reimbursable (e.g. student/employer pays this back)
+    </label>
     <div id="exp-err" style="color:#f87171;font-size:13px;min-height:18px;margin-bottom:8px"></div>
     <button class="btn primary full" id="exp-save-btn">Save Expense</button>
   </div>
@@ -1357,7 +1424,11 @@
       <div class="fg" style="margin:0"><label>Unit Cost ($)</label><input type="number" id="sup-unitcost" placeholder="0.00" min="0" step="0.01" /></div>
       <div class="fg" style="margin:0"><label>Supplier</label><input type="text" id="sup-supplier" placeholder="e.g. AHA ShopCPR" /></div>
     </div>
-    <div class="fg" style="margin-top:10px"><label>Order Link (optional)</label><input type="url" id="sup-link" placeholder="https://shopcpr.heart.org/…" /></div>
+    <div class="row2" style="margin-top:10px">
+      <div class="fg" style="margin:0"><label>Order Link (optional)</label><input type="url" id="sup-link" placeholder="https://shopcpr.heart.org/…" /></div>
+      <div class="fg" style="margin:0"><label>Renews / Due By (optional)</label><input type="date" id="sup-renewson" /></div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);margin:-4px 0 10px">Use "Renews / Due By" for time-based items like instructor recerts or manual editions — you'll be reminded as the date nears.</div>
     <div class="fg"><label>Notes (optional)</label><input type="text" id="sup-notes" placeholder="e.g. ~1 pad set per 15–20 classes" /></div>
     <div id="sup-err" style="color:#f87171;font-size:13px;min-height:18px;margin-bottom:8px"></div>
     <div style="display:flex;gap:8px">
@@ -1707,8 +1778,8 @@ const stgRef  = path => fbStorage ? fbStorage.ref(path) : null;
 // ============================================================
 // STATE
 // ============================================================
-let allClasses=[], allStudents=[], allRoster=[], allCerts=[], allExpenses=[], allMaterials=[], allInstructors=[], allSupplies=[];
-let invFilterCat='', currentSupplyId=null;
+let allClasses=[], allStudents=[], allRoster=[], allCerts=[], allExpenses=[], allMaterials=[], allInstructors=[], allSupplies=[], allCeus=[];
+let invFilterCat='', currentSupplyId=null, finPeriod='all';
 let currentInstructorId=null;
 let allFaq=[], infoDoc={};
 let allEmailTemplates=[], allClassTemplates=[], allCheckoffs=[];
@@ -2000,6 +2071,8 @@ function setupListeners(){
     allRoster=snap.docs.map(d=>({id:d.id,...d.data()}));
     refreshView();
     if(currentClassId&&!$('modal-class-detail').classList.contains('hidden'))renderRoster(currentClassId);
+    if($('subpanel-dash-finances').style.display!=='none')renderFinances();
+    if($('subpanel-dash-inventory').style.display!=='none')renderInventory();
   },errAndShow));
   unsubs.push(col('certs').onSnapshot(snap=>{
     allCerts=snap.docs.map(d=>({id:d.id,...d.data()}));
@@ -2008,6 +2081,7 @@ function setupListeners(){
   unsubs.push(col('expenses').orderBy('date','desc').onSnapshot(snap=>{
     allExpenses=snap.docs.map(d=>({id:d.id,...d.data()}));
     refreshView();
+    if($('subpanel-dash-finances').style.display!=='none')renderFinances();
   },errAndShow));
   unsubs.push(col('materials').orderBy('uploadedAt','desc').onSnapshot(snap=>{
     allMaterials=snap.docs.map(d=>({id:d.id,...d.data()}));
@@ -2018,6 +2092,11 @@ function setupListeners(){
     allSupplies=snap.docs.map(d=>({id:d.id,...d.data()}));
     renderReorderAlert();
     if($('subpanel-dash-inventory').style.display!=='none')renderInventory();
+  },errAndShow));
+  unsubs.push(col('ceus').orderBy('date','desc').onSnapshot(snap=>{
+    allCeus=snap.docs.map(d=>({id:d.id,...d.data()}));
+    if(currentView==='certs')renderCerts();
+    if(currentCertId&&!$('modal-cert-detail').classList.contains('hidden'))renderCertCeus(currentCertId);
   },errAndShow));
   col('settings').doc('info').onSnapshot(snap=>{
     infoDoc=snap.exists?snap.data():{};
@@ -2706,9 +2785,11 @@ window.importMyCerts=async function(){
 };
 function certCard(c,icon){
   const cls=expiryClass(c.expiry);
+  const hrs=ceuHours(c.id);
+  const ceuBadge=hrs>0?`<span class="lv-badge exp-ok" style="border-color:currentColor;margin-left:6px">📚 ${hrs} CEU</span>`:'';
   return `<div class="cert-card" onclick="openCertDetail('${c.id}')">
     <div class="cert-icon">${icon}</div>
-    <div class="cert-body"><div class="cert-name">${c.name}</div><div class="cert-sub">${c.certNumber?'#'+c.certNumber+' · ':''} ${c.state||''}</div><div class="cert-exp exp-${cls}">${c.expiry?expiryLabel(c.expiry):'No expiry set'}</div></div>
+    <div class="cert-body"><div class="cert-name">${c.name}${ceuBadge}</div><div class="cert-sub">${c.certNumber?'#'+c.certNumber+' · ':''} ${c.state||''}</div><div class="cert-exp exp-${cls}">${c.expiry?expiryLabel(c.expiry):'No expiry set'}</div></div>
     ${c.loginUrl?'<span class="cert-link-dot" title="Login URL saved"></span>':''}
     <span class="exp-dot ${cls}" style="margin-left:${c.loginUrl?'6px':'auto'}"></span>
   </div>`;
@@ -2750,6 +2831,8 @@ window.openCertDetail=function(certId){
   const photoUrl=c.photoUrl||c.photoBase64||'';
   if(photoUrl){$('certd-photo-wrap').style.display='';$('certd-photo-link').href=photoUrl;}
   else{$('certd-photo-wrap').style.display='none';}
+  $('certd-ceu-section').style.display='';
+  renderCertCeus(certId);
   openModal('modal-cert-detail');
 };
 $('certd-delete-btn').addEventListener('click',async()=>{
@@ -2770,6 +2853,7 @@ $('certd-edit-btn').addEventListener('click',()=>{
   $('certd-e-err').textContent='';
   $('certd-body').style.display='none';
   $('certd-photo-wrap').style.display='none';
+  $('certd-ceu-section').style.display='none';
   $('certd-edit-form').style.display='';
   $('certd-edit-btn').style.display='none';
   $('certd-delete-btn').style.display='none';
@@ -2777,6 +2861,7 @@ $('certd-edit-btn').addEventListener('click',()=>{
 $('certd-e-cancel').addEventListener('click',()=>{
   $('certd-body').style.display='';
   $('certd-edit-form').style.display='none';
+  $('certd-ceu-section').style.display='';
   $('certd-edit-btn').style.display='';
   $('certd-delete-btn').style.display='';
   const c=allCerts.find(x=>x.id===currentCertId);
@@ -2796,6 +2881,97 @@ $('certd-e-save').addEventListener('click',async()=>{
     closeModal('modal-cert-detail');
   }catch(e){$('certd-e-err').textContent='Error: '+e.message;}
   $('certd-e-save').disabled=false;
+});
+
+// ============================================================
+// CONTINUING EDUCATION (CEU)
+// ============================================================
+function certCeus(certId){return allCeus.filter(x=>x.certId===certId);}
+function ceuHours(certId){return certCeus(certId).reduce((s,x)=>s+(+x.hours||0),0);}
+function renderCertCeus(certId){
+  const list=certCeus(certId).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  const total=ceuHours(certId);
+  $('certd-ceu-total').textContent=list.length?`· ${total} hr${total!==1?'s':''} logged`:'';
+  $('certd-ceu-list').innerHTML=list.length
+    ? list.map(x=>{
+        const file=x.fileUrl?`<a href="${x.fileUrl}" target="_blank" rel="noopener" class="contact-chip" onclick="event.stopPropagation()">📎 ${x.fileName||'File'}</a>`:'';
+        return `<div class="card-sm" style="cursor:pointer" onclick="openCeuModal('${certId}','${x.id}')">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
+            <div style="flex:1;min-width:0">
+              <div style="font-size:14px;font-weight:600">${x.title||'—'}</div>
+              <div class="fin-meta">${x.category||''}${x.provider?' · '+x.provider:''}${x.date?' · '+formatDate(x.date):''}</div>
+            </div>
+            <div style="font-weight:700;font-size:15px;color:var(--accent);flex:none">${(+x.hours||0)} hr</div>
+          </div>
+          ${file||x.notes?`<div style="margin-top:8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap">${file}${x.notes?`<span style="font-size:12px;color:var(--muted)">${x.notes}</span>`:''}</div>`:''}
+        </div>`;
+      }).join('')
+    : `<div style="font-size:13px;color:var(--muted);padding:4px 0 8px">No CEUs logged for this certification yet.</div>`;
+}
+let ceuFileToUpload=null, currentCeuId=null;
+$('certd-add-ceu-btn').addEventListener('click',()=>openCeuModal(currentCertId,null));
+window.openCeuModal=function(certId,ceuId){
+  currentCertId=certId;currentCeuId=ceuId;ceuFileToUpload=null;
+  const c=allCerts.find(x=>x.id===certId);
+  const x=ceuId?allCeus.find(k=>k.id===ceuId):null;
+  $('ceu-modal-title').textContent=x?'Edit CEU':'Add Continuing Education';
+  $('ceu-for-cert').textContent=c?`For: ${c.name}`:'';
+  $('ceu-title').value=x?x.title||'':'';
+  $('ceu-provider').value=x?x.provider||'':'';
+  $('ceu-hours').value=x&&x.hours!=null?x.hours:'';
+  $('ceu-date').value=x?x.date||today():today();
+  syncOptGroup('ceu-category',x?x.category||'Clinical':'Clinical');
+  $('ceu-notes').value=x?x.notes||'':'';
+  $('ceu-file-name').textContent='';
+  $('ceu-err').textContent='';
+  $('ceu-delete-btn').style.display=x?'':'none';
+  $('ceu-storage-notice').style.display=fbStorage?'none':'';
+  const cur=$('ceu-file-current');
+  if(x&&x.fileUrl){cur.style.display='';cur.innerHTML=`Current file: <a href="${x.fileUrl}" target="_blank" rel="noopener" style="color:var(--accent)">${x.fileName||'View'}</a>`;}
+  else{cur.style.display='none';cur.innerHTML='';}
+  $('ceu-upload-prog').classList.remove('show');$('ceu-prog-bar').style.width='0%';$('ceu-prog-pct').textContent='';
+  openModal('modal-new-ceu');
+};
+$('ceu-file-btn').addEventListener('click',()=>$('ceu-file-input').click());
+$('ceu-file-input').addEventListener('change',function(){
+  ceuFileToUpload=this.files[0]||null;
+  $('ceu-file-name').textContent=ceuFileToUpload?ceuFileToUpload.name:'';
+});
+$('ceu-save-btn').addEventListener('click',async()=>{
+  const title=$('ceu-title').value.trim();
+  const hours=parseFloat($('ceu-hours').value);
+  if(!title){$('ceu-err').textContent='Course title is required.';return;}
+  if(isNaN(hours)){$('ceu-err').textContent='Hours / credits are required.';return;}
+  $('ceu-save-btn').disabled=true;$('ceu-err').textContent='';
+  const data={
+    certId:currentCertId,title,provider:$('ceu-provider').value.trim(),
+    hours,date:$('ceu-date').value,category:$('ceu-category').value,notes:$('ceu-notes').value.trim()
+  };
+  try{
+    if(ceuFileToUpload&&fbStorage){
+      $('ceu-prog-name').textContent=ceuFileToUpload.name;$('ceu-upload-prog').classList.add('show');
+      const path=`ceus/${UID}/${currentCertId}/${Date.now()}_${ceuFileToUpload.name}`;
+      const task=stgRef(path).put(ceuFileToUpload);
+      await new Promise((res,rej)=>task.on('state_changed',s=>{
+        const pct=Math.round(s.bytesTransferred/s.totalBytes*100);
+        $('ceu-prog-bar').style.width=pct+'%';$('ceu-prog-pct').textContent=pct+'%';
+      },rej,res));
+      data.fileUrl=await task.snapshot.ref.getDownloadURL();
+      data.fileName=ceuFileToUpload.name;data.storagePath=path;
+    }
+    if(currentCeuId)await col('ceus').doc(currentCeuId).update(data);
+    else{data.createdAt=Date.now();await col('ceus').add(data);}
+    closeModal('modal-new-ceu');
+  }catch(e){$('ceu-err').textContent='Error: '+e.message;}
+  $('ceu-upload-prog').classList.remove('show');
+  $('ceu-save-btn').disabled=false;
+});
+$('ceu-delete-btn').addEventListener('click',async()=>{
+  if(!currentCeuId||!confirm('Delete this CEU record?'))return;
+  const x=allCeus.find(k=>k.id===currentCeuId);
+  try{if(x&&x.storagePath&&fbStorage)await stgRef(x.storagePath).delete().catch(()=>{});}catch(e){}
+  await col('ceus').doc(currentCeuId).delete();
+  closeModal('modal-new-ceu');
 });
 
 // ============================================================
@@ -2853,16 +3029,30 @@ $('cd-print-btn').addEventListener('click',()=>{
 // ============================================================
 // FINANCES
 // ============================================================
+function finPeriodStart(){
+  const now=new Date();
+  if(finPeriod==='ytd')return now.getFullYear()+'-01-01';
+  if(finPeriod==='year'){const d=new Date();d.setFullYear(d.getFullYear()-1);return d.toISOString().slice(0,10);}
+  return '0000-01-01';
+}
 function renderFinances(){
-  const income=allRoster.reduce((s,r)=>s+(+r.charge||0),0),exp=allExpenses.reduce((s,e)=>s+(+e.amount||0),0),net=income-exp;
+  const start=finPeriodStart(),all=finPeriod==='all';
+  const classDate={};allClasses.forEach(c=>classDate[c.id]=c.date||'');
+  const rosterIn=r=>all||(classDate[r.classId]&&classDate[r.classId]>=start);
+  const expIn=e=>all||(e.date&&e.date>=start);
+  const income=allRoster.filter(rosterIn).reduce((s,r)=>s+(+r.charge||0),0);
+  const exps=allExpenses.filter(expIn);
+  const exp=exps.reduce((s,e)=>s+(+e.amount||0),0);
+  const oop=exps.filter(e=>!e.reimbursable).reduce((s,e)=>s+(+e.amount||0),0);
+  const net=income-exp;
   $('fin-income').textContent=fmt$(income);$('fin-expenses').textContent=fmt$(exp);$('fin-net').textContent=fmt$(net);
-  $('fin-net').className=`stat-val ${net>=0?'exp-ok':'exp-danger'}`;$('fin-classes').textContent=allClasses.length;
-  $('expenses-list').innerHTML=allExpenses.length
-    ?allExpenses.map(e=>{const c=allClasses.find(x=>x.id===e.classId);
-      return `<div class="fin-row"><div><div style="font-size:14px;font-weight:500">${e.description}</div><div class="fin-meta">${e.type} · ${formatDate(e.date)}${c?' · '+c.type:''}</div></div>
+  $('fin-net').className=`stat-val ${net>=0?'exp-ok':'exp-danger'}`;$('fin-oop').textContent=fmt$(oop);
+  $('expenses-list').innerHTML=exps.length
+    ?exps.map(e=>{const c=allClasses.find(x=>x.id===e.classId);
+      return `<div class="fin-row"><div><div style="font-size:14px;font-weight:500">${e.description}${e.reimbursable?' <span class="lv-badge exp-ok" style="border-color:currentColor">↩ Reimbursable</span>':''}</div><div class="fin-meta">${e.type} · ${formatDate(e.date)}${c?' · '+c.type:''}</div></div>
         <div style="display:flex;align-items:center;gap:10px"><span class="fin-amount expense">${fmt$(e.amount)}</span><button class="btn sm danger" onclick="deleteExpense('${e.id}')">×</button></div></div>`;}).join('')
-    :`<div class="empty" style="padding:20px 0"><div class="empty-text">No expenses recorded</div></div>`;
-  const byClass=allClasses.map(c=>({...c,income:allRoster.filter(r=>r.classId===c.id).reduce((s,r)=>s+(+r.charge||0),0),count:allRoster.filter(r=>r.classId===c.id).length})).filter(c=>c.income>0).sort((a,b)=>b.income-a.income);
+    :`<div class="empty" style="padding:20px 0"><div class="empty-text">No expenses in this period</div></div>`;
+  const byClass=allClasses.filter(c=>all||(c.date&&c.date>=start)).map(c=>({...c,income:allRoster.filter(r=>r.classId===c.id).reduce((s,r)=>s+(+r.charge||0),0),count:allRoster.filter(r=>r.classId===c.id).length})).filter(c=>c.income>0).sort((a,b)=>b.income-a.income);
   const maxInc=byClass[0]?.income||1;
   $('income-by-class').innerHTML=byClass.length
     ?byClass.map(c=>`<div class="fin-row" style="flex-direction:column;align-items:stretch">
@@ -2872,8 +3062,21 @@ function renderFinances(){
       </div>`).join('')
     :`<div class="empty" style="padding:20px 0"><div class="empty-text">No income recorded yet</div></div>`;
 }
+$('fin-period').addEventListener('change',()=>{finPeriod=$('fin-period').value;renderFinances();});
+$('fin-export-btn').addEventListener('click',()=>{
+  const start=finPeriodStart();
+  const rows=allExpenses.filter(e=>finPeriod==='all'||(e.date&&e.date>=start));
+  if(!rows.length){alert('No expenses to export for this period.');return;}
+  const esc=v=>`"${String(v==null?'':v).replace(/"/g,'""')}"`;
+  const lines=[['Date','Type','Description','Amount','Reimbursable','Class'].join(',')].concat(
+    rows.map(e=>{const c=allClasses.find(x=>x.id===e.classId);
+      return [e.date||'',e.type||'',e.description||'',(+e.amount||0).toFixed(2),e.reimbursable?'Yes':'No',c?`${c.type} ${c.date||''}`:''].map(esc).join(',');}));
+  const blob=new Blob([lines.join('\n')],{type:'text/csv'});const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;a.download=`expenses_${finPeriod}_${today()}.csv`;document.body.appendChild(a);a.click();a.remove();
+  URL.revokeObjectURL(url);
+});
 $('new-expense-btn').addEventListener('click',()=>{
-  ['exp-desc','exp-amount'].forEach(id=>$(id).value='');$('exp-type').value='Supplies / Materials';$('exp-date').value=today();$('exp-err').textContent='';
+  ['exp-desc','exp-amount'].forEach(id=>$(id).value='');$('exp-type').value='Supplies / Materials';$('exp-date').value=today();$('exp-err').textContent='';$('exp-reimbursable').checked=false;
   const expClassGrp=document.getElementById('exp-class-group');if(expClassGrp){expClassGrp.innerHTML='<button type="button" class="opt-btn sel" data-val="">General expense (no class)</button>'+allClasses.map(c=>`<button type="button" class="opt-btn" data-val="${c.id}">${c.type} – ${formatDate(c.date)}</button>`).join('');$('exp-class').value='';};
   openModal('modal-new-expense');
 });
@@ -2881,7 +3084,7 @@ $('exp-save-btn').addEventListener('click',async()=>{
   const desc=$('exp-desc').value.trim(),amount=parseFloat($('exp-amount').value);
   if(!desc||!amount){$('exp-err').textContent='Description and amount required.';return;}
   $('exp-save-btn').disabled=true;
-  try{await col('expenses').add({type:$('exp-type').value,description:desc,amount,date:$('exp-date').value,classId:$('exp-class').value||null,createdAt:Date.now()});closeModal('modal-new-expense');}
+  try{await col('expenses').add({type:$('exp-type').value,description:desc,amount,date:$('exp-date').value,classId:$('exp-class').value||null,reimbursable:$('exp-reimbursable').checked,createdAt:Date.now()});closeModal('modal-new-expense');}
   catch(e){$('exp-err').textContent='Error: '+e.message;}
   $('exp-save-btn').disabled=false;
 });
@@ -2892,9 +3095,14 @@ window.deleteExpense=async function(id){if(!confirm('Delete this expense?'))retu
 // ============================================================
 function supplyStatus(s){
   const on=+s.onHand||0, at=+s.reorderAt||0;
-  if(on<=at)return{key:'reorder',label:'🔴 Reorder',cls:'exp-danger'};
-  if(on<=Math.ceil(at*1.5))return{key:'low',label:'Low',cls:'exp-warn'};
-  return{key:'ok',label:'OK',cls:'exp-ok'};
+  const order={ok:0,low:1,reorder:2};
+  // quantity-based (skipped for purely date-based items with no threshold)
+  let qtyKey=(!at&&s.renewsOn)?'ok':(on<=at?'reorder':(on<=Math.ceil(at*1.5)?'low':'ok'));
+  // date-based (renewals/recerts)
+  let dateKey='ok';
+  if(s.renewsOn){const d=daysUntil(s.renewsOn);if(d!==null){if(d<=30)dateKey='reorder';else if(d<=60)dateKey='low';}}
+  const key=order[qtyKey]>=order[dateKey]?qtyKey:dateKey;
+  return {reorder:{key:'reorder',label:'🔴 Reorder',cls:'exp-danger'},low:{key:'low',label:'Low',cls:'exp-warn'},ok:{key:'ok',label:'OK',cls:'exp-ok'}}[key];
 }
 function catToExpenseType(cat){
   return {'eCards':'Course eCards','AED Pads':'AED Trainer Pads','Instructor Materials':'Instructor Materials','Consumables':'Supplies / Materials'}[cat]||'Supplies / Materials';
@@ -2913,7 +3121,27 @@ function renderReorderAlert(){
     <div style="font-size:18px;color:var(--muted);flex:none">→</div>
   </div>`;
 }
+function renderInvForecast(){
+  const el=$('inv-forecast');if(!el)return;
+  const ecards=allSupplies.filter(s=>s.category==='eCards');
+  const upcoming=allClasses.filter(c=>c.date&&c.date>=today()&&c.status!=='Completed'&&c.status!=='Archived');
+  const rows=ecards.map(s=>{
+    const cls=ecards.length===1?upcoming:upcoming.filter(c=>classTypeKey(c.type)===classTypeKey(s.name));
+    const needed=cls.reduce((sum,c)=>sum+allRoster.filter(r=>r.classId===c.id).length,0);
+    const on=+s.onHand||0;
+    return {name:s.name,needed,on,short:needed-on,classes:cls.length};
+  }).filter(r=>r.needed>0);
+  if(!rows.length){el.innerHTML='';return;}
+  el.innerHTML=`<div class="card-sm" style="margin-bottom:14px">
+    <div style="font-size:13px;font-weight:700;margin-bottom:8px">📈 eCard Forecast — Upcoming Classes</div>
+    ${rows.map(r=>`<div class="fin-row" style="padding:8px 0">
+      <div style="flex:1;min-width:0"><div style="font-size:13px;font-weight:600">${r.name}</div><div class="fin-meta">${r.needed} needed across ${r.classes} upcoming class${r.classes!==1?'es':''} · ${r.on} on hand</div></div>
+      <div style="font-weight:700;font-size:13px;flex:none" class="${r.short>0?'exp-danger':'exp-ok'}">${r.short>0?'Short '+r.short:'Covered'}</div>
+    </div>`).join('')}
+  </div>`;
+}
 function renderInventory(){
+  renderInvForecast();
   const reorder=allSupplies.filter(s=>supplyStatus(s).key==='reorder').length;
   const low=allSupplies.filter(s=>supplyStatus(s).key==='low').length;
   const value=allSupplies.reduce((t,s)=>t+(+s.onHand||0)*(+s.unitCost||0),0);
@@ -2935,7 +3163,7 @@ function renderInventory(){
           <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px">
             <div style="flex:1;min-width:0">
               <div style="font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px;flex-wrap:wrap">${s.name}<span class="lv-badge ${st.cls}" style="border-color:currentColor">${st.label}</span></div>
-              <div class="fin-meta">${s.category||'Other'}${s.supplier?' · '+s.supplier:''}${s.lastOrdered?' · last ordered '+formatDate(s.lastOrdered):''}</div>
+              <div class="fin-meta">${s.category||'Other'}${s.supplier?' · '+s.supplier:''}${s.lastOrdered?' · last ordered '+formatDate(s.lastOrdered):''}${s.renewsOn?` · <span class="exp-${expiryClass(s.renewsOn)}">renews ${formatDate(s.renewsOn)} (${daysUntil(s.renewsOn)<0?'overdue':daysUntil(s.renewsOn)+'d'})</span>`:''}</div>
             </div>
             <div style="text-align:right;flex:none">
               <div style="font-size:20px;font-weight:700" class="${st.cls}">${on}</div>
@@ -2971,11 +3199,22 @@ window.openSupplyModal=function(id){
   $('sup-unitcost').value=s&&s.unitCost!=null?s.unitCost:'';
   $('sup-supplier').value=s?s.supplier||'':'';
   $('sup-link').value=s?s.link||'':'';
+  $('sup-renewson').value=s?s.renewsOn||'':'';
   $('sup-notes').value=s?s.notes||'':'';
   $('sup-err').textContent='';
   $('sup-delete-btn').style.display=s?'':'none';
   openModal('modal-new-supply');
 };
+$('seed-supply-btn').addEventListener('click',async()=>{
+  if(!confirm('Add starter inventory items (ACLS eCards, BLS eCards, AED trainer pads)? You can edit or delete them afterward.'))return;
+  const items=[
+    {name:'ACLS eCards',category:'eCards',onHand:0,reorderAt:10,unitCost:10,supplier:'AHA ShopCPR',link:'https://shopcpr.heart.org/',notes:'~$10/card'},
+    {name:'BLS eCards',category:'eCards',onHand:0,reorderAt:10,unitCost:10,supplier:'AHA ShopCPR',link:'https://shopcpr.heart.org/',notes:'~$10/card'},
+    {name:'AED Trainer Pads',category:'AED Pads',onHand:1,reorderAt:1,unitCost:11,supplier:'AHA ShopCPR',link:'https://shopcpr.heart.org/',notes:'~$11/set per 15–20 classes'}
+  ];
+  try{await Promise.all(items.map(i=>col('supplies').add({...i,createdAt:Date.now()})));}
+  catch(e){alert('Error: '+e.message);}
+});
 $('sup-save-btn').addEventListener('click',async()=>{
   const name=$('sup-name').value.trim();
   if(!name){$('sup-err').textContent='Item name is required.';return;}
@@ -2986,6 +3225,7 @@ $('sup-save-btn').addEventListener('click',async()=>{
     unitCost:parseFloat($('sup-unitcost').value)||0,
     supplier:$('sup-supplier').value.trim(),
     link:$('sup-link').value.trim(),
+    renewsOn:$('sup-renewson').value||'',
     notes:$('sup-notes').value.trim()
   };
   $('sup-save-btn').disabled=true;
