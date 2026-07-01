@@ -1064,8 +1064,8 @@
         <span class="var-pill" onclick="insertEmailVar('{{deposit}}')">{{deposit}}</span>
         <span class="var-pill" onclick="insertEmailVar('{{balance}}')">{{balance}}</span>
       </div>
-      <button class="btn primary full" id="send-email-btn">📨 Open in Gmail</button>
-      <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px" id="send-email-hint">Opens Gmail with all roster emails pre-filled</div>
+      <button class="btn primary full" id="send-email-btn">📨 Open in Email App</button>
+      <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px" id="send-email-hint">Opens your default email app (Gmail, if set as default) with all roster emails pre-filled</div>
     </div>
     <div id="cd-notes" style="display:none">
       <div class="fg"><label>Class Notes</label><textarea id="cd-notes-text" style="min-height:140px" placeholder="Notes about this class…"></textarea></div>
@@ -1805,8 +1805,8 @@
       <span class="var-pill" onclick="insertSseVar('{{deposit}}')">{{deposit}}</span>
       <span class="var-pill" onclick="insertSseVar('{{balance}}')">{{balance}}</span>
     </div>
-    <button class="btn primary full" id="sse-send-btn">📨 Open in Gmail</button>
-    <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px" id="sse-send-hint">Opens Gmail with this message pre-filled</div>
+    <button class="btn primary full" id="sse-send-btn">📨 Open in Email App</button>
+    <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px" id="sse-send-hint">Opens your default email app (Gmail, if set as default) with this message pre-filled</div>
   </div>
 </div>
 
@@ -2563,7 +2563,7 @@ function updateEmailNotice(){
   $('cd-email-notice').textContent=entries.length
     ?`${entries.length} recipient${entries.length!==1?'s':''}${lbl} with email on file`
     :`No matching student emails${lbl}.`;
-  $('send-email-hint').textContent=`Opens Gmail with ${entries.length} recipient${entries.length!==1?'s':''} pre-filled`;
+  $('send-email-hint').textContent=`Opens your default email app with ${entries.length} recipient${entries.length!==1?'s':''} pre-filled`;
 }
 $('send-email-btn').addEventListener('click',()=>{
   const c=allClasses.find(x=>x.id===currentClassId);if(!c)return;
@@ -2574,7 +2574,7 @@ $('send-email-btn').addEventListener('click',()=>{
   if(!emails.length){alert('No matching student emails.');return;}
   const subject=applyMerge($('email-subject').value);
   const body=applyMerge($('email-body').value);
-  window.open(gmailComposeUrl(emails.join(','),subject,body),'_blank');
+  window.open(mailtoUrl(emails.join(','),subject,body),'_blank');
   logCommsSent(entries.map(r=>r.id),$('email-tpl-select').value||null,'email');
 });
 $('cd-notes-save').addEventListener('click',async()=>{
@@ -4516,8 +4516,8 @@ $('etpl-e-save-btn').addEventListener('click',async()=>{
 // ============================================================
 let sseRosterId=null, sseStudentId=null, sseChannel='email';
 
-function gmailComposeUrl(to,subject,body){
-  return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(to)}&su=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+function mailtoUrl(to,subject,body){
+  return `mailto:${encodeURIComponent(to).replace(/%2C/g,',')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
 function smsUrl(phone,body){
   return `sms:${encodeURIComponent(phone)}?body=${encodeURIComponent(body)}`;
@@ -4534,8 +4534,8 @@ window.setSseChannel=function(ch){
   $('sse-channel-email').classList.toggle('sel',ch==='email');
   $('sse-channel-text').classList.toggle('sel',ch==='text');
   $('sse-subject-row').style.display=ch==='email'?'':'none';
-  $('sse-send-btn').textContent=ch==='email'?'📨 Open in Gmail':'💬 Open in Messages';
-  $('sse-send-hint').textContent=ch==='email'?'Opens Gmail with this message pre-filled':'Opens your messaging app with this text pre-filled';
+  $('sse-send-btn').textContent=ch==='email'?'📨 Open in Email App':'💬 Open in Messages';
+  $('sse-send-hint').textContent=ch==='email'?'Opens your default email app (Gmail, if set as default) with this message pre-filled':'Opens your messaging app with this text pre-filled';
   refreshSseModal();
 };
 
@@ -4634,7 +4634,7 @@ $('sse-send-btn').addEventListener('click',()=>{
     const email=r?r.email:(s?s.email:'');
     if(!email){alert('No email address on file.');return;}
     const subject=applySseMerge($('sse-subject').value);
-    window.open(gmailComposeUrl(email,subject,body),'_blank');
+    window.open(mailtoUrl(email,subject,body),'_blank');
   } else {
     const phone=r?r.phone:(s?s.phone:'');
     if(!phone){alert('No phone number on file.');return;}
