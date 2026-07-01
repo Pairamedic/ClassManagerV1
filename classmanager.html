@@ -893,6 +893,14 @@
         <button type="button" class="opt-btn" data-val="Other">Other</button>
       </div>
     </div>
+    <div class="fg" id="nc-variant-wrap" style="display:none">
+      <label>Course Type</label>
+      <input type="hidden" id="nc-variant" value="">
+      <div class="opt-group">
+        <button type="button" class="opt-btn" data-val="Initial">Initial</button>
+        <button type="button" class="opt-btn" data-val="Renewal">Renewal</button>
+      </div>
+    </div>
     <div class="row2">
       <div class="fg" style="margin:0"><label>Date *</label><input type="date" id="nc-date" /></div>
       <div class="fg" style="margin:0"><label>Time</label><input type="time" id="nc-time" /></div>
@@ -900,7 +908,10 @@
     <div class="fg" style="margin-top:12px"><label>Location / Venue</label><input type="text" id="nc-location" placeholder="Address or facility name" /></div>
     <div class="row2">
       <div class="fg" style="margin:0"><label>Max Students</label><input type="number" id="nc-max" placeholder="e.g. 12" min="1" /></div>
-      <div class="fg" style="margin:0"><label>Default Charge ($)</label><input type="number" id="nc-charge" placeholder="0.00" min="0" step="0.01" /></div>
+      <div class="fg" style="margin:0">
+        <label>Default Charge ($)</label><input type="number" id="nc-charge" placeholder="0.00" min="0" step="0.01" />
+        <div id="nc-price-hint" style="font-size:12px;color:var(--muted);margin-top:5px"></div>
+      </div>
     </div>
     <div class="fg" style="margin-top:12px"><label>Notes</label><textarea id="nc-notes" placeholder="Any additional notes…"></textarea></div>
     <div class="fg" style="margin-top:12px">
@@ -1821,6 +1832,32 @@ function classTypeKey(t=''){
   return 'other';
 }
 function ctBadge(type){return `<span class="ct-badge ct-${classTypeKey(type)}">${type||'—'}</span>`;}
+
+// Recommended pricing/CEUs by course type + Initial/Renewal, based on typical 2026 AHA course rates.
+const COURSE_PRICING={
+  ACLS:{Initial:{price:235,ceu:8},Renewal:{price:150,ceu:4}},
+  PALS:{Initial:{price:225,ceu:8},Renewal:{price:165,ceu:6}},
+  BLS:{Initial:{price:90,ceu:4},Renewal:{price:65,ceu:2}},
+};
+function updateNcVariantVisibility(){
+  const type=$('nc-type').value;
+  const wrap=$('nc-variant-wrap');
+  if(COURSE_PRICING[type]){
+    wrap.style.display='';
+    if(!$('nc-variant').value)syncOptGroup('nc-variant','Initial');
+  } else {
+    wrap.style.display='none';
+    syncOptGroup('nc-variant','');
+  }
+  updateNcPriceHint();
+}
+function updateNcPriceHint(){
+  const rec=COURSE_PRICING[$('nc-type').value]?.[$('nc-variant').value];
+  const hint=$('nc-price-hint');
+  hint.innerHTML=rec?`Recommended: ${fmt$(rec.price)} · ${rec.ceu} CEUs · <span style="color:var(--accent);cursor:pointer;text-decoration:underline" onclick="$('nc-charge').value='${rec.price}'">Use this price</span>`:'';
+}
+$('nc-type').addEventListener('change',updateNcVariantVisibility);
+$('nc-variant').addEventListener('change',updateNcPriceHint);
 function lvBadge(level){
   if(!level)return '';
   const m={EMT:'lv-emt',AEMT:'lv-aemt',Paramedic:'lv-para',RN:'lv-rn','MD/DO':'lv-md'};
@@ -2241,7 +2278,7 @@ function renderClasses(){
     ?list.map(c=>{const cnt=allRoster.filter(r=>r.classId===c.id).length,rev=allRoster.filter(r=>r.classId===c.id).reduce((s,r)=>s+(+r.charge||0),0);
       return `<div class="class-card" onclick="openClassDetail('${c.id}')">
         <div class="class-card-hd">
-          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">${ctBadge(c.type)}${c.isInstructorCourse?'<span class="ct-badge ct-inst">Instructor</span>':''}${classStatusBadge(c.status)}</div>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">${ctBadge(c.type)}${c.variant?`<span class="ct-badge ct-other">${c.variant}</span>`:''}${c.isInstructorCourse?'<span class="ct-badge ct-inst">Instructor</span>':''}${classStatusBadge(c.status)}</div>
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-size:13px;color:var(--ok);font-weight:600">${fmt$(rev)}</span>
             <button class="btn sm primary" onclick="event.stopPropagation();openClassEdit('${c.id}')" style="font-size:12px;padding:4px 8px">✏️ Edit</button>
@@ -2263,6 +2300,8 @@ function openNewClassModal(prefill, classIdToEdit){
   $('nc-save-btn').textContent=editingClassId?'Save Changes':'Schedule Class';
   $('nc-tpl-row').style.display=editingClassId?'none':'';
   syncOptGroup('nc-type',prefill.type||'');
+  syncOptGroup('nc-variant',prefill.variant||'');
+  updateNcVariantVisibility();
   $('nc-date').value=prefill.date||today();
   $('nc-time').value=prefill.time||'';
   $('nc-location').value=prefill.location||'';
@@ -2299,6 +2338,8 @@ $('nc-tpl-load-btn').addEventListener('click',()=>{
   const id=$('nc-tpl-select').value;if(!id)return;
   const t=allClassTemplates.find(x=>x.id===id);if(!t)return;
   syncOptGroup('nc-type',t.type||'');
+  syncOptGroup('nc-variant',t.variant||'');
+  updateNcVariantVisibility();
   $('nc-location').value=t.location||'';
   $('nc-time').value=t.time||'';
   $('nc-max').value=t.maxStudents||'';
@@ -2308,13 +2349,14 @@ $('nc-tpl-load-btn').addEventListener('click',()=>{
   ncAdjInstructors=[...(t.adjunctInstructors||[])];$('nc-adj-input').value='';renderNcAdjList();
 });
 $('nc-save-btn').addEventListener('click',async()=>{
-  const type=$('nc-type').value,date=$('nc-date').value;
+  const type=$('nc-type').value,date=$('nc-date').value,variant=$('nc-variant').value;
   if(!type||!date){$('nc-err').textContent='Class type and date are required.';return;}
   $('nc-save-btn').disabled=true;$('nc-err').textContent='';
   const fields={type,date,time:$('nc-time').value,location:$('nc-location').value.trim(),
     maxStudents:parseInt($('nc-max').value)||null,defaultCharge:parseFloat($('nc-charge').value)||0,
     notes:$('nc-notes').value.trim(),isInstructorCourse:$('nc-instructor-course').checked,
-    adjunctInstructors:[...ncAdjInstructors]};
+    adjunctInstructors:[...ncAdjInstructors],
+    variant:variant||null,ceuCredits:COURSE_PRICING[type]?.[variant]?.ceu||null};
   try{
     if(editingClassId){
       await col('classes').doc(editingClassId).update(fields);
@@ -2335,8 +2377,8 @@ window.openClassEdit=function(classId){
 window.openClassDetail=function(classId){
   currentClassId=classId;
   const c=allClasses.find(x=>x.id===classId);if(!c)return;
-  $('cd-title').textContent=c.type;
-  $('cd-badges').innerHTML=ctBadge(c.type)+(c.isInstructorCourse?'<span class="ct-badge ct-inst" style="margin-left:6px">Instructor Course</span>':'');
+  $('cd-title').textContent=c.type+(c.variant?` — ${c.variant}`:'');
+  $('cd-badges').innerHTML=ctBadge(c.type)+(c.isInstructorCourse?'<span class="ct-badge ct-inst" style="margin-left:6px">Instructor Course</span>':'')+(c.ceuCredits?`<span class="ct-badge ct-other" style="margin-left:6px">${c.ceuCredits} CEUs</span>`:'');
   $('cd-meta').innerHTML=`<span>📅 ${formatDate(c.date)}${c.time?' '+formatTime(c.time):''}</span><span>📍 ${c.location||'Location TBD'}</span>${c.adjunctInstructors?.length?`<span>👨‍🏫 ${c.adjunctInstructors.join(', ')}</span>`:''}`;
   document.querySelectorAll('.mtab[data-mtab="cd"]').forEach((t,i)=>t.classList.toggle('active',i===0));
   ['cd-roster','cd-attend','cd-checklist','cd-email','cd-notes'].forEach((id,i)=>$(id).style.display=i===0?'':'none');
