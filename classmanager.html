@@ -4144,8 +4144,27 @@ function classStatusBadge(status){
 }
 window.updateClassStatus=async function(status){
   if(!currentClassId)return;
-  await col('classes').doc(currentClassId).update({status});
+  const cls=allClasses.find(c=>c.id===currentClassId);
+  const wasCompleted=cls&&cls.status==='Completed';
+  const classId=currentClassId;
+  await col('classes').doc(classId).update({status});
+  if(status==='Completed'&&!wasCompleted)maybeDeductECards(classId,cls);
 };
+// When a class is completed, offer to deduct eCards from inventory by the
+// number of students on the roster. If multiple eCard items are tracked,
+// match the one whose name aligns with the class type (ACLS/BLS/…).
+async function maybeDeductECards(classId,cls){
+  const count=allRoster.filter(r=>r.classId===classId).length;
+  if(!count)return;
+  const ecards=allSupplies.filter(s=>s.category==='eCards');
+  if(!ecards.length)return;
+  let target=ecards.length===1?ecards[0]:(ecards.find(s=>classTypeKey(s.name)===classTypeKey(cls?cls.type:''))||null);
+  if(!target)return;
+  const on=+target.onHand||0;
+  if(!confirm(`Class completed with ${count} student${count!==1?'s':''}.\n\nDeduct ${count} from "${target.name}" inventory? (${on} → ${Math.max(0,on-count)} on hand)`))return;
+  try{await col('supplies').doc(target.id).update({onHand:Math.max(0,on-count)});}
+  catch(e){alert('Could not update inventory: '+e.message);}
+}
 
 // ============================================================
 // PRE-CLASS CHECKLIST
