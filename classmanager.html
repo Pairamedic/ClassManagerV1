@@ -4287,6 +4287,23 @@ See you tomorrow!
 Thank you!`
     },
     {
+      name:'Payment Request',
+      category:'Payment Request',
+      subject:'{{class}} Class – Payment Due',
+      body:`Hi {{name}},
+
+This is a reminder that payment for your {{class}} class on {{date}} is due.
+
+Amount due: {{charge}}
+Payment due date: {{dueDate}}
+
+You can pay securely via Square here: https://square.link/u/ySsq2zyy?src=sheet
+
+Thank you, and let me know if you have any questions!
+
+{{instructor}}`
+    },
+    {
       name:'AHA Precourse Letter (Full Prework)',
       category:'AHA Default',
       subject:'{{class}} Provider Course – Precourse Instructions',
@@ -4420,7 +4437,7 @@ $('etpld-delete-btn').addEventListener('click',async()=>{
 
 $('etpl-new-btn').addEventListener('click',()=>openTplEditModal(null));
 $('etpl-seed-btn').addEventListener('click',async()=>{
-  if(!confirm('Add the default templates (Class Details, Class Confirmation, Class Reminder, and 2 AHA precourse letters)? This will add them even if they already exist.'))return;
+  if(!confirm('Add the default templates (Class Details, Class Confirmation, Class Reminder, Payment Request, and 2 AHA precourse letters)? This will add them even if they already exist.'))return;
   await seedDefaultEmailTemplates();
 });
 
