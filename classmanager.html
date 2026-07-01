@@ -944,6 +944,10 @@
       <div><div class="toggle-lbl">Instructor Course</div><div class="toggle-sub">Adds AHA/Atlas setup info to emails</div></div>
       <label class="toggle"><input type="checkbox" id="nc-instructor-course"><span class="slider"></span></label>
     </div>
+    <div class="toggle-row" style="margin-bottom:14px">
+      <div><div class="toggle-lbl">Pretest Required</div><div class="toggle-sub">Adds pretest instructions & link to emails</div></div>
+      <label class="toggle"><input type="checkbox" id="nc-pretest-required"><span class="slider"></span></label>
+    </div>
     <div id="nc-err" style="color:#f87171;font-size:13px;min-height:18px;margin-bottom:8px"></div>
     <button class="btn primary full" id="nc-save-btn">Schedule Class</button>
   </div>
@@ -1048,6 +1052,9 @@
         <span class="var-pill" onclick="insertEmailVar('{{charge}}')">{{charge}}</span>
         <span class="var-pill" onclick="insertEmailVar('{{dueDate}}')">{{dueDate}}</span>
         <span class="var-pill" onclick="insertEmailVar('{{note}}')">{{note}}</span>
+        <span class="var-pill" onclick="insertEmailVar('{{pretest}}')">{{pretest}}</span>
+        <span class="var-pill" onclick="insertEmailVar('{{phone}}')">{{phone}}</span>
+        <span class="var-pill" onclick="insertEmailVar('{{today}}')">{{today}}</span>
       </div>
       <button class="btn primary full" id="send-email-btn">📨 Open in Email Client</button>
       <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px" id="send-email-hint">Opens your default mail app with all roster emails pre-filled</div>
@@ -1649,6 +1656,10 @@
       <div><div class="toggle-lbl">Instructor Course</div><div class="toggle-sub">Adds AHA/Atlas setup info to emails</div></div>
       <label class="toggle"><input type="checkbox" id="ct-instructor-course"><span class="slider"></span></label>
     </div>
+    <div class="toggle-row" style="margin-bottom:14px">
+      <div><div class="toggle-lbl">Pretest Required</div><div class="toggle-sub">Adds pretest instructions & link to emails</div></div>
+      <label class="toggle"><input type="checkbox" id="ct-pretest-required"><span class="slider"></span></label>
+    </div>
     <div id="ct-err" style="color:#f87171;font-size:13px;min-height:18px;margin-bottom:8px"></div>
     <div style="display:flex;gap:10px">
       <button class="btn danger" id="ct-delete-btn" style="display:none">Delete</button>
@@ -1766,6 +1777,9 @@
       <span class="var-pill" onclick="insertSseVar('{{charge}}')">{{charge}}</span>
       <span class="var-pill" onclick="insertSseVar('{{dueDate}}')">{{dueDate}}</span>
       <span class="var-pill" onclick="insertSseVar('{{note}}')">{{note}}</span>
+      <span class="var-pill" onclick="insertSseVar('{{pretest}}')">{{pretest}}</span>
+      <span class="var-pill" onclick="insertSseVar('{{phone}}')">{{phone}}</span>
+      <span class="var-pill" onclick="insertSseVar('{{today}}')">{{today}}</span>
     </div>
     <button class="btn primary full" id="sse-send-btn">📨 Open in Email Client</button>
     <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px">Opens your default mail app with this message pre-filled</div>
@@ -1820,6 +1834,7 @@ let allDocFolders=[];
 let currentDocStudentId=null, currentDocSubfolder=null;
 let ncAdjInstructors=[], editingClassId=null;
 const unsubs=[];
+const PRETEST_BLOCK='Please complete the required pretest prior to arriving: https://shopcpr.heart.org/acls-prework\nYou must either bring a printed copy of your completion certificate or be prepared to show proof of completion at the beginning of class.';
 
 // ============================================================
 // HELPERS
@@ -2303,7 +2318,7 @@ function renderClasses(){
     ?list.map(c=>{const cnt=allRoster.filter(r=>r.classId===c.id).length,rev=allRoster.filter(r=>r.classId===c.id).reduce((s,r)=>s+(+r.charge||0),0);
       return `<div class="class-card" onclick="openClassDetail('${c.id}')">
         <div class="class-card-hd">
-          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">${ctBadge(c.type)}${c.variant?`<span class="ct-badge ct-other">${c.variant}</span>`:''}${c.isInstructorCourse?'<span class="ct-badge ct-inst">Instructor</span>':''}${classStatusBadge(c.status)}</div>
+          <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">${ctBadge(c.type)}${c.variant?`<span class="ct-badge ct-other">${c.variant}</span>`:''}${c.isInstructorCourse?'<span class="ct-badge ct-inst">Instructor</span>':''}${c.requiresPretest?'<span class="ct-badge ct-other">Pretest</span>':''}${classStatusBadge(c.status)}</div>
           <div style="display:flex;align-items:center;gap:8px">
             <span style="font-size:13px;color:var(--ok);font-weight:600">${fmt$(rev)}</span>
             <button class="btn sm primary" onclick="event.stopPropagation();openClassEdit('${c.id}')" style="font-size:12px;padding:4px 8px">✏️ Edit</button>
@@ -2334,6 +2349,7 @@ function openNewClassModal(prefill, classIdToEdit){
   $('nc-charge').value=prefill.defaultCharge||'';
   $('nc-notes').value=prefill.notes||'';
   $('nc-instructor-course').checked=!!prefill.isInstructorCourse;
+  $('nc-pretest-required').checked=!!prefill.requiresPretest;
   ncAdjInstructors=[...(prefill.adjunctInstructors||[])];
   $('nc-adj-input').value='';renderNcAdjList();
   $('nc-err').textContent='';
@@ -2371,6 +2387,7 @@ $('nc-tpl-load-btn').addEventListener('click',()=>{
   $('nc-charge').value=t.defaultCharge||'';
   $('nc-notes').value=t.notes||'';
   $('nc-instructor-course').checked=!!t.isInstructorCourse;
+  $('nc-pretest-required').checked=!!t.requiresPretest;
   ncAdjInstructors=[...(t.adjunctInstructors||[])];$('nc-adj-input').value='';renderNcAdjList();
 });
 $('nc-save-btn').addEventListener('click',async()=>{
@@ -2380,6 +2397,7 @@ $('nc-save-btn').addEventListener('click',async()=>{
   const fields={type,date,time:$('nc-time').value,location:$('nc-location').value.trim(),
     maxStudents:parseInt($('nc-max').value)||null,defaultCharge:parseFloat($('nc-charge').value)||0,
     notes:$('nc-notes').value.trim(),isInstructorCourse:$('nc-instructor-course').checked,
+    requiresPretest:$('nc-pretest-required').checked,
     adjunctInstructors:[...ncAdjInstructors],
     variant:variant||null,ceuCredits:getCoursePricing(type,variant)?.ceu||null};
   try{
@@ -2403,7 +2421,7 @@ window.openClassDetail=function(classId){
   currentClassId=classId;
   const c=allClasses.find(x=>x.id===classId);if(!c)return;
   $('cd-title').textContent=c.type+(c.variant?` — ${c.variant}`:'');
-  $('cd-badges').innerHTML=ctBadge(c.type)+(c.isInstructorCourse?'<span class="ct-badge ct-inst" style="margin-left:6px">Instructor Course</span>':'')+(c.ceuCredits?`<span class="ct-badge ct-other" style="margin-left:6px">${c.ceuCredits} CEUs</span>`:'');
+  $('cd-badges').innerHTML=ctBadge(c.type)+(c.isInstructorCourse?'<span class="ct-badge ct-inst" style="margin-left:6px">Instructor Course</span>':'')+(c.requiresPretest?'<span class="ct-badge ct-other" style="margin-left:6px">Pretest Required</span>':'')+(c.ceuCredits?`<span class="ct-badge ct-other" style="margin-left:6px">${c.ceuCredits} CEUs</span>`:'');
   $('cd-meta').innerHTML=`<span>📅 ${formatDate(c.date)}${c.time?' '+formatTime(c.time):''}</span><span>📍 ${c.location||'Location TBD'}</span>${c.adjunctInstructors?.length?`<span>👨‍🏫 ${c.adjunctInstructors.join(', ')}</span>`:''}`;
   document.querySelectorAll('.mtab[data-mtab="cd"]').forEach((t,i)=>t.classList.toggle('active',i===0));
   ['cd-roster','cd-attend','cd-checklist','cd-email','cd-notes'].forEach((id,i)=>$(id).style.display=i===0?'':'none');
@@ -2429,6 +2447,7 @@ function buildEmailPanel(c){
   let body=`Hello,\n\nYour upcoming {{class}} class is confirmed for {{date}} at {{time}}.\n\nLocation: {{location}}\n`;
   if(c.defaultCharge)body+=`\nClass fee: ${{charge}}. Payment due: {{dueDate}}\n`;
   if(c.isInstructorCourse)body+=`\nSince this is an instructor course, please ensure you have:\n1. An AHA account at https://www.heart.org — create one if you don't have one yet.\n2. An Atlas account — your AHA Training Center will send setup instructions.\n\nPlease complete both before the class.\n`;
+  if(c.requiresPretest)body+=`\n${PRETEST_BLOCK}\n`;
   body+=`\n{{note}}\n\nPlease reply with any questions.\n\nThank you!`;
   $('email-body').value=body;
   populateEmailTplSelect();
@@ -2446,6 +2465,9 @@ function getMergeValues(extraName){
     '{{charge}}':     $('email-mf-charge').value||c.defaultCharge||'',
     '{{dueDate}}':    $('email-mf-due').value||'',
     '{{note}}':       $('email-mf-note').value||'',
+    '{{pretest}}':    c.requiresPretest?PRETEST_BLOCK:'',
+    '{{phone}}':      infoDoc.pdPhone||'',
+    '{{today}}':      formatDate(today()),
   };
 }
 
@@ -2537,7 +2559,7 @@ $('cd-save-tpl-btn').addEventListener('click',()=>{
     name:`${c.type} – ${c.location||'Template'}`,
     type:c.type,location:c.location,time:c.time,
     maxStudents:c.maxStudents,defaultCharge:c.defaultCharge,
-    notes:c.notes,isInstructorCourse:c.isInstructorCourse
+    notes:c.notes,isInstructorCourse:c.isInstructorCourse,requiresPretest:c.requiresPretest
   },true);
 });
 $('cd-delete-btn').addEventListener('click',async()=>{
@@ -4102,6 +4124,7 @@ function openClassTplEditModal(prefill, isNew, existingId){
   $('ct-charge').value = prefill.defaultCharge || '';
   $('ct-notes').value = prefill.notes || '';
   $('ct-instructor-course').checked = !!prefill.isInstructorCourse;
+  $('ct-pretest-required').checked = !!prefill.requiresPretest;
   $('ct-err').textContent = '';
   $('ct-delete-btn').style.display = currentClassTplId ? '' : 'none';
   syncOptGroup('ct-type', prefill.type || '');
@@ -4146,6 +4169,7 @@ $('ct-save-btn').addEventListener('click',async()=>{
     defaultCharge:parseFloat($('ct-charge').value)||0,
     notes:$('ct-notes').value.trim(),
     isInstructorCourse:$('ct-instructor-course').checked,
+    requiresPretest:$('ct-pretest-required').checked,
     emailTemplateId:$('ct-email-tpl').value||null,
     createdAt:Date.now()
   };
@@ -4184,6 +4208,8 @@ Duration: Approximately 6 hours.
 Cost: ${{charge}} total, divided into two payments: a $60 deposit to reserve your seat and a $60 balance due upon successful course completion. The deposit is non-refundable and will only be refunded if the course is canceled or rescheduled by the instructor.
 Certification: Your AHA {{class}} Provider eCard will be issued through Baptist Health upon successful completion of the course.
 
+{{pretest}}
+
 {{note}}
 
 Please reply with any questions.
@@ -4204,6 +4230,8 @@ Class Details:
   Location: {{location}}
 
 Please plan to arrive 10–15 minutes early.
+
+{{pretest}}
 
 {{note}}
 
@@ -4226,11 +4254,119 @@ Important reminders:
   • Bring a valid photo ID.
   • Arrive 10–15 minutes early.
 
+{{pretest}}
+
 {{note}}
 
 See you tomorrow!
 
 Thank you!`
+    },
+    {
+      name:'AHA Precourse Letter (Full Prework)',
+      category:'AHA Default',
+      subject:'{{class}} Provider Course – Precourse Instructions',
+      body:`{{today}}
+
+Dear {{class}} Course Student:
+
+Welcome to the {{class}} Provider Course.
+
+When and Where the Class Will Be Given
+
+Date: {{date}}
+Time: {{time}}
+Location: {{location}}
+
+Please plan to arrive on time, because it will be difficult for late students to catch up once we start. Students are expected to attend and participate in the entire course.
+
+What We Sent You
+
+We have enclosed the agenda and your copy of the {{class}} Provider Manual. Use the following steps to access the Student Resources:
+1. Visit elearning.heart.org/courses.
+2. Find the course name: {{class}} Provider Course.
+3. Once you find your course, select Launch Course to begin.
+
+Note: If you haven't already logged in, the system will ask you to do so. If you haven't visited the site before, you'll be prompted to set up an account.
+
+How to Get Ready
+
+The {{class}} Course is designed to teach you the lifesaving skills required to be both a team member and a Team Leader in either an in-hospital or out-of-hospital setting. Because the {{class}} Course covers extensive material in a short time, you will need to prepare for the course beforehand.
+
+Precourse Requirements
+
+You should prepare for class by doing the following:
+1. Review and understand the information in your {{class}} Provider Manual.
+2. Review, understand, and pass the mandatory precourse self-assessment.
+3. Review, understand, and complete the mandatory video prework (video lessons). Once you have passed the Precourse Self-Assessment and completed the video lessons, print your certificate and score report, and bring them with you to class.
+
+Ensure that your BLS skills and knowledge are current for the resuscitation scenarios. You will be tested on adult high-quality BLS skills using a feedback manikin at the beginning of the course. You must know this in advance because you will not be taught how to do CPR or use an AED.
+
+You can access the required precourse self-assessment and video prework here: https://shopcpr.heart.org/acls-prework
+
+What to Bring and What to Wear
+
+Bring your {{class}} Provider Manual to each class. You will need it during each lesson in the course. You may wish to purchase the AHA's Handbook of ECC for Healthcare Providers (optional), which you may bring to class to use as a reference guide during some of the stations in the course.
+
+Please wear loose, comfortable clothing to class. You will be practicing skills that require you to work on your hands and knees, and the course requires bending, standing, and lifting. If you have any physical condition that might prevent you from engaging in these activities, please tell an instructor. The instructor may be able to adjust the equipment if you have back, knee, or hip problems.
+
+We look forward to welcoming you on {{date}}. If you have any questions about the course, please call {{instructor}} at {{phone}}.
+
+Sincerely,
+
+{{instructor}}, Lead Instructor`
+    },
+    {
+      name:'AHA Precourse Letter (Self-Assessment Only)',
+      category:'AHA Default',
+      subject:'{{class}} Provider Course – Precourse Instructions',
+      body:`{{today}}
+
+Dear {{class}} Course Student:
+
+Welcome to the {{class}} Provider Course.
+
+When and Where the Class Will Be Given
+
+Date: {{date}}
+Time: {{time}}
+Location: {{location}}
+
+Please plan to arrive on time, because it will be difficult for late students to catch up once we start. Students are expected to attend and participate in the entire course.
+
+What We Sent You
+
+We have enclosed the agenda and your copy of the {{class}} Provider Manual. Use the following steps to access the Student Resources:
+1. Visit elearning.heart.org/courses.
+2. Find the course name: {{class}} Provider Course.
+3. Once you find your course, select Launch Course to begin.
+
+Note: If you haven't already logged in, the system will ask you to do so. If you haven't visited the site before, you'll be prompted to set up an account.
+
+How to Get Ready
+
+The {{class}} Course will teach you the lifesaving skills required to be both a team member and a Team Leader in either an in-hospital or out-of-hospital setting. Because the {{class}} Course covers extensive material in a short time, you will need to prepare for the course beforehand.
+
+Precourse Requirements
+
+You should prepare for class by doing the following:
+1. Review and understand the information in your {{class}} Provider Manual.
+2. Review, understand, and pass the mandatory precourse self-assessment. Print your certificate and score report and bring them with you to class.
+3. Ensure that your BLS skills and knowledge are current for the resuscitation scenarios. At the beginning of the course, you will be tested on adult high-quality BLS skills, using a feedback manikin. You must know these skills in advance because the course will not teach you how to do CPR or use an AED.
+
+You can access the required precourse self-assessment here: https://shopcpr.heart.org/acls-prework
+
+What to Bring and What to Wear
+
+Bring your {{class}} Provider Manual to class. You will need it during each lesson in the course. You may wish to purchase the AHA's Handbook of ECC for Healthcare Providers (optional), which you may bring to class to use as a reference guide during some of the learning stations.
+
+Please wear loose, comfortable clothing to class. You will be practicing skills that require working on your hands and knees, bending, standing, and lifting. If you have any physical condition that might prevent you from engaging in these activities, please tell an instructor. The instructor may be able to adjust the equipment if you have back, knee, or hip problems.
+
+We look forward to welcoming you on {{date}}. If you have any questions about the course, please call {{instructor}} at {{phone}}.
+
+Sincerely,
+
+{{instructor}}, Lead Instructor`
     }
   ];
   for(const tpl of defaults){
@@ -4284,7 +4420,7 @@ $('etpld-delete-btn').addEventListener('click',async()=>{
 
 $('etpl-new-btn').addEventListener('click',()=>openTplEditModal(null));
 $('etpl-seed-btn').addEventListener('click',async()=>{
-  if(!confirm('Add the three default templates (Class Details, Class Confirmation, Class Reminder)? This will add them even if they already exist.'))return;
+  if(!confirm('Add the default templates (Class Details, Class Confirmation, Class Reminder, and 2 AHA precourse letters)? This will add them even if they already exist.'))return;
   await seedDefaultEmailTemplates();
 });
 
@@ -4356,6 +4492,9 @@ function getSseMergeValues(){
     '{{charge}}':     r?String(r.charge||''):(c?String(c.defaultCharge||''):''),
     '{{dueDate}}':    '',
     '{{note}}':       '',
+    '{{pretest}}':    c?.requiresPretest?PRETEST_BLOCK:'',
+    '{{phone}}':      infoDoc.pdPhone||'',
+    '{{today}}':      formatDate(today()),
   };
 }
 
