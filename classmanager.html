@@ -928,6 +928,10 @@
         <div id="nc-price-hint" style="font-size:12px;color:var(--muted);margin-top:5px"></div>
       </div>
     </div>
+    <div class="row2" style="margin-top:12px">
+      <div class="fg" style="margin:0"><label>Estimated Duration</label><input type="text" id="nc-duration" placeholder="e.g. 6-8 hours" /></div>
+      <div class="fg" style="margin:0"><label>Certification Name</label><input type="text" id="nc-cert-name" placeholder="e.g. ACLS Provider" /></div>
+    </div>
     <div class="fg" style="margin-top:12px"><label>Notes</label><textarea id="nc-notes" placeholder="Any additional notes…"></textarea></div>
     <div class="fg" style="margin-top:12px">
       <label>Adjunct Instructors</label>
@@ -1055,6 +1059,8 @@
         <span class="var-pill" onclick="insertEmailVar('{{pretest}}')">{{pretest}}</span>
         <span class="var-pill" onclick="insertEmailVar('{{phone}}')">{{phone}}</span>
         <span class="var-pill" onclick="insertEmailVar('{{today}}')">{{today}}</span>
+        <span class="var-pill" onclick="insertEmailVar('{{duration}}')">{{duration}}</span>
+        <span class="var-pill" onclick="insertEmailVar('{{certName}}')">{{certName}}</span>
       </div>
       <button class="btn primary full" id="send-email-btn">📨 Open in Email Client</button>
       <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px" id="send-email-hint">Opens your default mail app with all roster emails pre-filled</div>
@@ -1651,6 +1657,10 @@
         </select>
       </div>
     </div>
+    <div class="row2" style="margin-top:10px">
+      <div class="fg" style="margin:0"><label>Estimated Duration</label><input type="text" id="ct-duration" placeholder="e.g. 6-8 hours" /></div>
+      <div class="fg" style="margin:0"><label>Certification Name</label><input type="text" id="ct-cert-name" placeholder="e.g. ACLS Provider" /></div>
+    </div>
     <div class="fg" style="margin-top:10px"><label>Notes</label><textarea id="ct-notes" placeholder="Any default notes for this class type…" style="min-height:60px"></textarea></div>
     <div class="toggle-row" style="margin-bottom:14px">
       <div><div class="toggle-lbl">Instructor Course</div><div class="toggle-sub">Adds AHA/Atlas setup info to emails</div></div>
@@ -1780,6 +1790,8 @@
       <span class="var-pill" onclick="insertSseVar('{{pretest}}')">{{pretest}}</span>
       <span class="var-pill" onclick="insertSseVar('{{phone}}')">{{phone}}</span>
       <span class="var-pill" onclick="insertSseVar('{{today}}')">{{today}}</span>
+      <span class="var-pill" onclick="insertSseVar('{{duration}}')">{{duration}}</span>
+      <span class="var-pill" onclick="insertSseVar('{{certName}}')">{{certName}}</span>
     </div>
     <button class="btn primary full" id="sse-send-btn">📨 Open in Email Client</button>
     <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:6px">Opens your default mail app with this message pre-filled</div>
@@ -2347,6 +2359,8 @@ function openNewClassModal(prefill, classIdToEdit){
   $('nc-location').value=prefill.location||'';
   $('nc-max').value=prefill.maxStudents||'';
   $('nc-charge').value=prefill.defaultCharge||'';
+  $('nc-duration').value=prefill.duration||'';
+  $('nc-cert-name').value=prefill.certName||'';
   $('nc-notes').value=prefill.notes||'';
   $('nc-instructor-course').checked=!!prefill.isInstructorCourse;
   $('nc-pretest-required').checked=!!prefill.requiresPretest;
@@ -2385,6 +2399,8 @@ $('nc-tpl-load-btn').addEventListener('click',()=>{
   $('nc-time').value=t.time||'';
   $('nc-max').value=t.maxStudents||'';
   $('nc-charge').value=t.defaultCharge||'';
+  $('nc-duration').value=t.duration||'';
+  $('nc-cert-name').value=t.certName||'';
   $('nc-notes').value=t.notes||'';
   $('nc-instructor-course').checked=!!t.isInstructorCourse;
   $('nc-pretest-required').checked=!!t.requiresPretest;
@@ -2396,6 +2412,7 @@ $('nc-save-btn').addEventListener('click',async()=>{
   $('nc-save-btn').disabled=true;$('nc-err').textContent='';
   const fields={type,date,time:$('nc-time').value,location:$('nc-location').value.trim(),
     maxStudents:parseInt($('nc-max').value)||null,defaultCharge:parseFloat($('nc-charge').value)||0,
+    duration:$('nc-duration').value.trim(),certName:$('nc-cert-name').value.trim(),
     notes:$('nc-notes').value.trim(),isInstructorCourse:$('nc-instructor-course').checked,
     requiresPretest:$('nc-pretest-required').checked,
     adjunctInstructors:[...ncAdjInstructors],
@@ -2468,6 +2485,8 @@ function getMergeValues(extraName){
     '{{pretest}}':    c.requiresPretest?PRETEST_BLOCK:'',
     '{{phone}}':      infoDoc.pdPhone||'',
     '{{today}}':      formatDate(today()),
+    '{{duration}}':   c.duration?`Approximately ${c.duration}`:'',
+    '{{certName}}':   c.certName||(c.type?`${c.type} Provider`:''),
   };
 }
 
@@ -2559,6 +2578,7 @@ $('cd-save-tpl-btn').addEventListener('click',()=>{
     name:`${c.type} – ${c.location||'Template'}`,
     type:c.type,location:c.location,time:c.time,
     maxStudents:c.maxStudents,defaultCharge:c.defaultCharge,
+    duration:c.duration,certName:c.certName,
     notes:c.notes,isInstructorCourse:c.isInstructorCourse,requiresPretest:c.requiresPretest
   },true);
 });
@@ -4122,6 +4142,8 @@ function openClassTplEditModal(prefill, isNew, existingId){
   $('ct-time').value = prefill.time || '';
   $('ct-max').value = prefill.maxStudents || '';
   $('ct-charge').value = prefill.defaultCharge || '';
+  $('ct-duration').value = prefill.duration || '';
+  $('ct-cert-name').value = prefill.certName || '';
   $('ct-notes').value = prefill.notes || '';
   $('ct-instructor-course').checked = !!prefill.isInstructorCourse;
   $('ct-pretest-required').checked = !!prefill.requiresPretest;
@@ -4167,6 +4189,8 @@ $('ct-save-btn').addEventListener('click',async()=>{
     time:$('ct-time').value,
     maxStudents:parseInt($('ct-max').value)||null,
     defaultCharge:parseFloat($('ct-charge').value)||0,
+    duration:$('ct-duration').value.trim(),
+    certName:$('ct-cert-name').value.trim(),
     notes:$('ct-notes').value.trim(),
     isInstructorCourse:$('ct-instructor-course').checked,
     requiresPretest:$('ct-pretest-required').checked,
@@ -4204,9 +4228,9 @@ Thank you for expressing interest in the {{class}} Provider Course with {{instru
 
 Course Information:
 
-Duration: Approximately 6 hours.
+Duration: {{duration}}
 Cost: \${{charge}} total, divided into two payments: a $60 deposit to reserve your seat and a $60 balance due upon successful course completion. The deposit is non-refundable and will only be refunded if the course is canceled or rescheduled by the instructor.
-Certification: Your AHA {{class}} Provider eCard will be issued through Baptist Health upon successful completion of the course.
+Certification: Your AHA {{certName}} eCard will be issued through Baptist Health upon successful completion of the course.
 
 {{pretest}}
 
@@ -4495,6 +4519,8 @@ function getSseMergeValues(){
     '{{pretest}}':    c?.requiresPretest?PRETEST_BLOCK:'',
     '{{phone}}':      infoDoc.pdPhone||'',
     '{{today}}':      formatDate(today()),
+    '{{duration}}':   c?.duration?`Approximately ${c.duration}`:'',
+    '{{certName}}':   c?.certName||(c?.type?`${c.type} Provider`:''),
   };
 }
 
