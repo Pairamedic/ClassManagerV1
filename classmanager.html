@@ -2567,6 +2567,7 @@ $('send-email-btn').addEventListener('click',()=>{
   const subject=applyMerge($('email-subject').value);
   const body=applyMerge($('email-body').value);
   window.open(`mailto:${emails.join(',')}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,'_blank');
+  logEmailSent(entries.map(r=>r.id),$('email-tpl-select').value||null);
 });
 $('cd-notes-save').addEventListener('click',async()=>{
   const notes=$('cd-notes-text').value.trim();
@@ -2598,6 +2599,20 @@ $('cd-delete-btn').addEventListener('click',async()=>{
 // ============================================================
 // ROSTER
 // ============================================================
+async function logEmailSent(rosterIds,templateId){
+  const tpl=templateId?allEmailTemplates.find(t=>t.id===templateId):null;
+  const key=templateId||'custom';
+  const entry={name:tpl?tpl.name:'Custom message',sentAt:Date.now()};
+  await Promise.all(rosterIds.map(id=>col('roster').doc(id).update({[`emailLog.${key}`]:entry})));
+}
+function emailLogBadge(r){
+  if(!r.emailLog)return '';
+  const sent=Object.values(r.emailLog);
+  const pre=sent.filter(e=>/precourse/i.test(e.name||''));
+  if(!pre.length)return '';
+  const latest=pre.reduce((a,b)=>a.sentAt>b.sentAt?a:b);
+  return `<span class="paid-badge paid-y" title="Precourse letter sent ${formatDate(new Date(latest.sentAt).toISOString().slice(0,10))}">✓ Precourse</span>`;
+}
 function renderRoster(classId){
   const entries=allRoster.filter(r=>r.classId===classId);
   const total=entries.reduce((s,r)=>s+(+r.charge||0),0);
@@ -2612,6 +2627,7 @@ function renderRoster(classId){
           ${r.charge?`<span style="font-size:13px;font-weight:600;color:var(--ok)">${fmt$(r.charge)}</span>`:''}
           <span class="paid-badge ${r.paid?'paid-y':'paid-n'}" style="cursor:pointer" onclick="togglePaid('${r.id}')">${r.paid?'Paid':'Unpaid'}</span>
           <span class="card-badge ${cardCls}" onclick="openAhaCard('${r.id}')">${cardLbl}</span>
+          ${emailLogBadge(r)}
           ${r.email?`<button class="btn sm" onclick="openStudentEmailFromRoster('${r.id}')" title="Email">✉️</button>`:''}
           <button class="btn sm danger" onclick="removeFromRoster('${r.id}')">×</button>
         </div>
@@ -4573,6 +4589,7 @@ $('sse-send-btn').addEventListener('click',()=>{
   const subject=applySseMerge($('sse-subject').value);
   const body=applySseMerge($('sse-body').value);
   window.open(`mailto:${encodeURIComponent(email)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`,'_blank');
+  if(r)logEmailSent([r.id],$('sse-tpl-select').value||null);
 });
 
 // Category filter chips
