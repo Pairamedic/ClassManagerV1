@@ -2524,11 +2524,14 @@ function applyMerge(text){
   return mergeText(text,getMergeValues());
 }
 
-function populateEmailTplSelect(){
-  const sel=$('email-tpl-select');
+// Shared by both template-select dropdowns (bulk composer, per-student
+// composer) — they only differ in target select id, placeholder text, and
+// whether the previous selection should be preserved on refresh.
+function populateTplSelect(selectId,placeholder,preserveSelection){
+  const sel=$(selectId);
   if(!sel)return;
-  const cur=sel.value;
-  sel.innerHTML='<option value="">— Select a template —</option>';
+  const cur=preserveSelection?sel.value:'';
+  sel.innerHTML=`<option value="">${placeholder}</option>`;
   const cats=[...new Set(allEmailTemplates.map(t=>t.category||'Custom'))];
   cats.forEach(cat=>{
     const grp=document.createElement('optgroup');
@@ -2540,7 +2543,10 @@ function populateEmailTplSelect(){
     });
     sel.appendChild(grp);
   });
-  if(cur)sel.value=cur;
+  if(preserveSelection&&cur)sel.value=cur;
+}
+function populateEmailTplSelect(){
+  populateTplSelect('email-tpl-select','— Select a template —',true);
 }
 
 $('email-tpl-load-btn').addEventListener('click',()=>{
@@ -4552,16 +4558,7 @@ window.setSseChannel=function(ch){
 };
 
 function populateSseTplSelect(){
-  const sel=$('sse-tpl-select');if(!sel)return;
-  sel.innerHTML='<option value="">— Choose a template or compose below —</option>';
-  const cats=[...new Set(allEmailTemplates.map(t=>t.category||'Custom'))];
-  cats.forEach(cat=>{
-    const grp=document.createElement('optgroup');grp.label=cat;
-    allEmailTemplates.filter(t=>(t.category||'Custom')===cat).forEach(t=>{
-      const opt=document.createElement('option');opt.value=t.id;opt.textContent=t.name;grp.appendChild(opt);
-    });
-    sel.appendChild(grp);
-  });
+  populateTplSelect('sse-tpl-select','— Choose a template or compose below —',false);
 }
 
 function getSseMergeValues(){
