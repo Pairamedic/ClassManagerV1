@@ -1,0 +1,2431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Aaron C. — AHA Instructor Lesson Plans</title>
+<style>
+  :root{
+    --ink:#1a1a1a;
+    --mid:#444;
+    --line:#bbb;
+    --fill:#f4f4f4;
+    --fillstrong:#e9e9e9;
+    --accent:#7a0d0d;
+    --accent-light:#f6e9e9;
+  }
+  *{box-sizing:border-box;}
+  body{
+    font-family:-apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    color:var(--ink);
+    margin:0;
+    padding:0;
+    background:#fff;
+    font-size:14px;
+    line-height:1.4;
+  }
+  .page{max-width:960px;margin:0 auto;padding:28px 32px 60px;}
+
+  header.title-block{
+    border-bottom:3px solid var(--ink);
+    padding-bottom:12px;
+    margin-bottom:16px;
+    display:flex;
+    justify-content:space-between;
+    align-items:flex-end;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  header.title-block h1{
+    font-size:22px;
+    margin:0 0 2px 0;
+    letter-spacing:.2px;
+  }
+  header.title-block .sub{
+    font-size:12.5px;
+    color:var(--mid);
+  }
+  header.title-block .org{
+    text-align:right;
+    font-size:12px;
+    color:var(--mid);
+  }
+  header.title-block .org strong{color:var(--ink);font-size:13px;}
+
+  .notice{
+    background:var(--accent-light);
+    border:1px solid #d9bcbc;
+    border-left:4px solid var(--accent);
+    padding:8px 12px;
+    font-size:12px;
+    color:#4a0909;
+    margin-bottom:18px;
+  }
+
+  .meta-grid{
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    gap:0;
+    border:1px solid var(--line);
+    margin-bottom:18px;
+    font-size:12px;
+  }
+  .meta-grid div{
+    padding:6px 10px;
+    border-right:1px solid var(--line);
+  }
+  .meta-grid div:last-child{border-right:none;}
+  .meta-grid .k{color:var(--mid);text-transform:uppercase;letter-spacing:.4px;font-size:10px;margin-bottom:2px;}
+  .meta-grid .v{font-weight:600;}
+
+  /* Course-level tabs */
+  .course-tabs{display:flex;gap:6px;margin:0 0 0;flex-wrap:wrap;}
+  .course-tab-btn{
+    flex:1 1 90px;min-width:90px;padding:12px 12px;font-size:13.5px;font-weight:800;text-align:center;
+    background:var(--ink);color:#bbb;border:none;cursor:pointer;letter-spacing:.3px;
+  }
+  .course-tab-btn.active{background:var(--accent);color:#fff;}
+  .course-panel{display:none;padding-top:18px;}
+  .course-panel.active{display:block;}
+
+  /* Sub tabs (Initial / Renewal) */
+  .tabs{display:flex;gap:6px;margin-bottom:0;}
+  .tab-btn{
+    flex:1;
+    padding:10px 14px;
+    font-size:14px;
+    font-weight:700;
+    text-align:center;
+    background:var(--fill);
+    border:1px solid var(--line);
+    border-bottom:none;
+    cursor:pointer;
+    color:var(--mid);
+  }
+  .tab-btn.active{
+    background:var(--ink);
+    color:#fff;
+    border-color:var(--ink);
+  }
+  .tab-panel{display:none;border:1px solid var(--line);padding:16px;margin-bottom:24px;}
+  .tab-panel.active{display:block;}
+
+  h2.section-h{
+    font-size:15px;
+    text-transform:uppercase;
+    letter-spacing:.4px;
+    border-bottom:2px solid var(--ink);
+    padding-bottom:4px;
+    margin:26px 0 10px;
+  }
+  h3.lesson-h{
+    font-size:14.5px;
+    background:var(--fillstrong);
+    border-left:4px solid var(--accent);
+    padding:6px 10px;
+    margin:18px 0 8px;
+  }
+  h4.sub-h{
+    font-size:13px;
+    margin:12px 0 4px;
+    color:var(--accent);
+  }
+
+  table.agenda{
+    width:100%;
+    border-collapse:collapse;
+    font-size:12.5px;
+    margin-bottom:6px;
+  }
+  table.agenda th{
+    background:var(--ink);
+    color:#fff;
+    text-align:left;
+    padding:6px 8px;
+    font-size:11px;
+    text-transform:uppercase;
+    letter-spacing:.3px;
+  }
+  table.agenda td{
+    border:1px solid var(--line);
+    padding:6px 8px;
+    vertical-align:top;
+  }
+  table.agenda tr:nth-child(even) td{background:var(--fill);}
+  table.agenda td.time{white-space:nowrap;font-weight:600;width:90px;}
+  table.agenda td.dur{white-space:nowrap;width:60px;color:var(--mid);}
+  table.agenda tr.break-row td{background:var(--fillstrong);font-style:italic;color:var(--mid);}
+  table.agenda tr.total-row td{font-weight:700;border-top:2px solid var(--ink);}
+
+  ul.tight{margin:4px 0 10px 18px;padding:0;}
+  ul.tight li{margin-bottom:3px;}
+  p.body-text{margin:4px 0 8px;}
+
+  .callout{
+    border:1px solid var(--line);
+    border-left:4px solid var(--ink);
+    background:var(--fill);
+    padding:8px 10px;
+    font-size:12.5px;
+    margin:8px 0;
+  }
+  .callout.metric strong{color:var(--accent);}
+
+  .role-grid{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:6px;
+    margin:8px 0;
+  }
+  .role-chip{
+    border:1px solid var(--line);
+    background:var(--fill);
+    padding:5px 8px;
+    font-size:11.5px;
+    text-align:center;
+  }
+
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+
+  .checkbox-line{
+    font-size:12.5px;
+    padding:2px 0;
+    border-bottom:1px dotted var(--line);
+    display:flex;
+    justify-content:space-between;
+  }
+  .checkbox-line .box{
+    width:12px;height:12px;border:1px solid var(--ink);display:inline-block;margin-right:6px;vertical-align:middle;
+  }
+
+  footer{
+    margin-top:28px;
+    border-top:1px solid var(--line);
+    padding-top:8px;
+    font-size:10.5px;
+    color:var(--mid);
+    display:flex;
+    justify-content:space-between;
+  }
+
+  .print-btn-wrap{text-align:right;margin-bottom:10px;display:inline-block;}
+  .top-actions{display:flex;justify-content:flex-end;gap:8px;margin-bottom:10px;}
+  button.util{
+    background:var(--ink);color:#fff;border:none;padding:7px 14px;
+    font-size:12px;cursor:pointer;border-radius:2px;
+  }
+  button.util:hover{background:var(--accent);}
+  button.util.live{background:var(--accent);}
+  button.util.live:hover{background:#5a0808;}
+  button.util.primary{background:var(--accent);}
+  button.util.primary:hover{background:#5a0808;}
+  button.util.small{padding:5px 10px;font-size:11px;}
+
+  @media print{
+    .top-actions{display:none;}
+    .live-overlay{display:none !important;}
+    .course-tabs{display:none;}
+    .course-panel{display:none !important;}
+    .course-panel.active{display:block !important;}
+    .tabs{display:none;}
+    .tab-panel{display:block !important;border:none;padding:0;page-break-before:always;}
+    .tab-panel:first-of-type{page-break-before:auto;}
+    body{font-size:11.5px;}
+    .notice{background:#fff;border:1px solid #999;color:#000;}
+    .custom-actions,.json-panel{display:none;}
+    .custom-row button.remove-row{display:none;}
+    button.util.edit,button.util.save{display:none;}
+  }
+
+  @media (max-width:700px){
+    .meta-grid{grid-template-columns:repeat(2,1fr);}
+    .role-grid{grid-template-columns:1fr 1fr;}
+    .two-col{grid-template-columns:1fr;}
+  }
+
+  /* ---------- Live Session ---------- */
+  .live-overlay{
+    position:fixed;inset:0;background:#fff;z-index:1000;
+    display:flex;align-items:center;justify-content:center;
+    font-family:inherit;
+  }
+  .live-inner{width:100%;height:100%;display:flex;flex-direction:column;}
+
+  .live-setup{
+    margin:auto;max-width:440px;width:100%;padding:28px;
+    border:1px solid var(--line);
+  }
+  .live-setup h2{margin-top:0;font-size:17px;border-bottom:2px solid var(--ink);padding-bottom:8px;}
+  .live-setup label{display:block;font-size:12.5px;font-weight:600;color:var(--mid);margin:14px 0 4px;}
+  .live-setup select, .live-setup input{
+    width:100%;padding:8px;font-size:14px;border:1px solid var(--line);border-radius:2px;font-family:inherit;
+  }
+  .live-setup-actions{display:flex;gap:8px;margin-top:22px;justify-content:flex-end;}
+
+  .live-runner{display:flex;flex-direction:column;height:100%;width:100%;}
+  .live-topbar{
+    display:flex;justify-content:space-between;align-items:center;
+    background:var(--ink);color:#fff;padding:10px 20px;flex-shrink:0;
+  }
+  .live-topbar-left{display:flex;gap:14px;align-items:baseline;font-size:13px;}
+  .live-topbar-left strong{font-size:14px;}
+  .live-topbar-right{display:flex;gap:14px;align-items:center;font-size:12px;}
+  .variance{font-weight:700;padding:3px 8px;border-radius:2px;font-size:11.5px;}
+  .variance.ontrack{background:#2d5a2d;color:#fff;}
+  .variance.behind{background:#7a0d0d;color:#fff;}
+  .variance.ahead{background:#1a4a6b;color:#fff;}
+  .live-topbar-right button{background:#fff;color:var(--ink);}
+
+  .live-body{display:flex;flex:1;overflow:hidden;}
+  .live-steps-rail{
+    width:250px;flex-shrink:0;overflow-y:auto;
+    border-right:1px solid var(--line);background:var(--fill);
+  }
+  .live-rail-item{
+    display:flex;align-items:center;gap:8px;
+    padding:9px 12px;font-size:12px;border-bottom:1px solid #ddd;cursor:pointer;
+  }
+  .live-rail-item:hover{background:var(--fillstrong);}
+  .live-rail-item.active{background:var(--accent);color:#fff;font-weight:700;}
+  .live-rail-item.touched:not(.active){color:var(--mid);}
+  .live-rail-num{
+    width:20px;height:20px;border:1px solid var(--line);border-radius:50%;
+    display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;
+  }
+  .live-rail-item.active .live-rail-num{border-color:#fff;}
+  .live-rail-title{flex:1;line-height:1.25;}
+  .live-rail-dur{font-size:10.5px;color:var(--mid);flex-shrink:0;}
+  .live-rail-item.active .live-rail-dur{color:#f2d9d9;}
+
+  .live-main{flex:1;overflow-y:auto;padding:26px 34px;max-width:760px;margin:0 auto;width:100%;}
+  .live-step-header{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;}
+  .live-lesson-tag{
+    font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--mid);
+    border:1px solid var(--line);padding:2px 7px;border-radius:2px;
+  }
+  .live-step-header h2{font-size:22px;margin:0;flex:1;}
+  .live-duration-badge{font-size:11.5px;color:var(--mid);white-space:nowrap;}
+
+  .live-timer-block{
+    text-align:center;border:1px solid var(--line);background:var(--fill);
+    padding:22px;margin-bottom:18px;
+  }
+  .live-timer-display{
+    font-family:"SF Mono","Consolas",monospace;font-size:56px;font-weight:700;letter-spacing:1px;
+    color:var(--ink);
+  }
+  .live-timer-display.warn{color:#a05a00;}
+  .live-timer-display.over{color:var(--accent);}
+  .live-timer-controls{margin-top:10px;display:flex;gap:8px;justify-content:center;}
+  .live-timer-controls button{min-width:90px;}
+
+  ul.live-cues{margin:0 0 18px;padding:0 0 0 20px;font-size:13.5px;}
+  ul.live-cues li{margin-bottom:6px;}
+
+  .live-rotation{border:1px solid var(--line);border-left:4px solid var(--accent);padding:12px 14px;margin-bottom:18px;}
+  .live-rotation-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
+  .live-rotation-head .round-label{font-size:11.5px;color:var(--mid);flex:1;}
+  .live-rotation-groups{display:flex;flex-wrap:wrap;gap:14px;}
+  .live-team{border:1px solid var(--line);background:var(--fill);padding:8px 10px;min-width:170px;}
+  .live-team-label{font-size:10.5px;text-transform:uppercase;letter-spacing:.3px;color:var(--mid);margin-bottom:5px;}
+  .live-role-row{display:flex;justify-content:space-between;font-size:12.5px;padding:2px 0;}
+  .live-role-row .s-num{font-weight:700;}
+  .live-role-row.unfilled{color:var(--mid);font-style:italic;}
+
+  .live-nav{display:flex;justify-content:space-between;margin-top:8px;padding-bottom:20px;}
+  .live-nav button{min-width:120px;}
+
+  @media (max-width:800px){
+    .live-steps-rail{width:150px;}
+    .live-timer-display{font-size:40px;}
+    .live-main{padding:18px;}
+  }
+
+  /* ---------- Custom Builder ---------- */
+  .custom-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px;}
+  .custom-toolbar input[type=text]{flex:1;min-width:220px;padding:7px 9px;border:1px solid var(--line);font-size:13px;font-family:inherit;}
+  .custom-total-badge{font-size:12.5px;font-weight:700;background:var(--fill);border:1px solid var(--line);padding:6px 10px;white-space:nowrap;}
+
+  .custom-rows{border:1px solid var(--line);margin-bottom:12px;}
+  .custom-row{display:grid;grid-template-columns:2fr 90px 1.4fr 1.6fr 34px;gap:8px;padding:8px 10px;border-bottom:1px solid var(--line);align-items:start;}
+  .custom-row:last-child{border-bottom:none;}
+  .custom-row:nth-child(even){background:var(--fill);}
+  .custom-row input, .custom-row select, .custom-row textarea{
+    width:100%;padding:6px 7px;border:1px solid var(--line);font-size:12px;font-family:inherit;
+  }
+  .custom-row textarea{resize:vertical;min-height:34px;}
+  .custom-row .field-label{font-size:9px;text-transform:uppercase;color:var(--mid);margin-bottom:2px;display:block;}
+  .custom-row button.remove-row{
+    background:none;border:1px solid var(--line);color:var(--accent);width:28px;height:28px;
+    cursor:pointer;font-size:14px;border-radius:2px;align-self:end;
+  }
+  .custom-row button.remove-row:hover{background:var(--accent-light);}
+
+  .custom-actions{display:flex;gap:8px;margin-bottom:22px;flex-wrap:wrap;}
+
+  .json-panel{border:1px solid var(--line);padding:12px;margin-top:10px;}
+  .json-panel h4{margin:0 0 6px;font-size:12.5px;}
+  .json-panel textarea{width:100%;min-height:110px;font-family:"SF Mono",Consolas,monospace;font-size:11px;border:1px solid var(--line);padding:8px;}
+  .json-actions{display:flex;gap:8px;margin-top:8px;}
+
+  @media (max-width:800px){
+    .custom-row{grid-template-columns:1fr;}
+  }
+
+  /* ---------- Edit Mode ---------- */
+  button.util.edit{background:#1a4a6b;}
+  button.util.edit:hover{background:#123650;}
+  button.util.edit.on{background:var(--accent);}
+  button.util.edit.on:hover{background:#5a0808;}
+  button.util.save{background:#2d5a2d;}
+  button.util.save:hover{background:#1f3f1f;}
+
+  .edit-banner{
+    display:none;
+    background:#1a4a6b;color:#fff;font-size:12px;padding:8px 12px;
+    margin-bottom:14px;border-radius:2px;
+  }
+  body.edit-mode .edit-banner{display:block;}
+
+  body.edit-mode [contenteditable="true"]{
+    outline:1px dashed #1a4a6b;
+    outline-offset:2px;
+    cursor:text;
+    border-radius:2px;
+    transition:background .1s ease;
+  }
+  body.edit-mode [contenteditable="true"]:hover{
+    background:#eaf2f7;
+  }
+  body.edit-mode [contenteditable="true"]:focus{
+    outline:2px solid var(--accent);
+    background:#fff;
+  }
+
+  @media print{
+    .edit-banner{display:none !important;}
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <header class="title-block">
+    <div>
+      <h1>AHA Instructor Lesson Plans</h1>
+      <div class="sub">ACLS &nbsp;•&nbsp; BLS &nbsp;•&nbsp; PALS &nbsp;—&nbsp; Instructor-Led Training (ILT)</div>
+    </div>
+    <div class="org">
+      <strong>Aaron C.</strong><br>
+      AHA Instructor Lesson Plan
+    </div>
+  </header>
+
+  <div class="notice">
+    <strong>Instructor use only — verify against current materials.</strong> These lesson plans are personal
+    planning and pacing tools built around the AHA course frameworks and 2025 Guidelines for CPR &amp; ECC. AHA
+    Training Centers require instructors to teach from the lesson plans and checklists published in the current
+    official Instructor Manual for each program (ACLS, BLS, PALS) exactly as written — cross-check station
+    content, required skills checklists, and algorithm/dosing detail against those manuals (and your TC's
+    approved agenda) before use. ACLS and PALS classroom times below assume students complete all required
+    precourse work (Self-Assessment ≥70% + video prework) before arriving; BLS uses the traditional in-class
+    stop-and-practice video format, so no prework is assumed there.
+  </div>
+
+  <div class="meta-grid">
+    <div><div class="k">Guidelines</div><div class="v">2025 AHA Guidelines for CPR &amp; ECC</div></div>
+    <div><div class="k">Prerequisite</div><div class="v">Course-specific precourse work — see each tab</div></div>
+    <div><div class="k">Instructor</div><div class="v">_____________________</div></div>
+    <div><div class="k">Class Date</div><div class="v">_____________________</div></div>
+  </div>
+
+  <div class="top-actions">
+    <button class="util" onclick="window.print()">Print / Save PDF</button>
+    <button class="util live" onclick="openLiveSetup()">▶ Start Live Session</button>
+    <button class="util edit" id="editModeBtn" onclick="toggleEditMode()">✎ Edit Content</button>
+    <button class="util save" id="saveHtmlBtn" onclick="exportEditedHtml()">💾 Save as New HTML</button>
+  </div>
+
+  <div class="edit-banner" id="editBanner">
+    <strong>Edit mode is on.</strong> Click any highlighted text (headings, paragraphs, list items, table cells,
+    checklists, etc.) to change it. Tabs and buttons still work normally so you can navigate while editing.
+    When you're done, click <strong>Save as New HTML</strong> to download your changes as a new file — the original
+    file on your computer is never modified.
+  </div>
+
+  <!-- COURSE TABS -->
+  <div class="course-tabs">
+    <button class="course-tab-btn active" onclick="switchCourse('acls')">ACLS</button>
+    <button class="course-tab-btn" onclick="switchCourse('bls')">BLS</button>
+    <button class="course-tab-btn" onclick="switchCourse('pals')">PALS</button>
+    <button class="course-tab-btn" onclick="switchCourse('aclsbls')">ACLS + BLS</button>
+    <button class="course-tab-btn" onclick="switchCourse('aclspals')">ACLS + PALS</button>
+    <button class="course-tab-btn" onclick="switchCourse('custom')">Custom</button>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- ACLS                                                          -->
+  <!-- ============================================================ -->
+  <div class="course-panel active" id="course-acls">
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('acls-initial')">Initial Course — 8 Hours</button>
+      <button class="tab-btn" onclick="showTab('acls-renewal')">Renewal / Update Course — 6 Hours</button>
+    </div>
+
+    <div class="tab-panel active" id="acls-initial">
+      <h2 class="section-h">Timed Agenda — Initial Course (8 hrs / 480 min)</h2>
+      <table class="agenda">
+        <tr><th>Start</th><th>Dur.</th><th>Segment</th></tr>
+        <tr><td class="time">0:00</td><td class="dur">10 min</td><td>Welcome, introductions, course overview, precourse-work verification</td></tr>
+        <tr><td class="time">0:10</td><td class="dur">25 min</td><td>Lesson 1 — Science of Resuscitation (video + discussion)</td></tr>
+        <tr><td class="time">0:35</td><td class="dur">35 min</td><td>Lesson 2 — Session 1: Compression / AED Practice</td></tr>
+        <tr><td class="time">1:10</td><td class="dur">30 min</td><td>Lesson 2 — 2-Rescuer CPR Rotation</td></tr>
+        <tr class="break-row"><td class="time">1:40</td><td class="dur">10 min</td><td>Break</td></tr>
+        <tr><td class="time">1:50</td><td class="dur">35 min</td><td>Lesson 3 — Airway Management: OPA/NPA, oxygen &amp; suction, 1–2 rescuer BVM</td></tr>
+        <tr><td class="time">2:25</td><td class="dur">25 min</td><td>Lesson 3 — Advanced Airway video + intubation practice</td></tr>
+        <tr><td class="time">2:50</td><td class="dur">25 min</td><td>Lesson 4 — Monitor/Defib Tech Review &amp; Equipment Locations</td></tr>
+        <tr class="break-row"><td class="time">3:15</td><td class="dur">30 min</td><td>Lunch</td></tr>
+        <tr><td class="time">3:45</td><td class="dur">55 min</td><td>Lesson 5 — Preventing Arrest: Bradycardia (video, cases, scenarios)</td></tr>
+        <tr class="break-row"><td class="time">4:40</td><td class="dur">10 min</td><td>Break</td></tr>
+        <tr><td class="time">4:50</td><td class="dur">55 min</td><td>Lesson 6 — Preventing Arrest: Tachycardia (video, cases, scenarios)</td></tr>
+        <tr><td class="time">5:45</td><td class="dur">25 min</td><td>Lesson 7 — High-Performance Teams discussion &amp; debrief</td></tr>
+        <tr><td class="time">6:10</td><td class="dur">70 min</td><td>Megacode: team scenarios, rotating roles, skills testing station</td></tr>
+        <tr><td class="time">7:20</td><td class="dur">30 min</td><td>ACLS Provider Course Exam (open-resource, per TC policy)</td></tr>
+        <tr><td class="time">7:50</td><td class="dur">10 min</td><td>Wrap-up, remediation planning, course evaluations, eCard issuance</td></tr>
+        <tr class="total-row"><td colspan="2">Total</td><td>8:00 (480 min)</td></tr>
+      </table>
+      <p class="body-text" style="font-size:11.5px;color:var(--mid);">Add a second break block if class size or number of manikin stations extends rotation time — hold hands-on station time constant and trim discussion time first.</p>
+    </div>
+
+    <div class="tab-panel" id="acls-renewal">
+      <h2 class="section-h">Timed Agenda — Renewal / Update Course (6 hrs / 360 min)</h2>
+      <table class="agenda">
+        <tr><th>Start</th><th>Dur.</th><th>Segment</th></tr>
+        <tr><td class="time">0:00</td><td class="dur">5 min</td><td>Welcome, precourse-work verification, agenda overview</td></tr>
+        <tr><td class="time">0:05</td><td class="dur">15 min</td><td>Lesson 1 — Science of Resuscitation (condensed video + discussion)</td></tr>
+        <tr><td class="time">0:20</td><td class="dur">30 min</td><td>Lesson 2 — Session 1: Compression / AED Practice</td></tr>
+        <tr><td class="time">0:50</td><td class="dur">25 min</td><td>Lesson 2 — 2-Rescuer CPR Rotation</td></tr>
+        <tr class="break-row"><td class="time">1:15</td><td class="dur">10 min</td><td>Break</td></tr>
+        <tr><td class="time">1:25</td><td class="dur">30 min</td><td>Lesson 3 — Airway Management review: OPA/NPA, BVM, advanced airway refresh</td></tr>
+        <tr><td class="time">1:55</td><td class="dur">20 min</td><td>Lesson 4 — Monitor/Defib Tech Review</td></tr>
+        <tr><td class="time">2:15</td><td class="dur">45 min</td><td>Lesson 5 — Bradycardia (video, cases, team scenario)</td></tr>
+        <tr class="break-row"><td class="time">3:00</td><td class="dur">10 min</td><td>Break</td></tr>
+        <tr><td class="time">3:10</td><td class="dur">45 min</td><td>Lesson 6 — Tachycardia (video, cases, team scenario)</td></tr>
+        <tr><td class="time">3:55</td><td class="dur">15 min</td><td>Lesson 7 — High-Performance Teams discussion &amp; debrief</td></tr>
+        <tr><td class="time">4:10</td><td class="dur">75 min</td><td>Megacode: team scenarios, rotating roles, skills testing station</td></tr>
+        <tr><td class="time">5:25</td><td class="dur">25 min</td><td>ACLS Provider Course Exam (open-resource, per TC policy)</td></tr>
+        <tr><td class="time">5:50</td><td class="dur">10 min</td><td>Wrap-up, remediation planning, course evaluations, eCard issuance</td></tr>
+        <tr class="total-row"><td colspan="2">Total</td><td>6:00 (360 min)</td></tr>
+      </table>
+      <p class="body-text" style="font-size:11.5px;color:var(--mid);">Renewal condenses video/discussion time only — CPR, airway, and megacode hands-on minutes stay near initial-course length since skills testing standards don't change for returning providers.</p>
+    </div>
+
+    <h2 class="section-h">Lesson Content</h2>
+
+    <h3 class="lesson-h">Lesson 1 — Science of Resuscitation</h3>
+    <h4 class="sub-h">Objectives</h4>
+    <p class="body-text">Before playing the video, tell students what they should walk away with: why high-quality,
+    minimally-interrupted CPR is the single biggest driver of survival, how the Chain of Survival links prehospital
+    and in-hospital care, and how feedback devices and CPR coaching close the gap between what we think we're doing
+    and what we're actually doing.</p>
+    <h4 class="sub-h">Sequence</h4>
+    <ul class="tight">
+      <li>State the learning objectives</li>
+      <li>Play the Science of Resuscitation video</li>
+      <li>Facilitated discussion: high-quality BLS, real-time feedback devices, CPR Coach role</li>
+      <li>Open floor for questions</li>
+      <li>Instructor summarizes key points before transitioning to hands-on practice</li>
+    </ul>
+
+    <h3 class="lesson-h">Lesson 2 — Compression / AED Practice &amp; 2-Rescuer CPR</h3>
+    <h4 class="sub-h">Session 1: Compression / AED Station Setup</h4>
+    <ul class="tight">
+      <li>Assign students to manikins, no more than 3 per manikin</li>
+      <li>Each student performs 1 minute of high-quality compressions while instructor observes rate, depth, and
+      recoil, and while the student adjusts to real-time feedback-device and CPR Coach input</li>
+      <li>Instructor gives feedback to both the compressor and the CPR Coach after each rotation</li>
+    </ul>
+    <div class="callout metric">
+      <strong>Compression metrics:</strong> depth ≥2 in (5 cm) adult &nbsp;•&nbsp; rate 100–120/min &nbsp;•&nbsp;
+      full chest recoil between compressions &nbsp;•&nbsp; hand placement centered on the lower half of the sternum
+    </div>
+
+    <h4 class="sub-h">2-Rescuer CPR Rotation</h4>
+    <p class="body-text">Assign each student a number. Rotate through all three roles so every student is evaluated
+    in each position; only one student is being formally evaluated at a time. Allow one retest per student if needed.</p>
+    <div class="role-grid">
+      <div class="role-chip"><strong>Round 1</strong><br>S1 Compressor/Assessor · S2 AED · S3 CPR Coach</div>
+      <div class="role-chip"><strong>Round 2</strong><br>S2 Compressor/Assessor · S3 AED · S1 CPR Coach</div>
+      <div class="role-chip"><strong>Round 3</strong><br>S3 Compressor/Assessor · S1 AED · S2 CPR Coach</div>
+    </div>
+
+    <h3 class="lesson-h">Lesson 3 — Airway Management</h3>
+    <h4 class="sub-h">Framing before hands-on practice</h4>
+    <p class="body-text">Use a visible timer during practice so students ventilate at the correct rate and volume,
+    and coach against ventilating too forcefully or too frequently. Explicitly connect over-ventilation to its
+    physiologic cost before students touch a BVM:</p>
+    <div class="callout">
+      Over-ventilation increases intrathoracic pressure, which impedes venous return and lowers cardiac output,
+      cerebral blood flow, and coronary perfusion pressure — and it raises the risk of regurgitation and aspiration.
+    </div>
+    <h4 class="sub-h">Sequence</h4>
+    <ul class="tight">
+      <li>Play the Airway Management video</li>
+      <li>Practice OPA/NPA insertion</li>
+      <li>Discuss oxygen delivery and suction setup</li>
+      <li>Practice 1-rescuer and 2-rescuer bag-mask ventilation (rotate ventilator/mask-seal roles between students)</li>
+      <li>Play the Advanced Airway video</li>
+      <li>Advanced airway (intubation) practice, scaled to available airway trainers/scope type</li>
+    </ul>
+
+    <h3 class="lesson-h">Lesson 4 — Monitor/Defibrillator &amp; Equipment Tech Review</h3>
+    <p class="body-text">Hands-on walkthrough at the actual unit/training monitor before cases begin — students should
+    never be seeing these controls for the first time during a scenario.</p>
+    <div class="two-col">
+      <div>
+        <h4 class="sub-h">Monitor/defib functions</h4>
+        <ul class="tight">
+          <li>Power &amp; mode selection</li>
+          <li>Transcutaneous pacing</li>
+          <li>Synchronized cardioversion</li>
+          <li>Non-invasive blood pressure</li>
+          <li>EtCO₂</li>
+          <li>Pulse oximetry</li>
+          <li>Defib pad connections</li>
+          <li>ECG lead placement — 3-lead, 4-lead, 5-lead</li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="sub-h">Also review</h4>
+        <ul class="tight">
+          <li>Crash cart / jump kit supply locations</li>
+          <li>Audiovisual feedback device setup for both practice and testing stations</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 class="lesson-h">Lesson 5 — Preventing Arrest: Bradycardia</h3>
+    <ul class="tight">
+      <li>Play the Bradycardia Algorithm video, answer questions</li>
+      <li>Discuss bradycardia management, including setup for transcutaneous pacing</li>
+      <li>Work through 3 bradycardia cases as a group</li>
+    </ul>
+    <div class="callout">
+      Keep the focus on <strong>treatment of stable vs. unstable bradycardia</strong> rather than fine differentiation
+      between heart block types. Reinforce: students must call for rapid response/MET early when a patient shows
+      signs of instability. Cover clinical deterioration signs, the definition of unstable signs/symptoms, and a
+      brief review of first-degree, second-degree Type I, and second-degree Type II blocks — enough for pattern
+      recognition, not a deep-dive.
+    </div>
+    <h4 class="sub-h">Team Scenario</h4>
+    <p class="body-text">Every student runs one bradycardia scenario as Team Leader while teammates act in assigned
+    roles and follow direction. Rotate roles below across the group; all students take part in an open-ended debrief
+    after each scenario, focused on building a shared mental model of what happened — not on assigning blame.</p>
+    <div class="role-grid">
+      <div class="role-chip">Team Leader</div>
+      <div class="role-chip">Airway</div>
+      <div class="role-chip">IV/IO &amp; Medications</div>
+      <div class="role-chip">Monitor/Defib</div>
+      <div class="role-chip">Compressor (as needed)</div>
+      <div class="role-chip">Timer / Recorder</div>
+    </div>
+
+    <h3 class="lesson-h">Lesson 6 — Preventing Arrest: Tachycardia (Stable &amp; Unstable)</h3>
+    <p class="body-text">State the video's learning objectives, then play the Tachycardia Algorithm video. Run the
+    same case-and-debrief structure as Lesson 5, with treatment focused on synchronized cardioversion for the
+    unstable patient.</p>
+    <h4 class="sub-h">Rhythm review</h4>
+    <p class="body-text">Cover stable vs. unstable presentation, then survey: sinus tachycardia, narrow-complex
+    tachycardia, atrial fibrillation, atrial flutter, junctional rhythms, monomorphic V-tach, polymorphic V-tach with
+    a pulse, torsades de pointes, and wide-complex tachycardia. Tie treatment decisions to local protocol where
+    relevant.</p>
+
+    <h3 class="lesson-h">Lesson 7 — High-Performance Teams</h3>
+    <p class="body-text">Frame this as in-hospital, out-of-hospital, or both, depending on your student mix.</p>
+    <ul class="tight">
+      <li>Ask students what team behaviors they observed during today's scenarios — good and bad</li>
+      <li>Discuss timing and measurement in relation to survival (compression fraction, time to defibrillation, etc.)</li>
+      <li>Review the H's and T's of reversible causes</li>
+      <li>Discuss closed-loop communication, clear roles, and knowing your role under stress</li>
+    </ul>
+
+    <h2 class="section-h">Instructor Checklist</h2>
+    <div class="two-col">
+      <div>
+        <div class="checkbox-line"><span><span class="box"></span>Precourse Self-Assessment scores collected (≥70%)</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>Video prework completion certificates collected</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>Manikins, feedback devices, AED trainers staged</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>Airway trainers, OPA/NPA, BVMs staged</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>Monitor/defib trainers &amp; pads staged</span></div>
+      </div>
+      <div>
+        <div class="checkbox-line"><span><span class="box"></span>Crash cart / jump kit supplies staged</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>Skills testing checklists on hand (current Instructor Manual)</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>Megacode case cards prepared</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>Exams &amp; answer keys prepared</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>eCard issuance process confirmed</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- BLS                                                           -->
+  <!-- ============================================================ -->
+  <div class="course-panel" id="course-bls">
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('bls-initial')">Initial Course — 4 Hours</button>
+      <button class="tab-btn" onclick="showTab('bls-renewal')">Renewal Course — 3 Hours</button>
+    </div>
+
+    <div class="tab-panel active" id="bls-initial">
+      <h2 class="section-h">Timed Agenda — Initial Course (4 hrs / 240 min)</h2>
+      <table class="agenda">
+        <tr><th>Start</th><th>Dur.</th><th>Segment</th></tr>
+        <tr><td class="time">0:00</td><td class="dur">10 min</td><td>Welcome, introductions, course overview</td></tr>
+        <tr><td class="time">0:10</td><td class="dur">20 min</td><td>Lesson 1 — Adult CPR &amp; AED (video + discussion)</td></tr>
+        <tr><td class="time">0:30</td><td class="dur">40 min</td><td>Lesson 1 — Adult CPR/AED Practice: 1-rescuer &amp; 2-rescuer</td></tr>
+        <tr class="break-row"><td class="time">1:10</td><td class="dur">10 min</td><td>Break</td></tr>
+        <tr><td class="time">1:20</td><td class="dur">25 min</td><td>Lesson 2 — Child CPR &amp; AED (video + practice)</td></tr>
+        <tr><td class="time">1:45</td><td class="dur">30 min</td><td>Lesson 2 — Infant CPR (video + practice)</td></tr>
+        <tr><td class="time">2:15</td><td class="dur">25 min</td><td>Lesson 3 — Choking Relief: Adult, Child &amp; Infant</td></tr>
+        <tr><td class="time">2:40</td><td class="dur">20 min</td><td>Lesson 4 — BVM Ventilation &amp; Team Dynamics</td></tr>
+        <tr class="break-row"><td class="time">3:00</td><td class="dur">10 min</td><td>Break</td></tr>
+        <tr><td class="time">3:10</td><td class="dur">30 min</td><td>Skills Testing Station</td></tr>
+        <tr><td class="time">3:40</td><td class="dur">15 min</td><td>Written Exam</td></tr>
+        <tr><td class="time">3:55</td><td class="dur">5 min</td><td>Wrap-up &amp; eCard issuance</td></tr>
+        <tr class="total-row"><td colspan="2">Total</td><td>4:00 (240 min)</td></tr>
+      </table>
+      <p class="body-text" style="font-size:11.5px;color:var(--mid);">BLS follows the traditional stop-and-practice format — the video plays in the classroom and pauses for hands-on rehearsal, so no advance video prework is assumed here.</p>
+    </div>
+
+    <div class="tab-panel" id="bls-renewal">
+      <h2 class="section-h">Timed Agenda — Renewal Course (3 hrs / 180 min)</h2>
+      <table class="agenda">
+        <tr><th>Start</th><th>Dur.</th><th>Segment</th></tr>
+        <tr><td class="time">0:00</td><td class="dur">5 min</td><td>Welcome &amp; overview</td></tr>
+        <tr><td class="time">0:05</td><td class="dur">40 min</td><td>Lesson 1 — Adult CPR &amp; AED (condensed video + practice)</td></tr>
+        <tr><td class="time">0:45</td><td class="dur">40 min</td><td>Lesson 2 — Child &amp; Infant CPR (condensed video + practice)</td></tr>
+        <tr class="break-row"><td class="time">1:25</td><td class="dur">10 min</td><td>Break</td></tr>
+        <tr><td class="time">1:35</td><td class="dur">15 min</td><td>Lesson 3 — Choking Relief (review)</td></tr>
+        <tr><td class="time">1:50</td><td class="dur">15 min</td><td>Lesson 4 — BVM &amp; Team Dynamics (review)</td></tr>
+        <tr><td class="time">2:05</td><td class="dur">30 min</td><td>Skills Testing Station</td></tr>
+        <tr><td class="time">2:35</td><td class="dur">20 min</td><td>Written Exam</td></tr>
+        <tr><td class="time">2:55</td><td class="dur">5 min</td><td>Wrap-up &amp; eCard issuance</td></tr>
+        <tr class="total-row"><td colspan="2">Total</td><td>3:00 (180 min)</td></tr>
+      </table>
+      <p class="body-text" style="font-size:11.5px;color:var(--mid);">Skills testing and hands-on minutes stay near initial-course length — renewal condenses video/discussion time only.</p>
+    </div>
+
+    <h2 class="section-h">Lesson Content</h2>
+
+    <h3 class="lesson-h">Lesson 1 — Adult CPR &amp; AED</h3>
+    <h4 class="sub-h">Sequence</h4>
+    <ul class="tight">
+      <li>Play the Adult CPR &amp; AED video, pausing at built-in practice points</li>
+      <li>1-rescuer adult CPR: compressions, ventilations, AED use</li>
+      <li>2-rescuer adult CPR: rotate compressor / ventilator roles every 2 minutes or 5 cycles</li>
+    </ul>
+    <div class="callout metric">
+      <strong>Adult compression metrics:</strong> depth ≥2 in (5 cm) &nbsp;•&nbsp; rate 100–120/min &nbsp;•&nbsp;
+      full recoil &nbsp;•&nbsp; minimize interruptions &nbsp;•&nbsp; 30:2 compression-to-ventilation ratio (1-rescuer)
+    </div>
+    <div class="role-grid">
+      <div class="role-chip">Compressor</div>
+      <div class="role-chip">Ventilator / AED Operator</div>
+      <div class="role-chip">Switch roles ~every 2 min</div>
+    </div>
+
+    <h3 class="lesson-h">Lesson 2 — Child &amp; Infant CPR</h3>
+    <p class="body-text">Cover the depth, ratio, and technique differences from adult CPR before students practice on
+    pediatric manikins.</p>
+    <div class="callout">
+      <strong>Child:</strong> depth ~2 in (at least 1/3 AP chest diameter) &nbsp;•&nbsp; rate 100–120/min &nbsp;•&nbsp;
+      30:2 (1-rescuer) or 15:2 (2-rescuer).<br>
+      <strong>Infant:</strong> depth ~1.5 in (at least 1/3 AP chest diameter) &nbsp;•&nbsp; 2-finger technique
+      (1-rescuer) or 2-thumb encircling technique (2-rescuer) &nbsp;•&nbsp; 30:2 (1-rescuer) or 15:2 (2-rescuer).
+    </div>
+    <ul class="tight">
+      <li>Demonstrate the 2-thumb encircling technique for 2-rescuer infant CPR</li>
+      <li>Practice pediatric AED pad placement, including a pediatric attenuator when available</li>
+    </ul>
+
+    <h3 class="lesson-h">Lesson 3 — Choking Relief</h3>
+    <ul class="tight">
+      <li>Adult &amp; child: abdominal thrusts while conscious; transition to CPR with visual airway checks if the
+      victim becomes unresponsive</li>
+      <li>Infant: alternating back blows and chest thrusts while conscious; transition to CPR with visual airway
+      checks if unresponsive</li>
+    </ul>
+
+    <h3 class="lesson-h">Lesson 4 — BVM Ventilation &amp; Team Dynamics</h3>
+    <ul class="tight">
+      <li>Proper mask seal and barrier device use</li>
+      <li>Avoid excessive ventilation — watch rate and volume</li>
+      <li>Multi-rescuer team roles, closed-loop communication, clear role assignment</li>
+    </ul>
+
+    <h2 class="section-h">Instructor Checklist</h2>
+    <div class="two-col">
+      <div>
+        <div class="checkbox-line"><span><span class="box"></span>Adult, child &amp; infant manikins staged</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>Feedback devices on all manikins</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>AED trainers + pediatric pads/attenuators</span></div>
+      </div>
+      <div>
+        <div class="checkbox-line"><span><span class="box"></span>BVMs &amp; barrier devices staged</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>Skills testing checklists on hand</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>Exams &amp; answer keys prepared</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- PALS                                                          -->
+  <!-- ============================================================ -->
+  <div class="course-panel" id="course-pals">
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('pals-initial')">Initial Course — 8 Hours</button>
+      <button class="tab-btn" onclick="showTab('pals-renewal')">Renewal / Update Course — 6 Hours</button>
+    </div>
+
+    <div class="tab-panel active" id="pals-initial">
+      <h2 class="section-h">Timed Agenda — Initial Course (8 hrs / 480 min)</h2>
+      <table class="agenda">
+        <tr><th>Start</th><th>Dur.</th><th>Segment</th></tr>
+        <tr><td class="time">0:00</td><td class="dur">10 min</td><td>Welcome, introductions, course overview, precourse-work verification</td></tr>
+        <tr><td class="time">0:10</td><td class="dur">30 min</td><td>Lesson 1 — Systematic Approach: PAT &amp; Evaluate-Identify-Intervene</td></tr>
+        <tr><td class="time">0:40</td><td class="dur">45 min</td><td>Lesson 2 — Pediatric High-Quality CPR Practice (child/infant, 1- &amp; 2-rescuer, AED)</td></tr>
+        <tr class="break-row"><td class="time">1:25</td><td class="dur">10 min</td><td>Break</td></tr>
+        <tr><td class="time">1:35</td><td class="dur">35 min</td><td>Lesson 3 — Respiratory Emergencies: distress vs. failure</td></tr>
+        <tr><td class="time">2:10</td><td class="dur">35 min</td><td>Lesson 4 — Pediatric Airway Management Practice</td></tr>
+        <tr><td class="time">2:45</td><td class="dur">20 min</td><td>Lesson 5 — Monitor/Defib &amp; Vascular Access Tech Review</td></tr>
+        <tr class="break-row"><td class="time">3:05</td><td class="dur">30 min</td><td>Lunch</td></tr>
+        <tr><td class="time">3:35</td><td class="dur">45 min</td><td>Lesson 6 — Shock Recognition &amp; Management</td></tr>
+        <tr class="break-row"><td class="time">4:20</td><td class="dur">10 min</td><td>Break</td></tr>
+        <tr><td class="time">4:30</td><td class="dur">45 min</td><td>Lesson 7 — Bradycardia (video, cases, team scenario)</td></tr>
+        <tr><td class="time">5:15</td><td class="dur">45 min</td><td>Lesson 8 — Tachycardia (video, cases, team scenario)</td></tr>
+        <tr><td class="time">6:00</td><td class="dur">30 min</td><td>Lesson 9 — Cardiac Arrest Algorithm &amp; High-Performance Teams</td></tr>
+        <tr><td class="time">6:30</td><td class="dur">55 min</td><td>Megacode: team scenarios, rotating roles, skills testing station</td></tr>
+        <tr><td class="time">7:25</td><td class="dur">25 min</td><td>PALS Provider Course Exam (open-resource, per TC policy)</td></tr>
+        <tr><td class="time">7:50</td><td class="dur">10 min</td><td>Wrap-up, remediation planning, course evaluations, eCard issuance</td></tr>
+        <tr class="total-row"><td colspan="2">Total</td><td>8:00 (480 min)</td></tr>
+      </table>
+      <p class="body-text" style="font-size:11.5px;color:var(--mid);">Compressed from the standard 10–12 hr published PALS Initial time — assumes full completion of the Precourse Self-Assessment and video prework before class.</p>
+    </div>
+
+    <div class="tab-panel" id="pals-renewal">
+      <h2 class="section-h">Timed Agenda — Renewal / Update Course (6 hrs / 360 min)</h2>
+      <table class="agenda">
+        <tr><th>Start</th><th>Dur.</th><th>Segment</th></tr>
+        <tr><td class="time">0:00</td><td class="dur">5 min</td><td>Welcome, precourse-work verification, agenda overview</td></tr>
+        <tr><td class="time">0:05</td><td class="dur">15 min</td><td>Lesson 1 — Systematic Approach (condensed)</td></tr>
+        <tr><td class="time">0:20</td><td class="dur">30 min</td><td>Lesson 2 — Pediatric High-Quality CPR Practice</td></tr>
+        <tr class="break-row"><td class="time">0:50</td><td class="dur">10 min</td><td>Break</td></tr>
+        <tr><td class="time">1:00</td><td class="dur">25 min</td><td>Lesson 3 — Respiratory Emergencies</td></tr>
+        <tr><td class="time">1:25</td><td class="dur">25 min</td><td>Lesson 4 — Pediatric Airway Management (review)</td></tr>
+        <tr><td class="time">1:50</td><td class="dur">15 min</td><td>Lesson 5 — Monitor/Defib &amp; Vascular Access (review)</td></tr>
+        <tr><td class="time">2:05</td><td class="dur">35 min</td><td>Lesson 6 — Shock Recognition &amp; Management</td></tr>
+        <tr class="break-row"><td class="time">2:40</td><td class="dur">10 min</td><td>Break</td></tr>
+        <tr><td class="time">2:50</td><td class="dur">35 min</td><td>Lesson 7 — Bradycardia</td></tr>
+        <tr><td class="time">3:25</td><td class="dur">35 min</td><td>Lesson 8 — Tachycardia</td></tr>
+        <tr><td class="time">4:00</td><td class="dur">20 min</td><td>Lesson 9 — Cardiac Arrest Algorithm &amp; High-Performance Teams</td></tr>
+        <tr><td class="time">4:20</td><td class="dur">75 min</td><td>Megacode: team scenarios, rotating roles, skills testing station</td></tr>
+        <tr><td class="time">5:35</td><td class="dur">20 min</td><td>PALS Provider Course Exam (open-resource, per TC policy)</td></tr>
+        <tr><td class="time">5:55</td><td class="dur">5 min</td><td>Wrap-up &amp; course evaluations</td></tr>
+        <tr class="total-row"><td colspan="2">Total</td><td>6:00 (360 min)</td></tr>
+      </table>
+      <p class="body-text" style="font-size:11.5px;color:var(--mid);">Matches typical published PALS Update/Renewal length — CPR, airway, and megacode hands-on minutes stay close to initial-course length.</p>
+    </div>
+
+    <h2 class="section-h">Lesson Content</h2>
+
+    <h3 class="lesson-h">Lesson 1 — Systematic Approach</h3>
+    <ul class="tight">
+      <li>Pediatric Assessment Triangle (PAT): Appearance, Work of Breathing, Circulation to Skin — assessed from
+      across the room before touching the patient</li>
+      <li>Evaluate–Identify–Intervene cycle repeats throughout the encounter</li>
+      <li>Primary assessment: Airway, Breathing, Circulation, Disability, Exposure (ABCDE)</li>
+    </ul>
+
+    <h3 class="lesson-h">Lesson 2 — Pediatric High-Quality CPR</h3>
+    <div class="callout metric">
+      <strong>Child:</strong> depth ~2 in (≥1/3 AP chest diameter) &nbsp;•&nbsp; rate 100–120/min &nbsp;•&nbsp;
+      15:2 (2-rescuer).<br>
+      <strong>Infant:</strong> depth ~1.5 in (≥1/3 AP chest diameter) &nbsp;•&nbsp; 2-thumb encircling technique
+      for 2-rescuer &nbsp;•&nbsp; 15:2 (2-rescuer).
+    </div>
+    <ul class="tight">
+      <li>Practice 1- and 2-rescuer pediatric CPR with feedback devices</li>
+      <li>Pediatric AED pad placement, including attenuator use where indicated</li>
+    </ul>
+    <div class="role-grid">
+      <div class="role-chip">Compressor</div>
+      <div class="role-chip">Airway / Ventilations</div>
+      <div class="role-chip">AED / Monitor</div>
+    </div>
+
+    <h3 class="lesson-h">Lesson 3 — Respiratory Emergencies</h3>
+    <p class="body-text">Distinguish respiratory distress from respiratory failure, then work through the four
+    categories of respiratory problem so students can match the presentation to the right first intervention.</p>
+    <ul class="tight">
+      <li>Upper airway obstruction</li>
+      <li>Lower airway obstruction</li>
+      <li>Lung tissue disease</li>
+      <li>Disordered control of breathing</li>
+    </ul>
+
+    <h3 class="lesson-h">Lesson 4 — Pediatric Airway Management</h3>
+    <ul class="tight">
+      <li>Correct OPA/NPA sizing for pediatric patients</li>
+      <li>Two-person BVM technique — one maintaining seal and head position, one squeezing the bag</li>
+      <li>Advanced airway considerations; confirm current cuffed vs. uncuffed ETT sizing guidance against the
+      current PALS Provider Manual</li>
+    </ul>
+
+    <h3 class="lesson-h">Lesson 5 — Monitor/Defib &amp; Vascular Access Tech Review</h3>
+    <ul class="tight">
+      <li>Pediatric pad sizing and attenuator use</li>
+      <li>ECG lead placement, EtCO₂, pulse oximetry, NIBP</li>
+      <li>IV/IO access sites and equipment for pediatric patients</li>
+      <li>Crash cart / code cart pediatric supply locations, including a length-based resuscitation tape if used</li>
+    </ul>
+
+    <h3 class="lesson-h">Lesson 6 — Shock Recognition &amp; Management</h3>
+    <ul class="tight">
+      <li>Compensated vs. decompensated shock</li>
+      <li>Four types: hypovolemic, distributive, cardiogenic, obstructive</li>
+      <li>Reassess after every intervention — confirm current fluid/medication dosing against the PALS algorithm
+      cards rather than memory</li>
+    </ul>
+
+    <h3 class="lesson-h">Lesson 7 — Bradycardia</h3>
+    <ul class="tight">
+      <li>Play the Bradycardia Algorithm video, answer questions</li>
+      <li>Distinguish bradycardia with vs. without cardiopulmonary compromise</li>
+      <li>Work through cases as a group before the team scenario</li>
+    </ul>
+    <h4 class="sub-h">Team Scenario</h4>
+    <p class="body-text">Every student runs one scenario as Team Leader while teammates fill the remaining roles;
+    rotate through the group and debrief openly after each run.</p>
+    <div class="role-grid">
+      <div class="role-chip">Team Leader</div>
+      <div class="role-chip">Airway</div>
+      <div class="role-chip">IV/IO &amp; Medications</div>
+      <div class="role-chip">Monitor/Defib</div>
+      <div class="role-chip">Compressor (as needed)</div>
+      <div class="role-chip">Timer / Recorder</div>
+    </div>
+
+    <h3 class="lesson-h">Lesson 8 — Tachycardia</h3>
+    <ul class="tight">
+      <li>Play the Tachycardia Algorithm video</li>
+      <li>Narrow vs. wide complex, stable vs. unstable</li>
+      <li>Treatment pathway: vagal maneuvers, medication therapy, synchronized cardioversion — confirm current
+      weight-based dosing and energy settings against the PALS algorithm cards</li>
+    </ul>
+
+    <h3 class="lesson-h">Lesson 9 — Cardiac Arrest Algorithm &amp; High-Performance Teams</h3>
+    <ul class="tight">
+      <li>Walk through the PALS Cardiac Arrest Algorithm</li>
+      <li>Review the H's and T's of reversible causes</li>
+      <li>Ask what team behaviors students observed today; discuss closed-loop communication and knowing your role</li>
+    </ul>
+
+    <h2 class="section-h">Instructor Checklist</h2>
+    <div class="two-col">
+      <div>
+        <div class="checkbox-line"><span><span class="box"></span>Precourse Self-Assessment scores collected (≥70%)</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>Video prework completion certificates collected</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>Child &amp; infant manikins, feedback devices staged</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>Pediatric AED pads/attenuators staged</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>Pediatric airway trainers, OPA/NPA, BVMs staged</span></div>
+      </div>
+      <div>
+        <div class="checkbox-line"><span><span class="box"></span>Monitor/defib trainers &amp; pediatric pads staged</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>IO/vascular access trainers staged</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>Skills testing checklists on hand (current Instructor Manual)</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>Megacode case cards prepared</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>Exams &amp; answer keys prepared</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- ACLS + BLS COMBINED                                           -->
+  <!-- ============================================================ -->
+  <div class="course-panel" id="course-aclsbls">
+
+    <div class="notice">
+      <strong>Two cards, one class.</strong> This is the standard ACLS agenda with a BLS Provider skills test and
+      BLS exam added so students leave with both an ACLS and a BLS eCard. Per AHA rules, a <strong>BLS Instructor
+      must be present</strong> to run the infant CPR skills test and the BLS exam, and the BLS card must be issued
+      from the same Training Center as the ACLS card. Plan the BLS portion in advance and register students for it
+      — it isn't something to tack on mid-class. Confirm the current official combined agenda and both skills
+      checklists before use.
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('aclsbls-initial')">Initial — 9.5 Hours</button>
+      <button class="tab-btn" onclick="showTab('aclsbls-renewal')">Renewal — 7 Hours</button>
+    </div>
+
+    <div class="tab-panel active" id="aclsbls-initial">
+      <h2 class="section-h">Timed Agenda — ACLS + BLS Initial (9 hr 30 min / 570 min)</h2>
+      <table class="agenda">
+        <tr><th>Start</th><th>Dur.</th><th>Segment</th></tr>
+        <tr><td class="time">0:00</td><td class="dur">10 min</td><td>Welcome, introductions, overview, precourse-work verification (ACLS + BLS)</td></tr>
+        <tr><td class="time">0:10</td><td class="dur">25 min</td><td>ACLS L1 — Science of Resuscitation (video + discussion)</td></tr>
+        <tr><td class="time">0:35</td><td class="dur">35 min</td><td>ACLS L2 — Compression / AED Practice</td></tr>
+        <tr><td class="time">1:10</td><td class="dur">30 min</td><td>ACLS L2 — 2-Rescuer CPR Rotation</td></tr>
+        <tr class="break-row"><td class="time">1:40</td><td class="dur">10 min</td><td>Break</td></tr>
+        <tr><td class="time">1:50</td><td class="dur">35 min</td><td>BLS — Child &amp; Infant CPR Practice (adds pediatric to the adult work above)</td></tr>
+        <tr><td class="time">2:25</td><td class="dur">20 min</td><td>BLS — Choking Relief: Adult, Child &amp; Infant</td></tr>
+        <tr><td class="time">2:45</td><td class="dur">35 min</td><td>ACLS L3 — Airway Management: OPA/NPA, O2/suction, 1–2 rescuer BVM</td></tr>
+        <tr><td class="time">3:20</td><td class="dur">25 min</td><td>ACLS L3 — Advanced Airway video + intubation practice</td></tr>
+        <tr class="break-row"><td class="time">3:45</td><td class="dur">30 min</td><td>Lunch</td></tr>
+        <tr><td class="time">4:15</td><td class="dur">25 min</td><td>ACLS L4 — Monitor/Defib Tech Review &amp; Equipment Locations</td></tr>
+        <tr><td class="time">4:40</td><td class="dur">55 min</td><td>ACLS L5 — Bradycardia (video, cases, scenarios)</td></tr>
+        <tr class="break-row"><td class="time">5:35</td><td class="dur">10 min</td><td>Break</td></tr>
+        <tr><td class="time">5:45</td><td class="dur">55 min</td><td>ACLS L6 — Tachycardia (video, cases, scenarios)</td></tr>
+        <tr><td class="time">6:40</td><td class="dur">25 min</td><td>ACLS L7 — High-Performance Teams discussion &amp; debrief</td></tr>
+        <tr><td class="time">7:05</td><td class="dur">70 min</td><td>ACLS Megacode: team scenarios, rotating roles, skills testing</td></tr>
+        <tr><td class="time">8:15</td><td class="dur">30 min</td><td>BLS Skills Testing (adult + infant; BLS Instructor required for infant)</td></tr>
+        <tr><td class="time">8:45</td><td class="dur">30 min</td><td>ACLS Provider Exam</td></tr>
+        <tr><td class="time">9:15</td><td class="dur">15 min</td><td>BLS Exam + wrap-up, evaluations, ACLS &amp; BLS eCard issuance</td></tr>
+        <tr class="total-row"><td colspan="2">Total</td><td>9:30 (570 min)</td></tr>
+      </table>
+      <p class="body-text" style="font-size:11.5px;color:var(--mid);">Most of the BLS card is earned inside the ACLS hands-on work — the only true additions are pediatric (child/infant) CPR practice, the infant skills test, and the short BLS exam. If you're tight on time, the pediatric practice block is where ACLS and BLS overlap most.</p>
+    </div>
+
+    <div class="tab-panel" id="aclsbls-renewal">
+      <h2 class="section-h">Timed Agenda — ACLS + BLS Renewal (7 hr / 420 min)</h2>
+      <table class="agenda">
+        <tr><th>Start</th><th>Dur.</th><th>Segment</th></tr>
+        <tr><td class="time">0:00</td><td class="dur">5 min</td><td>Welcome, precourse-work verification, agenda overview</td></tr>
+        <tr><td class="time">0:05</td><td class="dur">15 min</td><td>ACLS L1 — Science of Resuscitation (condensed)</td></tr>
+        <tr><td class="time">0:20</td><td class="dur">30 min</td><td>ACLS L2 — Compression / AED Practice</td></tr>
+        <tr><td class="time">0:50</td><td class="dur">25 min</td><td>ACLS L2 — 2-Rescuer CPR Rotation</td></tr>
+        <tr class="break-row"><td class="time">1:15</td><td class="dur">10 min</td><td>Break</td></tr>
+        <tr><td class="time">1:25</td><td class="dur">30 min</td><td>BLS — Child &amp; Infant CPR Practice</td></tr>
+        <tr><td class="time">1:55</td><td class="dur">30 min</td><td>ACLS L3 — Airway Management review (OPA/NPA, BVM, advanced airway refresh)</td></tr>
+        <tr><td class="time">2:25</td><td class="dur">20 min</td><td>ACLS L4 — Monitor/Defib Tech Review</td></tr>
+        <tr><td class="time">2:45</td><td class="dur">45 min</td><td>ACLS L5 — Bradycardia (video, cases, team scenario)</td></tr>
+        <tr class="break-row"><td class="time">3:30</td><td class="dur">10 min</td><td>Break</td></tr>
+        <tr><td class="time">3:40</td><td class="dur">45 min</td><td>ACLS L6 — Tachycardia (video, cases, team scenario)</td></tr>
+        <tr><td class="time">4:25</td><td class="dur">15 min</td><td>ACLS L7 — High-Performance Teams debrief</td></tr>
+        <tr><td class="time">4:40</td><td class="dur">75 min</td><td>ACLS Megacode: team scenarios, rotating roles, skills testing</td></tr>
+        <tr><td class="time">5:55</td><td class="dur">25 min</td><td>BLS Skills Testing (adult + infant; BLS Instructor required for infant)</td></tr>
+        <tr><td class="time">6:20</td><td class="dur">25 min</td><td>ACLS Provider Exam</td></tr>
+        <tr><td class="time">6:45</td><td class="dur">15 min</td><td>BLS Exam + wrap-up, evaluations, eCard issuance</td></tr>
+        <tr class="total-row"><td colspan="2">Total</td><td>7:00 (420 min)</td></tr>
+      </table>
+      <p class="body-text" style="font-size:11.5px;color:var(--mid);">Hands-on ACLS and BLS testing minutes hold near initial length — the renewal only trims video/discussion time.</p>
+    </div>
+
+    <div class="callout">
+      <strong>How this course works:</strong> the adult high-quality CPR, AED, and BVM skills that make up most of a
+      BLS card are already covered in the ACLS hands-on stations. The pieces unique to earning the BLS card are
+      pediatric (child and infant) CPR practice, the infant skills test, and the separate BLS written exam. The full
+      lesson content for each ACLS lesson is on the <strong>ACLS tab</strong>; the pediatric CPR, choking, and BVM
+      detail is on the <strong>BLS tab</strong>. This tab is the combined timing and the additions.
+    </div>
+
+    <h2 class="section-h">Instructor Checklist — Combined ACLS + BLS</h2>
+    <div class="two-col">
+      <div>
+        <div class="checkbox-line"><span><span class="box"></span>BLS Instructor scheduled for infant test + BLS exam</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>Students pre-registered for the BLS portion</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>ACLS precourse work verified (≥70% + prework)</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>Adult + child + infant manikins staged</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>Feedback devices on all manikins</span></div>
+      </div>
+      <div>
+        <div class="checkbox-line"><span><span class="box"></span>Airway trainers, OPA/NPA, BVMs, monitor/defib staged</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>ACLS + BLS skills testing checklists on hand</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>ACLS exam + BLS exam &amp; answer keys prepared</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>Both eCards issued from the same Training Center</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- ACLS + PALS COMBINED                                          -->
+  <!-- ============================================================ -->
+  <div class="course-panel" id="course-aclspals">
+
+    <div class="notice">
+      <strong>Adult + pediatric in one sitting — plan for a long day (or two).</strong> ACLS and PALS are each full
+      advanced courses with their own manuals, algorithms, exams, and skills tests. Running them together makes for
+      a very long single day; many Training Centers split this across two days. The agendas below assume all
+      precourse work (Self-Assessment ≥70% + video prework) is complete for <em>both</em> programs before class, and
+      that shared foundations (high-quality CPR, airway, team dynamics) are taught once and applied to both adult and
+      pediatric patients. Students receive separate ACLS and PALS eCards. Confirm both official agendas, skills
+      checklists, and current pediatric dosing against the respective Instructor Manuals before use.
+    </div>
+
+    <div class="tabs">
+      <button class="tab-btn active" onclick="showTab('aclspals-initial')">Initial — 14 Hours (2 days)</button>
+      <button class="tab-btn" onclick="showTab('aclspals-renewal')">Renewal — 10 Hours</button>
+    </div>
+
+    <div class="tab-panel active" id="aclspals-initial">
+      <h2 class="section-h">Timed Agenda — ACLS + PALS Initial (14 hr / 840 min — split across 2 days)</h2>
+      <h4 class="sub-h">Day 1 — Shared foundations + ACLS (7 hr 05 min)</h4>
+      <table class="agenda">
+        <tr><th>Start</th><th>Dur.</th><th>Segment</th></tr>
+        <tr><td class="time">0:00</td><td class="dur">10 min</td><td>Welcome, overview, precourse-work verification (ACLS + PALS)</td></tr>
+        <tr><td class="time">0:10</td><td class="dur">25 min</td><td>Shared — Science of Resuscitation (video + discussion)</td></tr>
+        <tr><td class="time">0:35</td><td class="dur">35 min</td><td>Shared — Compression / AED Practice (adult)</td></tr>
+        <tr><td class="time">1:10</td><td class="dur">30 min</td><td>ACLS — 2-Rescuer CPR Rotation</td></tr>
+        <tr class="break-row"><td class="time">1:40</td><td class="dur">10 min</td><td>Break</td></tr>
+        <tr><td class="time">1:50</td><td class="dur">35 min</td><td>ACLS L3 — Airway Management (OPA/NPA, BVM) + Advanced Airway</td></tr>
+        <tr><td class="time">2:25</td><td class="dur">25 min</td><td>ACLS L4 — Monitor/Defib Tech Review</td></tr>
+        <tr class="break-row"><td class="time">2:50</td><td class="dur">30 min</td><td>Lunch</td></tr>
+        <tr><td class="time">3:20</td><td class="dur">55 min</td><td>ACLS L5 — Bradycardia (video, cases, scenarios)</td></tr>
+        <tr class="break-row"><td class="time">4:15</td><td class="dur">10 min</td><td>Break</td></tr>
+        <tr><td class="time">4:25</td><td class="dur">55 min</td><td>ACLS L6 — Tachycardia (video, cases, scenarios)</td></tr>
+        <tr><td class="time">5:20</td><td class="dur">25 min</td><td>ACLS L7 — High-Performance Teams debrief</td></tr>
+        <tr><td class="time">5:45</td><td class="dur">50 min</td><td>ACLS Megacode + skills testing</td></tr>
+        <tr><td class="time">6:35</td><td class="dur">30 min</td><td>ACLS Provider Exam</td></tr>
+        <tr class="total-row"><td colspan="2">Day 1 Total</td><td>7:05 (425 min)</td></tr>
+      </table>
+      <h4 class="sub-h">Day 2 — PALS (6 hr 55 min)</h4>
+      <table class="agenda">
+        <tr><th>Start</th><th>Dur.</th><th>Segment</th></tr>
+        <tr><td class="time">0:00</td><td class="dur">10 min</td><td>Day 2 welcome + PALS overview</td></tr>
+        <tr><td class="time">0:10</td><td class="dur">25 min</td><td>PALS L1 — Systematic Approach: PAT &amp; Evaluate-Identify-Intervene</td></tr>
+        <tr><td class="time">0:35</td><td class="dur">40 min</td><td>PALS L2 — Pediatric High-Quality CPR Practice (child/infant)</td></tr>
+        <tr class="break-row"><td class="time">1:15</td><td class="dur">10 min</td><td>Break</td></tr>
+        <tr><td class="time">1:25</td><td class="dur">35 min</td><td>PALS L3 — Respiratory Emergencies: distress vs. failure</td></tr>
+        <tr><td class="time">2:00</td><td class="dur">35 min</td><td>PALS L4 — Pediatric Airway Management Practice</td></tr>
+        <tr><td class="time">2:35</td><td class="dur">20 min</td><td>PALS L5 — Monitor/Defib &amp; Vascular Access (pediatric)</td></tr>
+        <tr class="break-row"><td class="time">2:55</td><td class="dur">30 min</td><td>Lunch</td></tr>
+        <tr><td class="time">3:25</td><td class="dur">45 min</td><td>PALS L6 — Shock Recognition &amp; Management</td></tr>
+        <tr><td class="time">4:10</td><td class="dur">40 min</td><td>PALS L7 — Bradycardia (video, cases, team scenario)</td></tr>
+        <tr class="break-row"><td class="time">4:50</td><td class="dur">10 min</td><td>Break</td></tr>
+        <tr><td class="time">5:00</td><td class="dur">40 min</td><td>PALS L8 — Tachycardia (video, cases, team scenario)</td></tr>
+        <tr><td class="time">5:40</td><td class="dur">25 min</td><td>PALS L9 — Cardiac Arrest Algorithm &amp; High-Performance Teams</td></tr>
+        <tr><td class="time">6:05</td><td class="dur">30 min</td><td>PALS Megacode + skills testing</td></tr>
+        <tr><td class="time">6:35</td><td class="dur">20 min</td><td>PALS Exam + wrap-up, evaluations, eCard issuance</td></tr>
+        <tr class="total-row"><td colspan="2">Day 2 Total</td><td>6:55 (415 min)</td></tr>
+      </table>
+      <p class="body-text" style="font-size:11.5px;color:var(--mid);">If you must run this in a single day, expect 14+ hours and build in a longer meal break — but two days is strongly preferable for retention and instructor fatigue. The Live Session runner treats it as one continuous 30-step sequence; just pause the timer at the day break.</p>
+    </div>
+
+    <div class="tab-panel" id="aclspals-renewal">
+      <h2 class="section-h">Timed Agenda — ACLS + PALS Renewal (10 hr / 600 min)</h2>
+      <table class="agenda">
+        <tr><th>Start</th><th>Dur.</th><th>Segment</th></tr>
+        <tr><td class="time">0:00</td><td class="dur">5 min</td><td>Welcome, precourse-work verification (ACLS + PALS)</td></tr>
+        <tr><td class="time">0:05</td><td class="dur">15 min</td><td>Shared — Science of Resuscitation (condensed)</td></tr>
+        <tr><td class="time">0:20</td><td class="dur">30 min</td><td>Shared — Compression / AED Practice (adult)</td></tr>
+        <tr><td class="time">0:50</td><td class="dur">25 min</td><td>ACLS — 2-Rescuer CPR Rotation</td></tr>
+        <tr class="break-row"><td class="time">1:15</td><td class="dur">10 min</td><td>Break</td></tr>
+        <tr><td class="time">1:25</td><td class="dur">30 min</td><td>ACLS L3 — Airway Management review</td></tr>
+        <tr><td class="time">1:55</td><td class="dur">20 min</td><td>ACLS L4 — Monitor/Defib Tech Review</td></tr>
+        <tr><td class="time">2:15</td><td class="dur">45 min</td><td>ACLS L5 — Bradycardia</td></tr>
+        <tr><td class="time">3:00</td><td class="dur">45 min</td><td>ACLS L6 — Tachycardia</td></tr>
+        <tr><td class="time">3:45</td><td class="dur">15 min</td><td>ACLS L7 — High-Performance Teams debrief</td></tr>
+        <tr class="break-row"><td class="time">4:00</td><td class="dur">30 min</td><td>Lunch</td></tr>
+        <tr><td class="time">4:30</td><td class="dur">60 min</td><td>ACLS Megacode + skills testing</td></tr>
+        <tr><td class="time">5:30</td><td class="dur">15 min</td><td>PALS L1 — Systematic Approach (condensed)</td></tr>
+        <tr><td class="time">5:45</td><td class="dur">30 min</td><td>PALS L2 — Pediatric High-Quality CPR Practice</td></tr>
+        <tr class="break-row"><td class="time">6:15</td><td class="dur">10 min</td><td>Break</td></tr>
+        <tr><td class="time">6:25</td><td class="dur">25 min</td><td>PALS L3 — Respiratory Emergencies</td></tr>
+        <tr><td class="time">6:50</td><td class="dur">25 min</td><td>PALS L4 — Pediatric Airway Management (review)</td></tr>
+        <tr><td class="time">7:15</td><td class="dur">35 min</td><td>PALS L6 — Shock Recognition &amp; Management</td></tr>
+        <tr><td class="time">7:50</td><td class="dur">35 min</td><td>PALS L7 — Bradycardia</td></tr>
+        <tr><td class="time">8:25</td><td class="dur">35 min</td><td>PALS L8 — Tachycardia</td></tr>
+        <tr class="break-row"><td class="time">9:00</td><td class="dur">10 min</td><td>Break</td></tr>
+        <tr><td class="time">9:10</td><td class="dur">30 min</td><td>PALS Megacode + skills testing</td></tr>
+        <tr><td class="time">9:40</td><td class="dur">20 min</td><td>Exams (ACLS + PALS) + wrap-up, evaluations, eCard issuance</td></tr>
+        <tr class="total-row"><td colspan="2">Total</td><td>10:00 (600 min)</td></tr>
+      </table>
+      <p class="body-text" style="font-size:11.5px;color:var(--mid);">Shared adult CPR/airway foundations are taught once; PALS then focuses on the pediatric-specific assessment, shock, and rhythm content. Still a long day — a second break and a firm lunch are built in.</p>
+    </div>
+
+    <div class="callout">
+      <strong>How this course works:</strong> the shared foundation blocks (Science of Resuscitation, adult
+      compression/AED, airway, team dynamics) are taught once. ACLS then covers the adult rhythm/algorithm content
+      and PALS covers pediatric assessment, respiratory, shock, and pediatric rhythm content. Full lesson detail
+      lives on the <strong>ACLS tab</strong> and <strong>PALS tab</strong>; this tab is the combined timing.
+    </div>
+
+    <h2 class="section-h">Instructor Checklist — Combined ACLS + PALS</h2>
+    <div class="two-col">
+      <div>
+        <div class="checkbox-line"><span><span class="box"></span>Precourse work verified for BOTH programs (≥70% + prework)</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>Adult + child + infant manikins, feedback devices staged</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>Adult + pediatric AED pads/attenuators staged</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>Adult + pediatric airway trainers, OPA/NPA, BVMs staged</span></div>
+      </div>
+      <div>
+        <div class="checkbox-line"><span><span class="box"></span>Monitor/defib + IO/vascular access trainers staged</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>ACLS + PALS skills testing checklists on hand</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>ACLS + PALS exams &amp; answer keys prepared</span></div>
+        <div class="checkbox-line"><span><span class="box"></span>Current pediatric dosing/energy cards on hand</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- CUSTOM                                                        -->
+  <!-- ============================================================ -->
+  <div class="course-panel" id="course-custom">
+
+    <h2 class="section-h">Custom Lesson Plan Builder</h2>
+    <p class="body-text">Build a timed agenda from scratch — useful for non-standard hour targets, agency-specific
+    sessions, or course types outside ACLS/BLS/PALS. Steps you add here can be previewed as a printable agenda and
+    run directly in Live Session mode. Nothing here is saved automatically — use <em>Copy Plan as JSON</em> before
+    you close the page if you want to reuse it later.</p>
+
+    <div class="custom-toolbar">
+      <input type="text" id="customPlanNameInput" value="My Custom Course" placeholder="Plan name" oninput="syncCustomPlanName(this.value)">
+      <span class="custom-total-badge" id="customTotalBadge">Total: 0:00 (0 min)</span>
+    </div>
+
+    <div class="custom-rows" id="customRows"></div>
+
+    <div class="custom-actions">
+      <button class="util" onclick="addCustomStep()">+ Add Step</button>
+      <button class="util" onclick="generateCustomAgenda()">Generate Printable Agenda</button>
+      <button class="util live" onclick="quickRunCustom()">▶ Run This Plan Live</button>
+      <button class="util" onclick="exportCustomPlan()">Copy Plan as JSON</button>
+    </div>
+
+    <div id="customAgendaOutput"></div>
+
+    <div class="json-panel" id="customJsonArea" style="display:none;">
+      <h4>Exported plan — copy this somewhere safe, it isn't saved automatically</h4>
+      <textarea id="customExportText" readonly></textarea>
+      <div id="customCopyStatus" style="font-size:11px;color:var(--mid);margin-top:4px;"></div>
+    </div>
+
+    <div class="json-panel">
+      <h4>Load a previously saved plan</h4>
+      <textarea id="customImportText" placeholder="Paste exported plan JSON here"></textarea>
+      <div class="json-actions">
+        <button class="util" onclick="importCustomPlan()">Load Plan</button>
+      </div>
+      <div id="customImportStatus" style="font-size:11px;color:var(--mid);margin-top:4px;"></div>
+    </div>
+
+  </div>
+
+  <footer>
+    <span>Aaron C. — AHA Instructor Lesson Plans (ACLS · BLS · PALS · Combined)</span>
+    <span>Built to align with 2025 AHA Guidelines for CPR &amp; ECC course frameworks</span>
+  </footer>
+
+</div>
+
+<!-- ================= LIVE SESSION OVERLAY ================= -->
+<div class="live-overlay" id="liveOverlay" style="display:none;">
+  <div class="live-inner">
+
+    <div class="live-setup" id="liveSetup">
+      <h2>Start Live Session</h2>
+      <label for="liveCourseType">Course</label>
+      <select id="liveCourseType">
+        <optgroup label="ACLS">
+          <option value="acls_initial">Initial — 8 hr</option>
+          <option value="acls_renewal">Renewal — 6 hr</option>
+        </optgroup>
+        <optgroup label="BLS">
+          <option value="bls_initial">Initial — 4 hr</option>
+          <option value="bls_renewal">Renewal — 3 hr</option>
+        </optgroup>
+        <optgroup label="PALS">
+          <option value="pals_initial">Initial — 8 hr</option>
+          <option value="pals_renewal">Renewal — 6 hr</option>
+        </optgroup>
+        <optgroup label="ACLS + BLS">
+          <option value="aclsbls_initial">Initial — 9.5 hr</option>
+          <option value="aclsbls_renewal">Renewal — 7 hr</option>
+        </optgroup>
+        <optgroup label="ACLS + PALS">
+          <option value="aclspals_initial">Initial — 14 hr (2 days)</option>
+          <option value="aclspals_renewal">Renewal — 10 hr</option>
+        </optgroup>
+        <option value="custom">Custom Plan (from Custom tab)</option>
+      </select>
+      <label for="liveStudentCount"># Students in class</label>
+      <input type="number" id="liveStudentCount" value="3" min="1" max="30">
+      <div class="live-setup-actions">
+        <button class="util" onclick="closeLive()">Cancel</button>
+        <button class="util primary" onclick="startLiveSession()">Begin</button>
+      </div>
+    </div>
+
+    <div class="live-runner" id="liveRunner" style="display:none;">
+      <div class="live-topbar">
+        <div class="live-topbar-left">
+          <strong id="liveCourseLabel"></strong>
+          <span id="liveStepCounter"></span>
+        </div>
+        <div class="live-topbar-right">
+          <span class="variance ontrack" id="liveScheduleVariance">On schedule</span>
+          <button class="util small" onclick="closeLive()">Exit</button>
+        </div>
+      </div>
+
+      <div class="live-body">
+        <div class="live-steps-rail" id="liveStepsRail"></div>
+
+        <div class="live-main">
+          <div class="live-step-header">
+            <span class="live-lesson-tag" id="liveLessonTag"></span>
+            <h2 id="liveStepTitle"></h2>
+            <span class="live-duration-badge" id="liveDurationBadge"></span>
+          </div>
+
+          <div class="live-timer-block">
+            <div class="live-timer-display" id="liveTimerDisplay">00:00</div>
+            <div class="live-timer-controls">
+              <button class="util" id="liveStartBtn" onclick="toggleTimer()">Start</button>
+              <button class="util" onclick="resetTimer()">Reset</button>
+            </div>
+          </div>
+
+          <ul class="live-cues" id="liveCues"></ul>
+
+          <div class="live-rotation" id="liveRotation" style="display:none;"></div>
+
+          <div class="live-nav">
+            <button class="util" onclick="prevStep()">← Previous</button>
+            <button class="util primary" onclick="nextStep()">Next →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ================= COURSE / SUB-TAB SWITCHING ================= */
+
+function switchCourse(id){
+  var btn = event.currentTarget;
+  document.querySelectorAll('.course-panel').forEach(function(p){ p.classList.remove('active'); });
+  document.querySelectorAll('.course-tab-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.getElementById('course-' + id).classList.add('active');
+  btn.classList.add('active');
+}
+
+function showTab(id){
+  var btn = event.currentTarget;
+  var scope = btn.closest('.course-panel') || document;
+  scope.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+  scope.querySelectorAll('.tab-btn').forEach(function(b){ b.classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  btn.classList.add('active');
+}
+
+/* ================= LIVE SESSION ================= */
+
+var ROTATION_DEFS = {
+  cpr:  { teamSize: 3, roles: ['Compressor / Assessor', 'AED', 'CPR Coach'] },
+  team: { teamSize: 6, roles: ['Team Leader', 'Airway', 'IV/IO & Meds', 'Monitor/Defib', 'Compressor', 'Timer/Recorder'] },
+  bls2: { teamSize: 2, roles: ['Compressor', 'Ventilator / AED'] },
+  peds: { teamSize: 3, roles: ['Compressor', 'Airway / Ventilations', 'AED / Monitor'] }
+};
+
+var STEP_DATA = {
+
+  acls_initial: [
+    { lesson:'', title:'Welcome & Course Overview', duration:10, rotation:null, cues:[
+      'Confirm precourse self-assessment (\u226570%) and video prework certificates',
+      'Introduce CPR Coaches / co-instructors',
+      'Preview today\'s agenda and station rotations'
+    ]},
+    { lesson:'Lesson 1', title:'Science of Resuscitation', duration:25, rotation:null, cues:[
+      'State learning objectives before playing video',
+      'Play the Science of Resuscitation video',
+      'Discuss high-quality BLS and feedback devices',
+      'Q&A, then summarize key points'
+    ]},
+    { lesson:'Lesson 2', title:'Session 1: Compression / AED Practice', duration:35, rotation:null, cues:[
+      'Max 3 students per manikin',
+      '1 minute of compressions each \u2014 observe rate, depth, recoil',
+      'Depth \u22652in (5cm) \u00b7 Rate 100\u2013120/min \u00b7 Full recoil \u00b7 Hands on lower half of sternum',
+      'Feedback to both the compressor AND the CPR Coach'
+    ]},
+    { lesson:'Lesson 2', title:'2-Rescuer CPR Rotation', duration:30, rotation:'cpr', cues:[
+      'Rotate every student through all 3 roles',
+      'Evaluate one student at a time',
+      'One retest allowed per student'
+    ]},
+    { lesson:'', title:'Break', duration:10, rotation:null, cues:[] },
+    { lesson:'Lesson 3', title:'Airway Management: OPA/NPA & BVM', duration:35, rotation:null, cues:[
+      'Use a visible timer \u2014 correct ventilation rate & volume',
+      'Watch for over-ventilation (\u2191intrathoracic pressure, \u2193venous return, \u2193cardiac output, \u2193cerebral/coronary flow, \u2191aspiration risk)',
+      'Practice OPA/NPA insertion',
+      'Discuss oxygen delivery and suction setup',
+      '1- and 2-rescuer BVM \u2014 rotate ventilator / mask-seal roles'
+    ]},
+    { lesson:'Lesson 3', title:'Advanced Airway Video & Intubation Practice', duration:25, rotation:null, cues:[
+      'Play the Advanced Airway video',
+      'Intubation practice, scaled to available airway trainers/scope'
+    ]},
+    { lesson:'Lesson 4', title:'Monitor/Defib Tech Review', duration:25, rotation:null, cues:[
+      'Power, transcutaneous pacing, synchronized cardioversion',
+      'NIBP, EtCO2, SpO2',
+      'Pad connections + ECG lead placement (3/4/5-lead)',
+      'Crash cart / jump kit + A/V feedback device locations'
+    ]},
+    { lesson:'', title:'Lunch', duration:30, rotation:null, cues:[] },
+    { lesson:'Lesson 5', title:'Preventing Arrest: Bradycardia', duration:55, rotation:'team', cues:[
+      'Play the Bradycardia Algorithm video, answer questions',
+      'Discuss transcutaneous pacing setup',
+      'Work through 3 bradycardia cases as a group',
+      'Focus: stable vs. unstable treatment, NOT fine block differentiation',
+      'Students must call rapid response/MET early on deterioration'
+    ]},
+    { lesson:'', title:'Break', duration:10, rotation:null, cues:[] },
+    { lesson:'Lesson 6', title:'Preventing Arrest: Tachycardia', duration:55, rotation:'team', cues:[
+      'State objectives, play the Tachycardia Algorithm video',
+      'Stable vs. unstable \u2192 synchronized cardioversion',
+      'Review rhythms: SVT, A-fib/flutter, junctional, mono/polymorphic VT, torsades, wide-complex',
+      'Tie treatment decisions to local protocol'
+    ]},
+    { lesson:'Lesson 7', title:'High-Performance Teams Debrief', duration:25, rotation:null, cues:[
+      'Ask what team behaviors students observed today',
+      'Discuss timing/measurement vs. survival',
+      'Review the H\'s and T\'s',
+      'Closed-loop communication, knowing your role'
+    ]},
+    { lesson:'', title:'Megacode: Team Scenarios & Skills Testing', duration:70, rotation:'team', cues:[
+      'Rotate Team Leader through every student',
+      'Use the current skills testing checklist',
+      'Cases run in real time'
+    ]},
+    { lesson:'', title:'ACLS Provider Course Exam', duration:30, rotation:null, cues:[
+      'Open-resource per Training Center policy',
+      'Confirm minimum passing score per TC requirement'
+    ]},
+    { lesson:'', title:'Wrap-up & Evaluations', duration:10, rotation:null, cues:[
+      'Collect course evaluations',
+      'Note any remediation/retest needs',
+      'Issue eCards'
+    ]}
+  ],
+
+  acls_renewal: [
+    { lesson:'', title:'Welcome & Overview', duration:5, rotation:null, cues:[
+      'Confirm precourse self-assessment (\u226570%) and video prework certificates',
+      'Preview today\'s agenda'
+    ]},
+    { lesson:'Lesson 1', title:'Science of Resuscitation (condensed)', duration:15, rotation:null, cues:[
+      'State learning objectives before playing video',
+      'Play the video (condensed)',
+      'Discuss high-quality BLS and feedback devices',
+      'Summarize key points'
+    ]},
+    { lesson:'Lesson 2', title:'Session 1: Compression / AED Practice', duration:30, rotation:null, cues:[
+      'Max 3 students per manikin',
+      '1 minute of compressions each \u2014 observe rate, depth, recoil',
+      'Depth \u22652in (5cm) \u00b7 Rate 100\u2013120/min \u00b7 Full recoil \u00b7 Hands on lower half of sternum',
+      'Feedback to both the compressor AND the CPR Coach'
+    ]},
+    { lesson:'Lesson 2', title:'2-Rescuer CPR Rotation', duration:25, rotation:'cpr', cues:[
+      'Rotate every student through all 3 roles',
+      'Evaluate one student at a time',
+      'One retest allowed per student'
+    ]},
+    { lesson:'', title:'Break', duration:10, rotation:null, cues:[] },
+    { lesson:'Lesson 3', title:'Airway Management Review', duration:30, rotation:null, cues:[
+      'Visible timer \u2014 correct ventilation rate & volume',
+      'Watch for over-ventilation',
+      'OPA/NPA, O2/suction, 1- and 2-rescuer BVM',
+      'Advanced airway refresh'
+    ]},
+    { lesson:'Lesson 4', title:'Monitor/Defib Tech Review', duration:20, rotation:null, cues:[
+      'Power, pacing, synchronized cardioversion',
+      'NIBP, EtCO2, SpO2',
+      'Pad + ECG lead placement (3/4/5-lead)',
+      'Crash cart / jump kit + A/V feedback device locations'
+    ]},
+    { lesson:'Lesson 5', title:'Bradycardia', duration:45, rotation:'team', cues:[
+      'Play the Bradycardia Algorithm video',
+      'Discuss transcutaneous pacing setup',
+      'Work bradycardia cases as a group',
+      'Focus: stable vs. unstable treatment',
+      'Students must call rapid response/MET early'
+    ]},
+    { lesson:'', title:'Break', duration:10, rotation:null, cues:[] },
+    { lesson:'Lesson 6', title:'Tachycardia', duration:45, rotation:'team', cues:[
+      'Play the Tachycardia Algorithm video',
+      'Stable vs. unstable \u2192 synchronized cardioversion',
+      'Review rhythms, tie to local protocol'
+    ]},
+    { lesson:'Lesson 7', title:'High-Performance Teams Debrief', duration:15, rotation:null, cues:[
+      'Ask what team behaviors students observed',
+      'Discuss timing/measurement vs. survival',
+      'Review the H\'s and T\'s',
+      'Closed-loop communication, knowing your role'
+    ]},
+    { lesson:'', title:'Megacode: Team Scenarios & Skills Testing', duration:75, rotation:'team', cues:[
+      'Rotate Team Leader through every student',
+      'Use the current skills testing checklist',
+      'Cases run in real time'
+    ]},
+    { lesson:'', title:'ACLS Provider Course Exam', duration:25, rotation:null, cues:[
+      'Open-resource per Training Center policy',
+      'Confirm minimum passing score per TC requirement'
+    ]},
+    { lesson:'', title:'Wrap-up & Evaluations', duration:10, rotation:null, cues:[
+      'Collect course evaluations',
+      'Note any remediation/retest needs',
+      'Issue eCards'
+    ]}
+  ],
+
+  bls_initial: [
+    { lesson:'', title:'Welcome & Course Overview', duration:10, rotation:null, cues:[
+      'Introductions',
+      'Preview today\'s agenda'
+    ]},
+    { lesson:'Lesson 1', title:'Adult CPR & AED (video + discussion)', duration:20, rotation:null, cues:[
+      'Play video, pausing at built-in practice points',
+      'Discuss high-quality CPR fundamentals'
+    ]},
+    { lesson:'Lesson 1', title:'Adult CPR/AED Practice', duration:40, rotation:'bls2', cues:[
+      '1-rescuer: compressions, ventilations, AED',
+      '2-rescuer: rotate roles every 2 min / 5 cycles',
+      'Depth \u22652in \u00b7 Rate 100\u2013120/min \u00b7 Full recoil \u00b7 30:2 ratio (1-rescuer)'
+    ]},
+    { lesson:'', title:'Break', duration:10, rotation:null, cues:[] },
+    { lesson:'Lesson 2', title:'Child CPR & AED', duration:25, rotation:'bls2', cues:[
+      'Video + practice',
+      'Depth ~2in (\u22651/3 AP diameter) \u00b7 30:2 (1-rescuer) or 15:2 (2-rescuer)'
+    ]},
+    { lesson:'Lesson 2', title:'Infant CPR', duration:30, rotation:'bls2', cues:[
+      'Video + practice',
+      '2-finger (1-rescuer) or 2-thumb encircling (2-rescuer) technique',
+      'Depth ~1.5in (\u22651/3 AP diameter) \u00b7 30:2 or 15:2'
+    ]},
+    { lesson:'Lesson 3', title:'Choking Relief: Adult, Child & Infant', duration:25, rotation:null, cues:[
+      'Adult/child: abdominal thrusts while conscious',
+      'Infant: alternating back blows and chest thrusts',
+      'Transition to CPR with visual airway checks if unresponsive'
+    ]},
+    { lesson:'Lesson 4', title:'BVM Ventilation & Team Dynamics', duration:20, rotation:null, cues:[
+      'Mask seal, barrier device use',
+      'Avoid excessive ventilation',
+      'Multi-rescuer team roles, closed-loop communication'
+    ]},
+    { lesson:'', title:'Break', duration:10, rotation:null, cues:[] },
+    { lesson:'', title:'Skills Testing Station', duration:30, rotation:'bls2', cues:[
+      'Use current skills testing checklist'
+    ]},
+    { lesson:'', title:'Written Exam', duration:15, rotation:null, cues:[
+      'Open-resource per TC policy',
+      'Passing score per TC requirement'
+    ]},
+    { lesson:'', title:'Wrap-up & eCard Issuance', duration:5, rotation:null, cues:[] }
+  ],
+
+  bls_renewal: [
+    { lesson:'', title:'Welcome & Overview', duration:5, rotation:null, cues:[
+      'Preview today\'s agenda'
+    ]},
+    { lesson:'Lesson 1', title:'Adult CPR & AED (condensed)', duration:40, rotation:'bls2', cues:[
+      'Condensed video + practice',
+      '1- and 2-rescuer roles, rotate every 2 min',
+      'Depth \u22652in \u00b7 Rate 100\u2013120/min \u00b7 Full recoil'
+    ]},
+    { lesson:'Lesson 2', title:'Child & Infant CPR (condensed)', duration:40, rotation:'bls2', cues:[
+      'Condensed video + practice',
+      'Cover depth/ratio/technique differences from adult'
+    ]},
+    { lesson:'', title:'Break', duration:10, rotation:null, cues:[] },
+    { lesson:'Lesson 3', title:'Choking Relief (review)', duration:15, rotation:null, cues:[
+      'Adult/child/infant review'
+    ]},
+    { lesson:'Lesson 4', title:'BVM & Team Dynamics (review)', duration:15, rotation:null, cues:[
+      'Mask seal, ventilation rate/volume',
+      'Team roles review'
+    ]},
+    { lesson:'', title:'Skills Testing Station', duration:30, rotation:'bls2', cues:[
+      'Use current skills testing checklist'
+    ]},
+    { lesson:'', title:'Written Exam', duration:20, rotation:null, cues:[
+      'Open-resource per TC policy'
+    ]},
+    { lesson:'', title:'Wrap-up & eCard Issuance', duration:5, rotation:null, cues:[] }
+  ],
+
+  pals_initial: [
+    { lesson:'', title:'Welcome & Course Overview', duration:10, rotation:null, cues:[
+      'Confirm precourse self-assessment (\u226570%) and video prework certificates',
+      'Preview today\'s agenda'
+    ]},
+    { lesson:'Lesson 1', title:'Systematic Approach: PAT & Evaluate-Identify-Intervene', duration:30, rotation:null, cues:[
+      'Pediatric Assessment Triangle: Appearance, Work of Breathing, Circulation to Skin',
+      'Evaluate\u2013Identify\u2013Intervene cycle',
+      'Primary assessment: ABCDE'
+    ]},
+    { lesson:'Lesson 2', title:'Pediatric High-Quality CPR Practice', duration:45, rotation:'peds', cues:[
+      'Child depth ~2in \u00b7 Infant depth ~1.5in \u00b7 15:2 (2-rescuer)',
+      '2-thumb encircling technique for 2-rescuer infant CPR',
+      'Pediatric AED pad placement + attenuator use'
+    ]},
+    { lesson:'', title:'Break', duration:10, rotation:null, cues:[] },
+    { lesson:'Lesson 3', title:'Respiratory Emergencies: distress vs. failure', duration:35, rotation:null, cues:[
+      'Distress vs. failure signs',
+      'Upper airway obstruction, lower airway obstruction, lung tissue disease, disordered control of breathing'
+    ]},
+    { lesson:'Lesson 4', title:'Pediatric Airway Management Practice', duration:35, rotation:null, cues:[
+      'Pediatric OPA/NPA sizing',
+      'Two-person BVM technique',
+      'Advanced airway considerations \u2014 confirm sizing against current manual'
+    ]},
+    { lesson:'Lesson 5', title:'Monitor/Defib & Vascular Access Tech Review', duration:20, rotation:null, cues:[
+      'Pediatric pads/attenuators, ECG leads, EtCO2, SpO2, NIBP',
+      'IV/IO access sites and equipment',
+      'Pediatric crash cart supply locations'
+    ]},
+    { lesson:'', title:'Lunch', duration:30, rotation:null, cues:[] },
+    { lesson:'Lesson 6', title:'Shock Recognition & Management', duration:45, rotation:null, cues:[
+      'Compensated vs. decompensated shock',
+      'Hypovolemic, distributive, cardiogenic, obstructive',
+      'Reassess after every intervention'
+    ]},
+    { lesson:'', title:'Break', duration:10, rotation:null, cues:[] },
+    { lesson:'Lesson 7', title:'Bradycardia', duration:45, rotation:'team', cues:[
+      'Play the Bradycardia Algorithm video',
+      'With vs. without cardiopulmonary compromise',
+      'Work cases as a group before team scenario'
+    ]},
+    { lesson:'Lesson 8', title:'Tachycardia', duration:45, rotation:'team', cues:[
+      'Play the Tachycardia Algorithm video',
+      'Narrow vs. wide complex, stable vs. unstable',
+      'Vagal maneuvers, meds, synchronized cardioversion \u2014 confirm dosing against algorithm cards'
+    ]},
+    { lesson:'Lesson 9', title:'Cardiac Arrest Algorithm & High-Performance Teams', duration:30, rotation:null, cues:[
+      'Walk through the PALS Cardiac Arrest Algorithm',
+      'Review the H\'s and T\'s',
+      'Team behaviors, closed-loop communication'
+    ]},
+    { lesson:'', title:'Megacode: Team Scenarios & Skills Testing', duration:55, rotation:'team', cues:[
+      'Rotate Team Leader through every student',
+      'Use the current skills testing checklist'
+    ]},
+    { lesson:'', title:'PALS Provider Course Exam', duration:25, rotation:null, cues:[
+      'Open-resource per TC policy'
+    ]},
+    { lesson:'', title:'Wrap-up & Evaluations', duration:10, rotation:null, cues:[
+      'Collect evaluations, note remediation needs, issue eCards'
+    ]}
+  ],
+
+  pals_renewal: [
+    { lesson:'', title:'Welcome & Overview', duration:5, rotation:null, cues:[
+      'Confirm precourse self-assessment (\u226570%) and video prework certificates'
+    ]},
+    { lesson:'Lesson 1', title:'Systematic Approach (condensed)', duration:15, rotation:null, cues:[
+      'PAT + Evaluate\u2013Identify\u2013Intervene, condensed'
+    ]},
+    { lesson:'Lesson 2', title:'Pediatric High-Quality CPR Practice', duration:30, rotation:'peds', cues:[
+      'Child/infant depth, ratio, technique review',
+      '2-thumb encircling technique for 2-rescuer infant CPR'
+    ]},
+    { lesson:'', title:'Break', duration:10, rotation:null, cues:[] },
+    { lesson:'Lesson 3', title:'Respiratory Emergencies', duration:25, rotation:null, cues:[
+      'Distress vs. failure, 4 categories review'
+    ]},
+    { lesson:'Lesson 4', title:'Pediatric Airway Management (review)', duration:25, rotation:null, cues:[
+      'OPA/NPA sizing, 2-person BVM technique refresh'
+    ]},
+    { lesson:'Lesson 5', title:'Monitor/Defib & Vascular Access (review)', duration:15, rotation:null, cues:[
+      'Pads/attenuators, IV/IO sites, crash cart locations'
+    ]},
+    { lesson:'Lesson 6', title:'Shock Recognition & Management', duration:35, rotation:null, cues:[
+      'Compensated vs. decompensated, 4 shock types'
+    ]},
+    { lesson:'', title:'Break', duration:10, rotation:null, cues:[] },
+    { lesson:'Lesson 7', title:'Bradycardia', duration:35, rotation:'team', cues:[
+      'With vs. without cardiopulmonary compromise'
+    ]},
+    { lesson:'Lesson 8', title:'Tachycardia', duration:35, rotation:'team', cues:[
+      'Narrow vs. wide complex, stable vs. unstable'
+    ]},
+    { lesson:'Lesson 9', title:'Cardiac Arrest Algorithm & High-Performance Teams', duration:20, rotation:null, cues:[
+      'H\'s and T\'s, team behaviors review'
+    ]},
+    { lesson:'', title:'Megacode: Team Scenarios & Skills Testing', duration:75, rotation:'team', cues:[
+      'Rotate Team Leader through every student'
+    ]},
+    { lesson:'', title:'PALS Provider Course Exam', duration:20, rotation:null, cues:[
+      'Open-resource per TC policy'
+    ]},
+    { lesson:'', title:'Wrap-up & Evaluations', duration:5, rotation:null, cues:[] }
+  ],
+
+  aclsbls_initial: [
+    { lesson:'', title:'Welcome & Overview (ACLS + BLS)', duration:10, rotation:null, cues:[
+      'Confirm ACLS precourse work (\u226570%) + prework certificates',
+      'Confirm BLS Instructor present for infant test + BLS exam',
+      'Preview combined agenda'
+    ]},
+    { lesson:'ACLS L1', title:'Science of Resuscitation', duration:25, rotation:null, cues:[
+      'State objectives, play video',
+      'Discuss high-quality BLS + feedback devices'
+    ]},
+    { lesson:'ACLS L2', title:'Compression / AED Practice', duration:35, rotation:null, cues:[
+      'Max 3 per manikin, 1 min each',
+      'Depth \u22652in \u00b7 Rate 100\u2013120 \u00b7 Full recoil \u00b7 Lower half of sternum'
+    ]},
+    { lesson:'ACLS L2', title:'2-Rescuer CPR Rotation', duration:30, rotation:'cpr', cues:[
+      'Rotate through all 3 roles, evaluate one at a time'
+    ]},
+    { lesson:'', title:'Break', duration:10, rotation:null, cues:[] },
+    { lesson:'BLS', title:'Child & Infant CPR Practice', duration:35, rotation:'bls2', cues:[
+      'Child depth ~2in \u00b7 Infant depth ~1.5in',
+      '2-thumb encircling technique for 2-rescuer infant CPR',
+      'Pediatric AED pads/attenuator'
+    ]},
+    { lesson:'BLS', title:'Choking Relief: Adult, Child & Infant', duration:20, rotation:null, cues:[
+      'Adult/child abdominal thrusts; infant back blows + chest thrusts',
+      'Transition to CPR with visual airway checks if unresponsive'
+    ]},
+    { lesson:'ACLS L3', title:'Airway Management + Advanced Airway', duration:35, rotation:null, cues:[
+      'Visible timer \u2014 watch for over-ventilation',
+      'OPA/NPA, O2/suction, 1- & 2-rescuer BVM'
+    ]},
+    { lesson:'ACLS L3', title:'Advanced Airway video + intubation', duration:25, rotation:null, cues:[
+      'Play Advanced Airway video, intubation practice scaled to trainers'
+    ]},
+    { lesson:'', title:'Lunch', duration:30, rotation:null, cues:[] },
+    { lesson:'ACLS L4', title:'Monitor/Defib Tech Review', duration:25, rotation:null, cues:[
+      'Power, pacing, sync cardioversion, NIBP, EtCO2, SpO2',
+      'Pad + ECG lead placement, crash cart locations'
+    ]},
+    { lesson:'ACLS L5', title:'Bradycardia', duration:55, rotation:'team', cues:[
+      'Play video, work 3 cases, stable vs. unstable treatment',
+      'Call rapid response/MET early'
+    ]},
+    { lesson:'', title:'Break', duration:10, rotation:null, cues:[] },
+    { lesson:'ACLS L6', title:'Tachycardia', duration:55, rotation:'team', cues:[
+      'Play video, stable vs. unstable \u2192 synchronized cardioversion',
+      'Tie to local protocol'
+    ]},
+    { lesson:'ACLS L7', title:'High-Performance Teams Debrief', duration:25, rotation:null, cues:[
+      'Team behaviors, timing vs. survival, H\'s and T\'s'
+    ]},
+    { lesson:'', title:'ACLS Megacode + Skills Testing', duration:70, rotation:'team', cues:[
+      'Rotate Team Leader through every student'
+    ]},
+    { lesson:'BLS', title:'BLS Skills Testing (adult + infant)', duration:30, rotation:'bls2', cues:[
+      'BLS Instructor required for infant skills test',
+      'Use current BLS skills checklist'
+    ]},
+    { lesson:'', title:'ACLS Provider Exam', duration:30, rotation:null, cues:[
+      'Open-resource per TC policy'
+    ]},
+    { lesson:'', title:'BLS Exam + Wrap-up & eCards', duration:15, rotation:null, cues:[
+      'BLS exam, evaluations',
+      'Issue ACLS + BLS eCards from same Training Center'
+    ]}
+  ],
+
+  aclsbls_renewal: [
+    { lesson:'', title:'Welcome & Overview (ACLS + BLS)', duration:5, rotation:null, cues:[
+      'Confirm precourse work + BLS Instructor present'
+    ]},
+    { lesson:'ACLS L1', title:'Science of Resuscitation (condensed)', duration:15, rotation:null, cues:[
+      'Objectives, video, discuss feedback devices'
+    ]},
+    { lesson:'ACLS L2', title:'Compression / AED Practice', duration:30, rotation:null, cues:[
+      'Depth \u22652in \u00b7 Rate 100\u2013120 \u00b7 Full recoil'
+    ]},
+    { lesson:'ACLS L2', title:'2-Rescuer CPR Rotation', duration:25, rotation:'cpr', cues:[
+      'Rotate all 3 roles, evaluate one at a time'
+    ]},
+    { lesson:'', title:'Break', duration:10, rotation:null, cues:[] },
+    { lesson:'BLS', title:'Child & Infant CPR Practice', duration:30, rotation:'bls2', cues:[
+      'Child/infant depth, ratio, technique',
+      '2-thumb encircling technique for 2-rescuer infant'
+    ]},
+    { lesson:'ACLS L3', title:'Airway Management Review', duration:30, rotation:null, cues:[
+      'OPA/NPA, BVM, advanced airway refresh; watch over-ventilation'
+    ]},
+    { lesson:'ACLS L4', title:'Monitor/Defib Tech Review', duration:20, rotation:null, cues:[
+      'Pacing, sync cardioversion, leads, crash cart locations'
+    ]},
+    { lesson:'ACLS L5', title:'Bradycardia', duration:45, rotation:'team', cues:[
+      'Play video, cases, stable vs. unstable'
+    ]},
+    { lesson:'', title:'Break', duration:10, rotation:null, cues:[] },
+    { lesson:'ACLS L6', title:'Tachycardia', duration:45, rotation:'team', cues:[
+      'Play video, synchronized cardioversion for unstable'
+    ]},
+    { lesson:'ACLS L7', title:'High-Performance Teams Debrief', duration:15, rotation:null, cues:[
+      'Team behaviors, H\'s and T\'s'
+    ]},
+    { lesson:'', title:'ACLS Megacode + Skills Testing', duration:75, rotation:'team', cues:[
+      'Rotate Team Leader through every student'
+    ]},
+    { lesson:'BLS', title:'BLS Skills Testing (adult + infant)', duration:25, rotation:'bls2', cues:[
+      'BLS Instructor required for infant skills test'
+    ]},
+    { lesson:'', title:'ACLS Provider Exam', duration:25, rotation:null, cues:[
+      'Open-resource per TC policy'
+    ]},
+    { lesson:'', title:'BLS Exam + Wrap-up & eCards', duration:15, rotation:null, cues:[
+      'BLS exam, evaluations, issue both eCards'
+    ]}
+  ],
+
+  aclspals_initial: [
+    { lesson:'Day 1', title:'Welcome & Overview (ACLS + PALS)', duration:10, rotation:null, cues:[
+      'Confirm precourse work for BOTH programs',
+      'Preview 2-day combined agenda'
+    ]},
+    { lesson:'Shared', title:'Science of Resuscitation', duration:25, rotation:null, cues:[
+      'Objectives, video, feedback devices \u2014 applies to adult + pediatric'
+    ]},
+    { lesson:'Shared', title:'Compression / AED Practice (adult)', duration:35, rotation:null, cues:[
+      'Depth \u22652in \u00b7 Rate 100\u2013120 \u00b7 Full recoil'
+    ]},
+    { lesson:'ACLS', title:'2-Rescuer CPR Rotation', duration:30, rotation:'cpr', cues:[
+      'Rotate all 3 roles, evaluate one at a time'
+    ]},
+    { lesson:'', title:'Break', duration:10, rotation:null, cues:[] },
+    { lesson:'ACLS L3', title:'Airway Management + Advanced Airway', duration:35, rotation:null, cues:[
+      'OPA/NPA, BVM, advanced airway; watch over-ventilation'
+    ]},
+    { lesson:'ACLS L4', title:'Monitor/Defib Tech Review', duration:25, rotation:null, cues:[
+      'Pacing, sync cardioversion, leads, crash cart'
+    ]},
+    { lesson:'', title:'Lunch', duration:30, rotation:null, cues:[] },
+    { lesson:'ACLS L5', title:'Bradycardia', duration:55, rotation:'team', cues:[
+      'Play video, cases, stable vs. unstable'
+    ]},
+    { lesson:'', title:'Break', duration:10, rotation:null, cues:[] },
+    { lesson:'ACLS L6', title:'Tachycardia', duration:55, rotation:'team', cues:[
+      'Play video, synchronized cardioversion for unstable'
+    ]},
+    { lesson:'ACLS L7', title:'High-Performance Teams Debrief', duration:25, rotation:null, cues:[
+      'Team behaviors, H\'s and T\'s'
+    ]},
+    { lesson:'', title:'ACLS Megacode + Skills Testing', duration:50, rotation:'team', cues:[
+      'Rotate Team Leader through every student'
+    ]},
+    { lesson:'', title:'ACLS Provider Exam', duration:30, rotation:null, cues:[
+      'Open-resource \u2014 END OF DAY 1 (pause timer here)'
+    ]},
+    { lesson:'Day 2', title:'Day 2 Welcome + PALS Overview', duration:10, rotation:null, cues:[
+      'Restart timer for Day 2'
+    ]},
+    { lesson:'PALS L1', title:'Systematic Approach: PAT & E-I-I', duration:25, rotation:null, cues:[
+      'Pediatric Assessment Triangle, Evaluate\u2013Identify\u2013Intervene, ABCDE'
+    ]},
+    { lesson:'PALS L2', title:'Pediatric High-Quality CPR Practice', duration:40, rotation:'peds', cues:[
+      'Child ~2in \u00b7 Infant ~1.5in \u00b7 15:2 (2-rescuer)',
+      '2-thumb encircling technique for infant'
+    ]},
+    { lesson:'', title:'Break', duration:10, rotation:null, cues:[] },
+    { lesson:'PALS L3', title:'Respiratory Emergencies', duration:35, rotation:null, cues:[
+      'Distress vs. failure; 4 categories'
+    ]},
+    { lesson:'PALS L4', title:'Pediatric Airway Management', duration:35, rotation:null, cues:[
+      'Pediatric OPA/NPA sizing, 2-person BVM'
+    ]},
+    { lesson:'PALS L5', title:'Monitor/Defib & Vascular Access (peds)', duration:20, rotation:null, cues:[
+      'Pediatric pads/attenuators, IV/IO sites'
+    ]},
+    { lesson:'', title:'Lunch', duration:30, rotation:null, cues:[] },
+    { lesson:'PALS L6', title:'Shock Recognition & Management', duration:45, rotation:null, cues:[
+      'Compensated vs. decompensated; 4 shock types'
+    ]},
+    { lesson:'PALS L7', title:'Bradycardia', duration:40, rotation:'team', cues:[
+      'With vs. without cardiopulmonary compromise'
+    ]},
+    { lesson:'', title:'Break', duration:10, rotation:null, cues:[] },
+    { lesson:'PALS L8', title:'Tachycardia', duration:40, rotation:'team', cues:[
+      'Narrow vs. wide complex \u2014 confirm dosing against algorithm cards'
+    ]},
+    { lesson:'PALS L9', title:'Cardiac Arrest Algorithm & Teams', duration:25, rotation:null, cues:[
+      'PALS Cardiac Arrest Algorithm, H\'s and T\'s'
+    ]},
+    { lesson:'', title:'PALS Megacode + Skills Testing', duration:30, rotation:'team', cues:[
+      'Rotate Team Leader through every student'
+    ]},
+    { lesson:'', title:'PALS Exam + Wrap-up & eCards', duration:20, rotation:null, cues:[
+      'Exam, evaluations, issue ACLS + PALS eCards'
+    ]}
+  ],
+
+  aclspals_renewal: [
+    { lesson:'', title:'Welcome & Overview (ACLS + PALS)', duration:5, rotation:null, cues:[
+      'Confirm precourse work for BOTH programs'
+    ]},
+    { lesson:'Shared', title:'Science of Resuscitation (condensed)', duration:15, rotation:null, cues:[
+      'Objectives, video, feedback devices'
+    ]},
+    { lesson:'Shared', title:'Compression / AED Practice (adult)', duration:30, rotation:null, cues:[
+      'Depth \u22652in \u00b7 Rate 100\u2013120 \u00b7 Full recoil'
+    ]},
+    { lesson:'ACLS', title:'2-Rescuer CPR Rotation', duration:25, rotation:'cpr', cues:[
+      'Rotate all 3 roles'
+    ]},
+    { lesson:'', title:'Break', duration:10, rotation:null, cues:[] },
+    { lesson:'ACLS L3', title:'Airway Management Review', duration:30, rotation:null, cues:[
+      'OPA/NPA, BVM, advanced airway refresh'
+    ]},
+    { lesson:'ACLS L4', title:'Monitor/Defib Tech Review', duration:20, rotation:null, cues:[
+      'Pacing, sync cardioversion, leads'
+    ]},
+    { lesson:'ACLS L5', title:'Bradycardia', duration:45, rotation:'team', cues:[
+      'Play video, cases, stable vs. unstable'
+    ]},
+    { lesson:'ACLS L6', title:'Tachycardia', duration:45, rotation:'team', cues:[
+      'Synchronized cardioversion for unstable'
+    ]},
+    { lesson:'ACLS L7', title:'High-Performance Teams Debrief', duration:15, rotation:null, cues:[
+      'Team behaviors, H\'s and T\'s'
+    ]},
+    { lesson:'', title:'Lunch', duration:30, rotation:null, cues:[] },
+    { lesson:'', title:'ACLS Megacode + Skills Testing', duration:60, rotation:'team', cues:[
+      'Rotate Team Leader through every student'
+    ]},
+    { lesson:'PALS L1', title:'Systematic Approach (condensed)', duration:15, rotation:null, cues:[
+      'PAT + Evaluate\u2013Identify\u2013Intervene'
+    ]},
+    { lesson:'PALS L2', title:'Pediatric High-Quality CPR Practice', duration:30, rotation:'peds', cues:[
+      'Child/infant depth, ratio, technique',
+      '2-thumb encircling technique for infant'
+    ]},
+    { lesson:'', title:'Break', duration:10, rotation:null, cues:[] },
+    { lesson:'PALS L3', title:'Respiratory Emergencies', duration:25, rotation:null, cues:[
+      'Distress vs. failure, 4 categories'
+    ]},
+    { lesson:'PALS L4', title:'Pediatric Airway Management (review)', duration:25, rotation:null, cues:[
+      'OPA/NPA sizing, 2-person BVM'
+    ]},
+    { lesson:'PALS L6', title:'Shock Recognition & Management', duration:35, rotation:null, cues:[
+      'Compensated vs. decompensated; 4 shock types'
+    ]},
+    { lesson:'PALS L7', title:'Bradycardia', duration:35, rotation:'team', cues:[
+      'With vs. without cardiopulmonary compromise'
+    ]},
+    { lesson:'PALS L8', title:'Tachycardia', duration:35, rotation:'team', cues:[
+      'Narrow vs. wide complex \u2014 confirm dosing'
+    ]},
+    { lesson:'', title:'Break', duration:10, rotation:null, cues:[] },
+    { lesson:'', title:'PALS Megacode + Skills Testing', duration:30, rotation:'team', cues:[
+      'Rotate Team Leader through every student'
+    ]},
+    { lesson:'', title:'Exams (ACLS + PALS) + Wrap-up & eCards', duration:20, rotation:null, cues:[
+      'Exams, evaluations, issue both eCards'
+    ]}
+  ]
+};
+
+var liveCourseType = 'acls_initial';
+var liveSteps = [];
+var liveStudentCount = 3;
+var liveStepIndex = 0;
+var liveStepState = [];
+var liveRotationState = [];
+var liveTickInterval = null;
+var liveClockInterval = null;
+var liveSessionStartTime = null;
+
+function courseLabelFor(type){
+  var map = {
+    acls_initial:'ACLS \u2014 Initial (8 hr)',
+    acls_renewal:'ACLS \u2014 Renewal (6 hr)',
+    bls_initial:'BLS \u2014 Initial (4 hr)',
+    bls_renewal:'BLS \u2014 Renewal (3 hr)',
+    pals_initial:'PALS \u2014 Initial (8 hr)',
+    pals_renewal:'PALS \u2014 Renewal (6 hr)',
+    aclsbls_initial:'ACLS + BLS \u2014 Initial (9.5 hr)',
+    aclsbls_renewal:'ACLS + BLS \u2014 Renewal (7 hr)',
+    aclspals_initial:'ACLS + PALS \u2014 Initial (14 hr, 2 days)',
+    aclspals_renewal:'ACLS + PALS \u2014 Renewal (10 hr)'
+  };
+  if(type === 'custom') return customPlanName || 'Custom Plan';
+  return map[type] || type;
+}
+
+function openLiveSetup(){
+  document.getElementById('liveOverlay').style.display = 'flex';
+  document.getElementById('liveSetup').style.display = 'block';
+  document.getElementById('liveRunner').style.display = 'none';
+}
+
+function closeLive(){
+  if(liveTickInterval){ clearInterval(liveTickInterval); liveTickInterval = null; }
+  if(liveClockInterval){ clearInterval(liveClockInterval); liveClockInterval = null; }
+  document.getElementById('liveOverlay').style.display = 'none';
+}
+
+function startLiveSession(){
+  liveCourseType = document.getElementById('liveCourseType').value;
+  liveStudentCount = parseInt(document.getElementById('liveStudentCount').value, 10) || 1;
+
+  if(liveCourseType === 'custom'){
+    liveSteps = buildLiveStepsFromCustom();
+    if(liveSteps.length === 0){
+      alert('Your custom plan doesn\'t have any steps yet. Go to the Custom tab and add at least one titled step with a duration first.');
+      return;
+    }
+  } else {
+    liveSteps = STEP_DATA[liveCourseType];
+  }
+
+  liveStepIndex = 0;
+  liveStepState = liveSteps.map(function(){ return { elapsed: 0, running: false }; });
+  liveRotationState = liveSteps.map(function(s){ return s.rotation ? { round: 0 } : null; });
+  liveSessionStartTime = Date.now();
+
+  document.getElementById('liveSetup').style.display = 'none';
+  document.getElementById('liveRunner').style.display = 'flex';
+  document.getElementById('liveCourseLabel').textContent = courseLabelFor(liveCourseType);
+
+  renderStepList();
+  renderCurrentStep();
+
+  if(liveClockInterval) clearInterval(liveClockInterval);
+  liveClockInterval = setInterval(updateScheduleVariance, 1000);
+}
+
+function quickRunCustom(){
+  document.getElementById('liveOverlay').style.display = 'flex';
+  document.getElementById('liveCourseType').value = 'custom';
+  startLiveSession();
+}
+
+function renderStepList(){
+  var rail = document.getElementById('liveStepsRail');
+  rail.innerHTML = '';
+  liveSteps.forEach(function(s, i){
+    var div = document.createElement('div');
+    var cls = 'live-rail-item';
+    if(i === liveStepIndex) cls += ' active';
+    else if(liveStepState[i].elapsed > 0) cls += ' touched';
+    div.className = cls;
+    div.onclick = function(){ jumpToStep(i); };
+    div.innerHTML =
+      '<span class="live-rail-num">' + (i+1) + '</span>' +
+      '<span class="live-rail-title">' + escapeHtml(s.title) + '</span>' +
+      '<span class="live-rail-dur">' + s.duration + 'm</span>';
+    rail.appendChild(div);
+  });
+}
+
+function jumpToStep(i){
+  pauseCurrentTimer();
+  liveStepIndex = i;
+  renderStepList();
+  renderCurrentStep();
+}
+
+function prevStep(){ if(liveStepIndex > 0) jumpToStep(liveStepIndex - 1); }
+function nextStep(){ if(liveStepIndex < liveSteps.length - 1) jumpToStep(liveStepIndex + 1); }
+
+function pauseCurrentTimer(){
+  if(liveTickInterval){ clearInterval(liveTickInterval); liveTickInterval = null; }
+  if(liveStepState[liveStepIndex]) liveStepState[liveStepIndex].running = false;
+}
+
+function renderCurrentStep(){
+  var s = liveSteps[liveStepIndex];
+  document.getElementById('liveStepCounter').textContent = 'Step ' + (liveStepIndex+1) + ' of ' + liveSteps.length;
+  document.getElementById('liveLessonTag').textContent = s.lesson || '\u00A0';
+  document.getElementById('liveStepTitle').textContent = s.title;
+  document.getElementById('liveDurationBadge').textContent = 'Planned: ' + s.duration + ' min';
+
+  updateTimerDisplay();
+  document.getElementById('liveStartBtn').textContent = liveStepState[liveStepIndex].running ? 'Pause' : 'Start';
+
+  var cuesEl = document.getElementById('liveCues');
+  cuesEl.innerHTML = '';
+  (s.cues || []).forEach(function(c){
+    var li = document.createElement('li');
+    li.textContent = c;
+    cuesEl.appendChild(li);
+  });
+
+  var rotEl = document.getElementById('liveRotation');
+  if(s.rotation && ROTATION_DEFS[s.rotation]){
+    rotEl.style.display = 'block';
+    renderRotation();
+  } else {
+    rotEl.style.display = 'none';
+  }
+
+  updateScheduleVariance();
+}
+
+function toggleTimer(){
+  var st = liveStepState[liveStepIndex];
+  if(st.running){
+    pauseCurrentTimer();
+  } else {
+    if(liveTickInterval) clearInterval(liveTickInterval);
+    st.running = true;
+    liveTickInterval = setInterval(function(){
+      liveStepState[liveStepIndex].elapsed++;
+      updateTimerDisplay();
+    }, 1000);
+  }
+  document.getElementById('liveStartBtn').textContent = st.running ? 'Pause' : 'Start';
+}
+
+function resetTimer(){
+  pauseCurrentTimer();
+  liveStepState[liveStepIndex].elapsed = 0;
+  updateTimerDisplay();
+  document.getElementById('liveStartBtn').textContent = 'Start';
+}
+
+function updateTimerDisplay(){
+  var s = liveSteps[liveStepIndex];
+  var st = liveStepState[liveStepIndex];
+  var remaining = s.duration * 60 - st.elapsed;
+  var disp = document.getElementById('liveTimerDisplay');
+  var abs = Math.abs(remaining);
+  var mm = String(Math.floor(abs/60)).padStart(2,'0');
+  var ss = String(abs%60).padStart(2,'0');
+  disp.textContent = (remaining < 0 ? '+' : '') + mm + ':' + ss;
+  disp.className = 'live-timer-display' + (remaining < 0 ? ' over' : (remaining <= 60 ? ' warn' : ''));
+}
+
+function updateScheduleVariance(){
+  if(!liveSessionStartTime) return;
+  var actualElapsedSec = Math.floor((Date.now() - liveSessionStartTime) / 1000);
+  var plannedUpToStart = 0;
+  for(var i = 0; i < liveStepIndex; i++) plannedUpToStart += liveSteps[i].duration * 60;
+  var diff = actualElapsedSec - plannedUpToStart;
+  var el = document.getElementById('liveScheduleVariance');
+  var mm = Math.floor(Math.abs(diff)/60);
+  var ss = Math.abs(diff)%60;
+  var txt = mm + 'm ' + String(ss).padStart(2,'0') + 's';
+  if(diff > 60){ el.textContent = txt + ' behind'; el.className = 'variance behind'; }
+  else if(diff < -60){ el.textContent = txt + ' ahead'; el.className = 'variance ahead'; }
+  else { el.textContent = 'On schedule'; el.className = 'variance ontrack'; }
+}
+
+function computeGroups(n, teamSize){
+  var groups = [];
+  var i = 1;
+  while(i <= n){
+    var g = [];
+    for(var k = 0; k < teamSize && i <= n; k++, i++){ g.push(i); }
+    groups.push(g);
+  }
+  return groups;
+}
+
+function renderRotation(){
+  var s = liveSteps[liveStepIndex];
+  var def = ROTATION_DEFS[s.rotation];
+  var rotState = liveRotationState[liveStepIndex];
+  var groups = computeGroups(liveStudentCount, def.teamSize);
+  var round = rotState.round;
+
+  var html = '<div class="live-rotation-head"><strong>Role Rotation</strong>' +
+    '<span class="round-label">Round ' + (round+1) + ' of ' + def.roles.length + '</span>' +
+    '<button class="util small" onclick="rotateRound()">Rotate roles \u2192</button></div>';
+
+  html += '<div class="live-rotation-groups">';
+  groups.forEach(function(g, gi){
+    html += '<div class="live-team"><div class="live-team-label">Team ' + (gi+1) + '</div>';
+    var filledRoles = [];
+    g.forEach(function(studentNum, idx){
+      var role = def.roles[(idx + round) % g.length];
+      filledRoles.push(role);
+      html += '<div class="live-role-row"><span class="s-num">S' + studentNum + '</span><span class="s-role">' + role + '</span></div>';
+    });
+    if(g.length < def.roles.length){
+      var unfilled = def.roles.filter(function(r){ return filledRoles.indexOf(r) === -1; });
+      if(unfilled.length){
+        html += '<div class="live-role-row unfilled"><span class="s-num">\u2014</span><span class="s-role">' + unfilled.join(', ') + '</span></div>';
+      }
+    }
+    html += '</div>';
+  });
+  html += '</div>';
+
+  document.getElementById('liveRotation').innerHTML = html;
+}
+
+function rotateRound(){
+  var def = ROTATION_DEFS[liveSteps[liveStepIndex].rotation];
+  var rotState = liveRotationState[liveStepIndex];
+  rotState.round = (rotState.round + 1) % def.roles.length;
+  renderRotation();
+}
+
+/* ================= CUSTOM LESSON PLAN BUILDER ================= */
+
+var customPlanName = 'My Custom Course';
+var customSteps = [
+  { title:'Welcome & Course Overview', duration:10, rotation:'none', cues:'Introduce instructors\nReview today\'s agenda' }
+];
+
+function escapeHtml(str){
+  return String(str == null ? '' : str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+function escapeAttr(str){
+  return escapeHtml(str).replace(/"/g,'&quot;');
+}
+function formatHM(minutes){
+  var h = Math.floor(minutes/60), m = minutes%60;
+  return h + ':' + String(m).padStart(2,'0');
+}
+
+function renderCustomRows(){
+  var container = document.getElementById('customRows');
+  if(customSteps.length === 0){
+    container.innerHTML = '<p class="body-text" style="padding:14px;color:var(--mid);margin:0;">No steps yet \u2014 click "+ Add Step" below to start building.</p>';
+    return;
+  }
+  container.innerHTML = '';
+  customSteps.forEach(function(s, i){
+    var row = document.createElement('div');
+    row.className = 'custom-row';
+    row.innerHTML =
+      '<div><span class="field-label">Segment title</span>' +
+      '<input type="text" value="' + escapeAttr(s.title) + '" placeholder="e.g. Airway Station" data-idx="' + i + '" data-field="title"></div>' +
+
+      '<div><span class="field-label">Minutes</span>' +
+      '<input type="number" min="0" value="' + s.duration + '" data-idx="' + i + '" data-field="duration"></div>' +
+
+      '<div><span class="field-label">Role rotation</span>' +
+      '<select data-idx="' + i + '" data-field="rotation">' +
+        '<option value="none"' + (s.rotation==='none'?' selected':'') + '>No rotation</option>' +
+        '<option value="bls2"' + (s.rotation==='bls2'?' selected':'') + '>2-role (Compressor / Ventilator)</option>' +
+        '<option value="cpr"' + (s.rotation==='cpr'?' selected':'') + '>3-role (Compressor / AED / Coach)</option>' +
+        '<option value="peds"' + (s.rotation==='peds'?' selected':'') + '>3-role (Compressor / Airway / Monitor)</option>' +
+        '<option value="team"' + (s.rotation==='team'?' selected':'') + '>6-role (Team Scenario)</option>' +
+      '</select></div>' +
+
+      '<div><span class="field-label">Cues (one per line)</span>' +
+      '<textarea data-idx="' + i + '" data-field="cues" placeholder="Key reminders...">' + escapeHtml(s.cues) + '</textarea></div>' +
+
+      '<button class="remove-row" title="Remove step" data-idx="' + i + '">\u2715</button>';
+
+    container.appendChild(row);
+  });
+
+  container.querySelectorAll('input,select,textarea').forEach(function(el){
+    el.addEventListener('input', function(){
+      var idx = parseInt(this.getAttribute('data-idx'), 10);
+      var field = this.getAttribute('data-field');
+      var val = field === 'duration' ? (parseInt(this.value, 10) || 0) : this.value;
+      customSteps[idx][field] = val;
+      updateCustomTotal();
+    });
+  });
+  container.querySelectorAll('button.remove-row').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var idx = parseInt(this.getAttribute('data-idx'), 10);
+      customSteps.splice(idx, 1);
+      renderCustomRows();
+      updateCustomTotal();
+    });
+  });
+}
+
+function addCustomStep(){
+  customSteps.push({ title:'', duration:15, rotation:'none', cues:'' });
+  renderCustomRows();
+  updateCustomTotal();
+}
+
+function updateCustomTotal(){
+  var total = customSteps.reduce(function(a,s){ return a + (s.duration||0); }, 0);
+  document.getElementById('customTotalBadge').textContent = 'Total: ' + formatHM(total) + ' (' + total + ' min)';
+}
+
+function syncCustomPlanName(val){
+  customPlanName = val;
+}
+
+function generateCustomAgenda(){
+  var out = document.getElementById('customAgendaOutput');
+  var valid = customSteps.filter(function(s){ return s.title && s.duration > 0; });
+  if(valid.length === 0){
+    out.innerHTML = '<p class="body-text" style="color:var(--mid);">Add at least one titled step with a duration above, then click Generate again.</p>';
+    return;
+  }
+  var total = valid.reduce(function(a,s){ return a+s.duration; }, 0);
+  var html = '<h2 class="section-h">Timed Agenda \u2014 ' + escapeHtml(customPlanName) + '</h2>';
+  html += '<table class="agenda"><tr><th>Start</th><th>Dur.</th><th>Segment</th></tr>';
+  var cum = 0;
+  valid.forEach(function(s){
+    html += '<tr><td class="time">' + formatHM(cum) + '</td><td class="dur">' + s.duration + ' min</td><td>' + escapeHtml(s.title) + '</td></tr>';
+    cum += s.duration;
+  });
+  html += '<tr class="total-row"><td colspan="2">Total</td><td>' + formatHM(total) + ' (' + total + ' min)</td></tr></table>';
+  out.innerHTML = html;
+}
+
+function buildLiveStepsFromCustom(){
+  return customSteps
+    .filter(function(s){ return s.title && s.duration > 0; })
+    .map(function(s){
+      return {
+        lesson: '',
+        title: s.title,
+        duration: s.duration,
+        rotation: (s.rotation && s.rotation !== 'none') ? s.rotation : null,
+        cues: (s.cues || '').split('\n').map(function(c){ return c.trim(); }).filter(Boolean)
+      };
+    });
+}
+
+function exportCustomPlan(){
+  var data = { name: customPlanName, steps: customSteps };
+  var json = JSON.stringify(data, null, 2);
+  var jsonBox = document.getElementById('customJsonArea');
+  jsonBox.style.display = 'block';
+  var ta = document.getElementById('customExportText');
+  ta.value = json;
+  ta.focus();
+  ta.select();
+  var status = document.getElementById('customCopyStatus');
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(json).then(function(){
+      status.textContent = 'Copied to clipboard.';
+    }).catch(function(){
+      try{ document.execCommand('copy'); status.textContent = 'Copied to clipboard.'; }
+      catch(e){ status.textContent = 'Select the text above and copy manually (Ctrl/Cmd+C).'; }
+    });
+  } else {
+    try{ document.execCommand('copy'); status.textContent = 'Copied to clipboard.'; }
+    catch(e){ status.textContent = 'Select the text above and copy manually (Ctrl/Cmd+C).'; }
+  }
+}
+
+function importCustomPlan(){
+  var raw = document.getElementById('customImportText').value;
+  var statusEl = document.getElementById('customImportStatus');
+  try{
+    var data = JSON.parse(raw);
+    customPlanName = data.name || 'Custom Plan';
+    customSteps = Array.isArray(data.steps) ? data.steps : [];
+    document.getElementById('customPlanNameInput').value = customPlanName;
+    renderCustomRows();
+    updateCustomTotal();
+    statusEl.textContent = 'Loaded ' + customSteps.length + ' step(s).';
+  }catch(e){
+    statusEl.textContent = 'Could not read that \u2014 make sure you pasted the full exported JSON.';
+  }
+}
+
+renderCustomRows();
+updateCustomTotal();
+
+/* ================= EDIT MODE + SAVE AS NEW HTML ================= */
+
+// Selectors for content that becomes directly editable in Edit Mode.
+// Deliberately excludes the Custom Lesson Plan Builder panel (it already has
+// its own editable inputs), buttons, tabs, form controls, and the Live
+// Session overlay.
+var EDITABLE_SELECTOR = [
+  '.page > header.title-block h1',
+  '.page > header.title-block .sub',
+  '.page > header.title-block .org',
+  '.page > .notice',
+  '.meta-grid .v',
+  '.course-panel h2.section-h',
+  '.course-panel h3.lesson-h',
+  '.course-panel h4.sub-h',
+  '.course-panel p.body-text',
+  '.course-panel li',
+  '.course-panel td',
+  '.course-panel .callout',
+  '.course-panel .role-chip',
+  '.course-panel .checkbox-line',
+  'footer span'
+].join(', ');
+
+function isInCustomPanel(el){
+  return !!el.closest('#course-custom');
+}
+
+function toggleEditMode(){
+  var body = document.body;
+  var btn = document.getElementById('editModeBtn');
+  var entering = !body.classList.contains('edit-mode');
+
+  if(entering){
+    body.classList.add('edit-mode');
+    document.querySelectorAll(EDITABLE_SELECTOR).forEach(function(el){
+      if(isInCustomPanel(el)) return;
+      el.setAttribute('contenteditable', 'true');
+    });
+    btn.textContent = '✓ Done Editing';
+    btn.classList.add('on');
+  } else {
+    body.classList.remove('edit-mode');
+    document.querySelectorAll('[contenteditable="true"]').forEach(function(el){
+      el.removeAttribute('contenteditable');
+    });
+    btn.textContent = '✎ Edit Content';
+    btn.classList.remove('on');
+  }
+}
+
+function formatDateStamp(){
+  var d = new Date();
+  var mm = String(d.getMonth() + 1).padStart(2, '0');
+  var dd = String(d.getDate()).padStart(2, '0');
+  return d.getFullYear() + '-' + mm + '-' + dd;
+}
+
+function exportEditedHtml(){
+  // Work on a clone so the live page (and any edit session in progress)
+  // is left exactly as-is after saving.
+  var clone = document.documentElement.cloneNode(true);
+
+  var cBody = clone.querySelector('body');
+  if(cBody) cBody.classList.remove('edit-mode');
+
+  clone.querySelectorAll('[contenteditable]').forEach(function(el){
+    el.removeAttribute('contenteditable');
+  });
+
+  var cEditBtn = clone.querySelector('#editModeBtn');
+  if(cEditBtn){ cEditBtn.textContent = '✎ Edit Content'; cEditBtn.classList.remove('on'); }
+
+  var cLiveOverlay = clone.querySelector('#liveOverlay');
+  if(cLiveOverlay) cLiveOverlay.style.display = 'none';
+
+  var cJsonPanel = clone.querySelector('#customJsonArea');
+  if(cJsonPanel) cJsonPanel.style.display = 'none';
+
+  var htmlStr = '<!DOCTYPE html>\n' + clone.outerHTML;
+
+  var defaultName = 'Aaron_C_Instructor_Lesson_Plans_' + formatDateStamp() + '.html';
+  var filename = window.prompt('Save as filename:', defaultName);
+  if(!filename) return;
+  if(!/\.html?$/i.test(filename)) filename += '.html';
+
+  var blob = new Blob([htmlStr], { type: 'text/html' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); }, 1000);
+}
+</script>
+
+</body>
+</html>
