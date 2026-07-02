@@ -418,7 +418,7 @@
       <button class="tab" data-view="certs">🏅 Certs</button>
       <button class="tab" data-view="materials">📚 Materials</button>
       <button class="tab" data-view="email">📧 Email</button>
-      <button class="tab" data-view="checkoffs">📋 Checkoffs</button>
+      <button class="tab" data-view="checkoffs">📋 Lesson Plans</button>
     </nav>
   </div>
 </header>
@@ -819,26 +819,10 @@
 
   <!-- RECORDS -->
 
-  <!-- MEGACODE CHECKOFFS -->
+  <!-- INSTRUCTOR LESSON PLANS -->
   <section class="view" id="view-checkoffs">
-    <div class="sec-hd" style="margin-bottom:12px">
-      <div class="sec-title">ACLS Megacode Checkoffs</div>
-      <button class="btn sm primary" id="chk-new-btn">+ New Checkoff</button>
-    </div>
-    <div class="filter-chips" id="chk-scenario-filter">
-      <button class="fchip active" data-sc="">All Scenarios</button>
-      <button class="fchip" data-sc="sc-1-3-8">1/3/8</button>
-      <button class="fchip" data-sc="sc-2-5">2/5</button>
-      <button class="fchip" data-sc="sc-6-11">6/11</button>
-      <button class="fchip" data-sc="sc-9">9</button>
-      <button class="fchip" data-sc="sc-12">12</button>
-      <button class="fchip" data-sc="sc-4-7-10">4/7/10</button>
-    </div>
-    <div class="search-wrap" style="margin-bottom:14px">
-      <span class="search-icon">🔍</span>
-      <input type="text" id="chk-search" placeholder="Search by student name…" />
-    </div>
-    <div id="chk-list"></div>
+    <iframe id="lesson-plans-frame" src="lesson-plans.html" title="AHA Instructor Lesson Plans"
+      style="width:100%;height:calc(100vh - 170px);min-height:560px;border:1px solid var(--border);border-radius:12px;background:#fff"></iframe>
   </section>
 
   <!-- EMAIL TEMPLATES -->
@@ -3964,6 +3948,7 @@ function chkScenarioLabel(key){
 }
 
 function renderCheckoffs(){
+  if(!$('chk-list'))return; // Checkoffs view replaced by Lesson Plans iframe
   const q=chkSearchQ.toLowerCase();
   let list=allCheckoffs.filter(c=>
     (!chkFilterSc||c.scenario===chkFilterSc)&&
@@ -4161,14 +4146,6 @@ $('chkf-print-btn').addEventListener('click',()=>{
   window.print();
 });
 
-$('chk-new-btn').addEventListener('click',()=>openCheckoffModal(null));
-$('chk-search').addEventListener('input',e=>{chkSearchQ=e.target.value;renderCheckoffs();});
-$('chk-scenario-filter').querySelectorAll('.fchip').forEach(chip=>{
-  chip.addEventListener('click',()=>{
-    $('chk-scenario-filter').querySelectorAll('.fchip').forEach(c=>c.classList.remove('active'));
-    chip.classList.add('active');chkFilterSc=chip.dataset.sc||'';renderCheckoffs();
-  });
-});
 
 // ============================================================
 // CLASS TEMPLATES
