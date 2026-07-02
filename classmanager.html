@@ -5027,10 +5027,12 @@ function getDefaultAgenda(type,variant){
   if(!tpl)return [];
   return tpl.map(b=>({...b,notes:[...b.notes],done:false,actualMin:null}));
 }
+const AGENDA_TEMPLATE_LABELS={ACLS_Renewal:'ACLS Renewal',ACLS_Initial:'ACLS Initial (2-Day)',BLS_Renewal:'BLS Renewal',BLS_Initial:'BLS Initial'};
 function renderAgenda(classId){
   const el=$('cd-agenda');if(!el)return;
   const c=allClasses.find(x=>x.id===classId);if(!c)return;
-  const hasTemplate=!!DEFAULT_AGENDAS[`${c.type}_${c.variant}`];
+  const matchedKey=`${c.type}_${c.variant}`;
+  const hasTemplate=!!DEFAULT_AGENDAS[matchedKey];
   const agenda=c.agenda||(hasTemplate?getDefaultAgenda(c.type,c.variant):[]);
   const live=c.agendaLive||null;
   const activeIdx=live&&live.activeIndex!=null?live.activeIndex:null;
@@ -5049,7 +5051,14 @@ function renderAgenda(classId){
       <div style="font-weight:700;font-size:13px">📋 Class Agenda</div>
       ${driftBadge}
     </div>
-    ${!agenda.length?`<div class="empty" style="padding:20px 0"><div class="empty-text">No agenda template for this course type yet.<br>Add timed blocks manually below.</div></div>`:
+    <div style="display:flex;gap:8px;align-items:center;margin-bottom:14px">
+      <select id="agenda-tpl-select" style="flex:1">
+        <option value="">— Choose an agenda template —</option>
+        ${Object.keys(AGENDA_TEMPLATE_LABELS).map(k=>`<option value="${k}" ${k===matchedKey?'selected':''}>${AGENDA_TEMPLATE_LABELS[k]}</option>`).join('')}
+      </select>
+      <button class="btn sm primary" onclick="applyAgendaTemplate()">Load</button>
+    </div>
+    ${!agenda.length?`<div class="empty" style="padding:20px 0"><div class="empty-text">No agenda loaded yet.<br>Pick a template above, or add timed blocks manually below.</div></div>`:
       agenda.map((b,i)=>{
         const divider=(b.day&&(i===0?b.day>1:agenda[i-1].day!==b.day))?`<div class="agenda-day-divider">Day ${b.day}</div>`:'';
         const isActive=started&&i===activeIdx;
@@ -5085,6 +5094,15 @@ async function saveAgenda(classId,agenda,agendaLive){
   if(agendaLive!==undefined)update.agendaLive=agendaLive;
   await col('classes').doc(classId).update(update);
 }
+window.applyAgendaTemplate=function(){
+  const key=$('agenda-tpl-select').value;if(!key)return;
+  const c=allClasses.find(x=>x.id===currentClassId);if(!c)return;
+  if((c.agenda&&c.agenda.some(b=>b.done))||c.agendaLive?.activeIndex!=null){
+    if(!confirm('Load this agenda template? This replaces the current agenda and clears any progress.'))return;
+  }
+  const [type,variant]=key.split('_');
+  saveAgenda(currentClassId,getDefaultAgenda(type,variant),null);
+};
 window.startOrResumeAgenda=function(){
   const c=allClasses.find(x=>x.id===currentClassId);if(!c)return;
   const agenda=c.agenda||getDefaultAgenda(c.type,c.variant);
