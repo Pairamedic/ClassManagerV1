@@ -263,6 +263,29 @@
     .chklist-text.done{text-decoration:line-through;opacity:.45}
     .chklist-del{background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;line-height:1;padding:0 4px;flex:none;transition:color .15s}
     .chklist-del:hover{color:var(--danger)}
+    .setup-chk-details{border:1px solid var(--border);border-radius:12px;padding:10px 14px;margin-bottom:16px}
+    .setup-chk-details summary{cursor:pointer;font-weight:700;font-size:13px;list-style:none}
+    .setup-chk-details summary::-webkit-details-marker{display:none}
+    .setup-chk-details summary:before{content:'▸ ';color:var(--muted)}
+    .setup-chk-details[open] summary:before{content:'▾ '}
+    /* Class Day Agenda */
+    .agenda-drift{font-size:11px;font-weight:700;padding:3px 10px;border-radius:6px;white-space:nowrap}
+    .agenda-drift.behind{background:rgba(248,113,113,.12);color:var(--danger)}
+    .agenda-drift.ahead{background:rgba(74,222,128,.12);color:var(--ok)}
+    .agenda-drift.ontrack{background:rgba(147,197,253,.12);color:var(--accent2)}
+    .agenda-day-divider{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin:16px 0 6px;padding-top:10px;border-top:1px dashed var(--border)}
+    .agenda-day-divider:first-child{margin-top:0;border-top:none;padding-top:0}
+    .agenda-block{border:1px solid var(--border);border-radius:12px;padding:10px 12px;margin-bottom:8px;transition:border-color .15s,opacity .15s}
+    .agenda-block.done{opacity:.55}
+    .agenda-block.active{border-color:var(--accent);background:rgba(94,234,212,.05)}
+    .agenda-block-hd{display:flex;align-items:center;gap:8px}
+    .agenda-block-time{font-size:11px;color:var(--muted);flex:none;min-width:76px}
+    .agenda-block-label{flex:1;font-size:13px;font-weight:600}
+    .agenda-block.done .agenda-block-label{text-decoration:line-through;font-weight:500}
+    .agenda-block-dur{font-size:11px;color:var(--muted);flex:none;white-space:nowrap}
+    .agenda-live{margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+    .agenda-timer{font-size:28px;font-weight:800;font-family:monospace;text-align:center;margin-bottom:8px;color:var(--ok)}
+    .agenda-notes{margin:0 0 10px;padding-left:18px;font-size:12px;color:var(--muted);line-height:1.6}
     /* Document File Browser */
     .doc-folder-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px 10px;cursor:pointer;transition:border-color .15s,background .15s;text-align:center;display:flex;flex-direction:column;align-items:center}
     .doc-folder-card:hover{border-color:rgba(94,234,212,.35);background:rgba(94,234,212,.03)}
@@ -1085,12 +1108,18 @@
       <div id="attend-list"></div>
     </div>
     <div id="cd-checklist" style="display:none">
-      <div id="checklist-items"></div>
-      <div style="display:flex;gap:8px;margin-top:14px">
-        <input type="text" id="chklist-new-item" placeholder="Add item…" style="flex:1" />
-        <button class="btn primary sm" id="chklist-add-btn">+ Add</button>
-      </div>
-      <button class="btn sm full" id="chklist-reset-btn" style="margin-top:8px">↺ Reset to Defaults for This Class Type</button>
+      <details class="setup-chk-details">
+        <summary>🧰 Setup Checklist <span id="chk-setup-count" style="color:var(--muted);font-weight:400"></span></summary>
+        <div style="padding-top:10px">
+          <div id="checklist-items"></div>
+          <div style="display:flex;gap:8px;margin-top:14px">
+            <input type="text" id="chklist-new-item" placeholder="Add item…" style="flex:1" />
+            <button class="btn primary sm" id="chklist-add-btn">+ Add</button>
+          </div>
+          <button class="btn sm full" id="chklist-reset-btn" style="margin-top:8px">↺ Reset to Defaults for This Class Type</button>
+        </div>
+      </details>
+      <div id="cd-agenda"></div>
     </div>
   </div>
 </div>
@@ -2172,7 +2201,7 @@ function setupListeners(){
   unsubs.push(col('classes').orderBy('date','asc').onSnapshot(snap=>{
     allClasses=snap.docs.map(d=>({id:d.id,...d.data()}));
     refreshView();
-    if(currentClassId&&$('cd-checklist')&&$('cd-checklist').style.display!=='none')renderChecklist(currentClassId);
+    if(currentClassId&&$('cd-checklist')&&$('cd-checklist').style.display!=='none'){renderChecklist(currentClassId);renderAgenda(currentClassId);}
   },errAndShow));
   unsubs.push(col('students').orderBy('lastName','asc').onSnapshot(snap=>{
     allStudents=snap.docs.map(d=>({id:d.id,...d.data()}));
@@ -4892,6 +4921,7 @@ function renderChecklist(classId){
   const c=allClasses.find(x=>x.id===classId);if(!c)return;
   const list=c.checklist||getDefaultChecklist(c.type);
   const doneCount=list.filter(r=>r.done).length;
+  if($('chk-setup-count'))$('chk-setup-count').textContent=`(${doneCount}/${list.length})`;
   $('checklist-items').innerHTML=`
     <div style="font-size:12px;color:var(--muted);margin-bottom:10px">${doneCount} of ${list.length} items complete</div>
     ${list.length?list.map((row,i)=>`<div class="chklist-item">
@@ -4933,7 +4963,192 @@ $('chklist-reset-btn').addEventListener('click',()=>{
   saveChecklist(currentClassId,getDefaultChecklist(c.type));
 });
 // Hook tab click to render checklist
-document.querySelector('.mtab[data-panel="cd-checklist"]').addEventListener('click',()=>renderChecklist(currentClassId));
+document.querySelector('.mtab[data-panel="cd-checklist"]').addEventListener('click',()=>{renderChecklist(currentClassId);renderAgenda(currentClassId);});
+
+// ============================================================
+// CLASS DAY AGENDA (live, timed run-of-show)
+// ============================================================
+// Default timelines transcribed from AHA course run sheets (1 instructor / up to ~6 students).
+// Keyed by `${type}_${variant}` to match the existing class.type / class.variant fields.
+const DEFAULT_AGENDAS={
+  ACLS_Renewal:[
+    {day:1,time:'8:00–8:10',label:'Welcome + Objectives',durationMin:10,notes:['Brief on what’s new since last cert','Overview of the day']},
+    {day:1,time:'8:10–8:35',label:'Rhythm Recognition Review',durationMin:25,notes:['14 AHA rhythms quick refresh','Show-and-tell: 4–5 strip examples','Students ID strips on board/app']},
+    {day:1,time:'8:35–9:00',label:'Algorithm Quick Review',durationMin:25,notes:['VF/Pulseless VT pathway','Asystole/PEA pathway','Bradycardia/Tachycardia pathway (visual reference)']},
+    {day:1,time:'9:00–9:15',label:'Break',durationMin:15,notes:[]},
+    {day:1,time:'9:15–9:50',label:'Megacode Case (Team scenario)',durationMin:35,notes:['Instructor-led cardiac arrest scenario','1–2 students play resuscitation team, others observe','Rotate roles if time allows','Debrief: communication, sequence, meds']},
+    {day:1,time:'9:50–10:15',label:'Written Exam',durationMin:25,notes:['Proctored, online/paper']},
+    {day:1,time:'10:15–10:45',label:'Skills Assessment',durationMin:30,notes:['1-on-1 cardiac arrest station, ~7–8 min each','Focus: CPR quality, rhythm interpretation, medication admin, team role clarity']},
+    {day:1,time:'10:45–10:50',label:'Wrap-up + Certificates',durationMin:5,notes:['Hand out completion cards','Schedule future renewal reminder']},
+  ],
+  ACLS_Initial:[
+    {day:1,time:'8:00–8:15',label:'Welcome + Learning Objectives',durationMin:15,notes:['Scope of ACLS','Why team dynamics matter']},
+    {day:1,time:'8:15–8:50',label:'Module 1: High-Quality CPR Review',durationMin:35,notes:['Chest compression depth, rate, hand placement','Role of team leader','Students practice on manikins (2–3 per manikin)']},
+    {day:1,time:'8:50–9:25',label:'Module 2: Airway Management',durationMin:35,notes:['BVM technique (review + hands-on practice)','Oral airway insertion','Students rotate through airway trainer']},
+    {day:1,time:'9:25–9:40',label:'Break',durationMin:15,notes:[]},
+    {day:1,time:'9:40–10:25',label:'Module 3: Rhythm Recognition',durationMin:45,notes:['All 14 AHA rhythms (systematic walkthrough)','Shockable vs. non-shockable','Rhythm strip practice: 8–10 examples','Students ID rhythms on cards/app']},
+    {day:1,time:'10:25–11:00',label:'Module 4: ACLS Medications',durationMin:35,notes:['Epinephrine (dose, timing, IV/IO routes)','Amiodarone vs. Lidocaine (when/why)','Atropine, Sodium bicarbonate (indications)','Dosing drill: quick calculation exercises']},
+    {day:1,time:'11:00–11:15',label:'Break',durationMin:15,notes:[]},
+    {day:1,time:'11:15–12:00',label:'Module 5: Algorithms',durationMin:45,notes:['VF/Pulseless VT algorithm (step-by-step)','Asystole/PEA algorithm','Bradycardia/Tachycardia pathways','Instructor walks through; students follow on reference card']},
+    {day:1,time:'12:00–12:30',label:'Megacode Case 1',durationMin:30,notes:['Instructor-led VF arrest scenario','2 students as team (leader + medic), others observe','Debrief: sequence, communication, med timing']},
+    {day:1,time:'12:30–1:00',label:'Lunch Break',durationMin:30,notes:[]},
+    {day:2,time:'1:00–1:30',label:'Megacode Case 2: Asystole/PEA',durationMin:30,notes:['New scenario, rotate student roles','Debrief team dynamics + decision points']},
+    {day:2,time:'1:30–2:00',label:'Written Exam',durationMin:30,notes:['50 questions, proctored','84% passing score, AHA standard test']},
+    {day:2,time:'2:00–2:15',label:'Break',durationMin:15,notes:[]},
+    {day:2,time:'2:15–3:30',label:'Skills Test',durationMin:75,notes:['Cardiac Arrest Station (1-on-1): each student ~12–15 min','Assess, call for help, perform CPR, recognize rhythm, administer meds, demonstrate leadership','Remediation if needed (re-test on weak area)']},
+    {day:2,time:'3:30–3:45',label:'Wrap-up + Certificates',durationMin:15,notes:['Distribute eCards','Review when to renew (2 years)']},
+  ],
+  BLS_Renewal:[
+    {day:1,time:'8:00–8:10',label:'Welcome + What’s New',durationMin:10,notes:[]},
+    {day:1,time:'8:10–8:35',label:'CPR Review',durationMin:25,notes:['High-quality CPR standards refresh','Hands-on: students practice on manikins (~5 min each)']},
+    {day:1,time:'8:35–9:00',label:'AED & Relief',durationMin:25,notes:['AED operation (pads, shock, post-shock)','Role rotation (compressions, ventilations, AED operator)','Quick scenario walk-through']},
+    {day:1,time:'9:00–9:15',label:'Break',durationMin:15,notes:[]},
+    {day:1,time:'9:15–9:30',label:'Choking / Obstructed Airway',durationMin:15,notes:['Conscious/unconscious algorithms','Demo by instructor','Skill practice (optional based on time)']},
+    {day:1,time:'9:30–10:00',label:'Written Exam',durationMin:30,notes:['Proctored, ~30–40 questions','84% pass']},
+    {day:1,time:'10:00–10:50',label:'Skills Test',durationMin:50,notes:['CPR Station (1-on-1): each student ~7–8 min','Assess responsiveness & call 911, 2 min CPR, AED application (if time)','Remediation if needed']},
+    {day:1,time:'10:50–11:00',label:'Certificates + Wrap',durationMin:10,notes:[]},
+  ],
+  BLS_Initial:[
+    {day:1,time:'8:00–8:15',label:'Welcome + Objectives',durationMin:15,notes:['What BLS covers','Why high-quality CPR matters','Adult vs. child/infant (scope clarification)']},
+    {day:1,time:'8:15–8:50',label:'Module 1: CPR Foundations',durationMin:35,notes:['Chain of Survival','Signs of cardiac arrest','Hands-on CPR technique (depth, rate, recoil)','Students practice on manikins (2–3 per manikin)']},
+    {day:1,time:'8:50–9:25',label:'Module 2: AED',durationMin:35,notes:['AED operation (all models work similarly)','Pad placement','When to shock / withhold shock','Skill practice: each student applies pads, initiates AED']},
+    {day:1,time:'9:25–9:40',label:'Break',durationMin:15,notes:[]},
+    {day:1,time:'9:40–10:15',label:'Module 3: Relief & Ventilation',durationMin:35,notes:['Role rotation (compressor, ventilator, AED operator)','Rescue breathing (mouth-to-mouth, mouth-to-mask, BVM)','Hands-on: students practice ventilation on manikin']},
+    {day:1,time:'10:15–10:50',label:'Module 4: Obstructed Airway & Special Scenarios',durationMin:35,notes:['Conscious choking (abdominal thrusts)','Unconscious choking (open airway, finger sweep, rescue breathing)','Infant/child BLS basics (brief overview)','Scenario: recognized vs. unwitnessed arrest']},
+    {day:1,time:'10:50–11:05',label:'Break',durationMin:15,notes:[]},
+    {day:1,time:'11:05–11:35',label:'Practice Scenario',durationMin:30,notes:['Instructor-led full-arrest scenario','2 students as team, others observe','Debrief: sequence, communication, when to activate EMS']},
+    {day:1,time:'11:35–12:05',label:'Written Exam',durationMin:30,notes:['Proctored, ~30–40 questions','84% pass']},
+    {day:1,time:'12:05–12:50',label:'Skills Test',durationMin:45,notes:['CPR Station (1-on-1): each student ~7–8 min','Assess responsiveness & activate 911, perform CPR (2 min min), apply AED','Remediation if needed']},
+    {day:1,time:'12:50–1:00',label:'Certificates + Wrap',durationMin:10,notes:[]},
+  ],
+};
+function getDefaultAgenda(type,variant){
+  const tpl=DEFAULT_AGENDAS[`${type}_${variant}`];
+  if(!tpl)return [];
+  return tpl.map(b=>({...b,notes:[...b.notes],done:false,actualMin:null}));
+}
+function renderAgenda(classId){
+  const el=$('cd-agenda');if(!el)return;
+  const c=allClasses.find(x=>x.id===classId);if(!c)return;
+  const hasTemplate=!!DEFAULT_AGENDAS[`${c.type}_${c.variant}`];
+  const agenda=c.agenda||(hasTemplate?getDefaultAgenda(c.type,c.variant):[]);
+  const live=c.agendaLive||null;
+  const activeIdx=live&&live.activeIndex!=null?live.activeIndex:null;
+  const started=activeIdx!=null&&!!live.startedAt;
+  const doneBlocks=agenda.filter(b=>b.done);
+  const allDone=agenda.length>0&&doneBlocks.length===agenda.length;
+  const driftMin=doneBlocks.reduce((s,b)=>s+((b.actualMin??b.durationMin)-b.durationMin),0);
+  let driftBadge='';
+  if(doneBlocks.length){
+    if(driftMin>0)driftBadge=`<span class="agenda-drift behind">🔴 ${driftMin} min behind</span>`;
+    else if(driftMin<0)driftBadge=`<span class="agenda-drift ahead">🟢 ${Math.abs(driftMin)} min ahead</span>`;
+    else driftBadge=`<span class="agenda-drift ontrack">🔵 On track</span>`;
+  }
+  el.innerHTML=`
+    <div class="sec-hd">
+      <div style="font-weight:700;font-size:13px">📋 Class Agenda</div>
+      ${driftBadge}
+    </div>
+    ${!agenda.length?`<div class="empty" style="padding:20px 0"><div class="empty-text">No agenda template for this course type yet.<br>Add timed blocks manually below.</div></div>`:
+      agenda.map((b,i)=>{
+        const divider=(b.day&&(i===0?b.day>1:agenda[i-1].day!==b.day))?`<div class="agenda-day-divider">Day ${b.day}</div>`:'';
+        const isActive=started&&i===activeIdx;
+        const isPending=!b.done&&!isActive;
+        return divider+`<div class="agenda-block ${isActive?'active':''} ${b.done?'done':''}">
+          <div class="agenda-block-hd">
+            <div class="agenda-block-time">${b.time||''}</div>
+            <div class="agenda-block-label">${b.label}</div>
+            <div class="agenda-block-dur">${b.durationMin}m${b.done&&b.actualMin!=null?` <span style="color:${b.actualMin>b.durationMin?'var(--danger)':'var(--ok)'}">(${b.actualMin}m actual)</span>`:''}</div>
+            <button class="chklist-del" onclick="deleteAgendaBlock(${i})" title="Remove">×</button>
+          </div>
+          ${isActive?`<div class="agenda-live">
+              <div class="agenda-timer" id="agenda-timer">00:00</div>
+              ${b.notes.length?`<ul class="agenda-notes">${b.notes.map(n=>`<li>${n}</li>`).join('')}</ul>`:''}
+              <button class="btn primary sm full" onclick="completeActiveAgendaBlock()">✓ Mark Done &amp; Next</button>
+            </div>`
+          :(isPending?`<button class="btn-link" style="margin-top:6px" onclick="jumpToAgendaBlock(${i})">Jump here</button>`:'')}
+        </div>`;
+      }).join('')}
+    ${agenda.length&&!started&&!allDone?`<button class="btn primary full" style="margin-top:6px" onclick="startOrResumeAgenda()">▶ ${doneBlocks.length?'Resume':'Start'} Class</button>`:''}
+    ${allDone?`<div class="empty" style="padding:10px 0;color:var(--ok);font-weight:700">✓ Agenda complete</div>`:''}
+    <div style="display:flex;gap:8px;margin-top:14px">
+      <input type="text" id="agenda-new-label" placeholder="Add custom block…" style="flex:2" />
+      <input type="number" id="agenda-new-dur" placeholder="min" style="flex:1;min-width:60px" min="1" />
+      <button class="btn sm" onclick="addAgendaBlock()">+ Add</button>
+    </div>
+    ${hasTemplate?`<button class="btn sm full" style="margin-top:8px" onclick="resetAgenda()">↺ Reset Agenda to Defaults (clears progress)</button>`:''}
+  `;
+  updateAgendaTimerDisplay();
+}
+async function saveAgenda(classId,agenda,agendaLive){
+  const update={agenda};
+  if(agendaLive!==undefined)update.agendaLive=agendaLive;
+  await col('classes').doc(classId).update(update);
+}
+window.startOrResumeAgenda=function(){
+  const c=allClasses.find(x=>x.id===currentClassId);if(!c)return;
+  const agenda=c.agenda||getDefaultAgenda(c.type,c.variant);
+  const nextIdx=agenda.findIndex(b=>!b.done);
+  if(nextIdx===-1)return;
+  saveAgenda(currentClassId,agenda,{activeIndex:nextIdx,startedAt:Date.now()});
+};
+window.completeActiveAgendaBlock=function(){
+  const c=allClasses.find(x=>x.id===currentClassId);if(!c)return;
+  const live=c.agendaLive;if(!live||live.activeIndex==null)return;
+  const list=JSON.parse(JSON.stringify(c.agenda||[]));
+  const idx=live.activeIndex;if(!list[idx])return;
+  const elapsedMin=Math.max(0,Math.round((Date.now()-live.startedAt)/60000));
+  list[idx].done=true;list[idx].actualMin=elapsedMin;
+  const nextIdx=list.findIndex(b=>!b.done);
+  const newLive=nextIdx===-1?{activeIndex:null,startedAt:null}:{activeIndex:nextIdx,startedAt:Date.now()};
+  saveAgenda(currentClassId,list,newLive);
+};
+window.jumpToAgendaBlock=function(idx){
+  const c=allClasses.find(x=>x.id===currentClassId);if(!c)return;
+  const agenda=c.agenda||getDefaultAgenda(c.type,c.variant);
+  saveAgenda(currentClassId,agenda,{activeIndex:idx,startedAt:Date.now()});
+};
+window.deleteAgendaBlock=function(idx){
+  const c=allClasses.find(x=>x.id===currentClassId);if(!c)return;
+  const agenda=JSON.parse(JSON.stringify(c.agenda||getDefaultAgenda(c.type,c.variant)));
+  agenda.splice(idx,1);
+  let live=c.agendaLive||null;
+  if(live&&live.activeIndex!=null){
+    if(live.activeIndex===idx)live=null;
+    else if(live.activeIndex>idx)live={...live,activeIndex:live.activeIndex-1};
+  }
+  saveAgenda(currentClassId,agenda,live);
+};
+window.addAgendaBlock=function(){
+  const label=$('agenda-new-label').value.trim();
+  const dur=parseInt($('agenda-new-dur').value)||5;
+  if(!label)return;
+  const c=allClasses.find(x=>x.id===currentClassId);if(!c)return;
+  const agenda=c.agenda||getDefaultAgenda(c.type,c.variant);
+  const list=[...agenda,{day:agenda.length?agenda[agenda.length-1].day:1,time:'',label,durationMin:dur,notes:[],done:false,actualMin:null}];
+  saveAgenda(currentClassId,list,undefined);
+  $('agenda-new-label').value='';$('agenda-new-dur').value='';
+};
+window.resetAgenda=function(){
+  if(!confirm('Reset agenda to defaults for this class type? This clears all progress.'))return;
+  const c=allClasses.find(x=>x.id===currentClassId);if(!c)return;
+  saveAgenda(currentClassId,getDefaultAgenda(c.type,c.variant),null);
+};
+function updateAgendaTimerDisplay(){
+  const timerEl=$('agenda-timer');if(!timerEl)return;
+  const c=allClasses.find(x=>x.id===currentClassId);if(!c)return;
+  const live=c.agendaLive;if(!live||live.startedAt==null||live.activeIndex==null)return;
+  const agenda=c.agenda||[];const b=agenda[live.activeIndex];if(!b)return;
+  const elapsedSec=Math.floor((Date.now()-live.startedAt)/1000);
+  const remainSec=b.durationMin*60-elapsedSec;
+  const mm=Math.floor(Math.abs(remainSec)/60),ss=Math.abs(remainSec)%60;
+  timerEl.textContent=`${remainSec<0?'+':''}${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}${remainSec<0?' over':' left'}`;
+  timerEl.style.color=remainSec<0?'var(--danger)':(remainSec<60?'var(--warn)':'var(--ok)');
+}
+setInterval(()=>{
+  if(!currentClassId||!$('cd-checklist')||$('cd-checklist').style.display==='none')return;
+  updateAgendaTimerDisplay();
+},1000);
 
 // ============================================================
 // ATTENDANCE TRACKING
